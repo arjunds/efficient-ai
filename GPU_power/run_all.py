@@ -5,17 +5,20 @@ import subprocess
 from datetime import datetime
 
 MODELS = [
-    "google/gemma-7b",
-    "mistralai/Mistral-7B-v0.1",
-    "deepseek-ai/deepseek-llm-7b-base",
-    "meta-llama/Meta-Llama-3-8B",
+    # "google/gemma-7b",
+    # "mistralai/Mistral-7B-v0.1",
+    # "deepseek-ai/deepseek-llm-7b-base",
+    # "meta-llama/Meta-Llama-3-8B",
+    "Qwen/Qwen2-7B-Instruct",
+    # "mistralai/Mixtral-8x7B-Instruct-v0.1"
+    # "microsoft/Phi-3-mini-4k-instruct"
 ]
 
 TASKS = [
     "alpaca",
     # "sharegpt",
     # "math",
-    # "multi_turn",
+   # "multi_turn",
 ]
 
 DTYPES = ["float16"]
