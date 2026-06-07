@@ -1,0 +1,5 @@
+logs
+run.slurm
+*.png
+*.csv
+__pycache__
