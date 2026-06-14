@@ -28,8 +28,52 @@ import sys
 import time
 from typing import List, Optional
 
+# Avoid FlashInfer sampler JIT compilation on cluster nodes without nvcc.
+os.environ.setdefault("VLLM_USE_FLASHINFER_SAMPLER", "0")
+
 import torch
-from vllm import LLM, SamplingParams
+from transformers import PreTrainedTokenizer, PreTrainedTokenizerBase, PreTrainedTokenizerFast
+from transformers.tokenization_utils_base import PreTrainedTokenizerBase as TokenizerBaseImpl
+
+
+def _install_transformers_tokenizer_compat() -> None:
+    """
+    vLLM 0.10.x expects all_special_tokens_extended, which newer transformers
+    tokenizers can hide behind __getattr__. Add a narrow fallback before vLLM
+    imports and initializes tokenizers.
+    """
+    for tokenizer_cls in (PreTrainedTokenizerBase, PreTrainedTokenizer, PreTrainedTokenizerFast):
+        if not hasattr(tokenizer_cls, "all_special_tokens_extended"):
+            tokenizer_cls.all_special_tokens_extended = property(
+                lambda self: self.all_special_tokens
+            )
+
+    original_getattr = TokenizerBaseImpl.__getattr__
+
+    if getattr(original_getattr, "_vllm_compat_patched", False):
+        return
+
+    def compat_getattr(self, key):
+        if key == "all_special_tokens_extended":
+            return self.all_special_tokens
+        return original_getattr(self, key)
+
+    compat_getattr._vllm_compat_patched = True
+    TokenizerBaseImpl.__getattr__ = compat_getattr
+
+
+_install_transformers_tokenizer_compat()
+
+try:
+    from vllm import LLM, SamplingParams
+except ImportError as exc:
+    if "libcudart.so.13" in str(exc):
+        raise ImportError(
+            "vLLM failed to import because its installed binary expects CUDA 13 "
+            "(missing libcudart.so.13). This cluster node exposes CUDA 12.7, so "
+            "install a CUDA 12.x-compatible vLLM build/version."
+        ) from exc
+    raise
 
 from energy_profile import (
     load_task_examples,
@@ -468,8 +512,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
     ap.add_argument("--tensor_parallel_size", type=int, default=1)
     ap.add_argument("--gpu_memory_utilization", type=float, default=0.90)
     ap.add_argument("--max_model_len", type=int, default=2048)
-    ap.add_argument("--enforce_eager", action="store_true",
-                    help="Disable CUDA graphs (required for NCU profiling)")
+    ap.add_argument("--enforce_eager", action="store_true", default=True,
+                    help="Disable CUDA graphs/TorchInductor compilation")
+    ap.add_argument("--no_enforce_eager", dest="enforce_eager", action="store_false",
+                    help="Allow vLLM CUDA graphs/TorchInductor compilation")
 
     ap.add_argument("--ncu_launch_count", type=int, default=20000)
     ap.add_argument("--ncu_replay_mode", default="application", choices=["application", "kernel"])

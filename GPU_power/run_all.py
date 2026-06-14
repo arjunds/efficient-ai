@@ -42,6 +42,7 @@ GPU_MEMORY_UTILIZATION = 0.90
 MAX_MODEL_LEN = 2048
 NCU_LAUNCH_COUNT = 20000
 NCU_REPLAY_MODE = "application"
+ENFORCE_EAGER = True
 SAVE_PREDICTIONS = False
 
 LOG_ROOT = "logs"
@@ -59,6 +60,25 @@ def run(cmd, log_file):
 
     if proc.returncode != 0:
         print(f"[{ts()}] WARNING: failed -> {log_file}", flush=True)
+
+    return proc.returncode
+
+
+def energy_complete(results_path):
+    if not os.path.exists(results_path):
+        return False
+
+    try:
+        with open(results_path) as f:
+            results = json.load(f)
+    except Exception:
+        return False
+
+    return (
+        results.get("backend") == BACKEND
+        and results.get("energy_total_j") is not None
+        and results.get("generated_tokens", 0) > 0
+    )
 
 
 def ncu_complete(status_path):
@@ -122,7 +142,7 @@ for model in MODELS:
             # -------------------------
             # PASS A: ENERGY
             # -------------------------
-            if os.path.exists(results_json):
+            if energy_complete(results_json):
                 print("[skip] energy already done")
             else:
                 cmd = [
@@ -143,10 +163,15 @@ for model in MODELS:
                     "--gpu_memory_utilization", str(GPU_MEMORY_UTILIZATION),
                     "--max_model_len", str(MAX_MODEL_LEN),
                 ]
+                if ENFORCE_EAGER:
+                    cmd.append("--enforce_eager")
                 if SAVE_PREDICTIONS:
                     cmd.append("--save_predictions")
 
-                run(cmd, os.path.join(run_dir, "energy.log"))
+                energy_returncode = run(cmd, os.path.join(run_dir, "energy.log"))
+                if energy_returncode != 0 or not energy_complete(results_json):
+                    print("[skip] ncu/intensity because energy pass did not complete", flush=True)
+                    continue
 
             # -------------------------
             # PASS B: NCU
@@ -174,6 +199,8 @@ for model in MODELS:
                     "--ncu_launch_count", str(NCU_LAUNCH_COUNT),
                     "--ncu_replay_mode", NCU_REPLAY_MODE,
                 ]
+                if ENFORCE_EAGER:
+                    cmd.append("--enforce_eager")
                 if SAVE_PREDICTIONS:
                     cmd.append("--save_predictions")
 
