@@ -42,6 +42,7 @@ import csv
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -198,9 +199,28 @@ def load_task_examples(task: str, limit: int) -> List[dict]:
 # POWER LOGGING
 # -------------------------
 
+def find_nvidia_smi() -> str:
+    path = shutil.which("nvidia-smi")
+    if path:
+        return path
+
+    for candidate in (
+        "/usr/bin/nvidia-smi",
+        "/usr/local/cuda/bin/nvidia-smi",
+        "/opt/bin/nvidia-smi",
+    ):
+        if os.path.exists(candidate) and os.access(candidate, os.X_OK):
+            return candidate
+
+    raise FileNotFoundError(
+        "Could not find nvidia-smi. On a cluster, run this inside a GPU allocation "
+        "and load the site CUDA/NVIDIA module if required."
+    )
+
+
 def start_smi_logger(log_path: str, gpu_id: int, interval_ms: int) -> Tuple[subprocess.Popen, Any, float]:
     cmd = [
-        "nvidia-smi",
+        find_nvidia_smi(),
         "-i", str(gpu_id),
         "--query-gpu=timestamp,power.draw,utilization.gpu,utilization.memory,temperature.gpu",
         "--format=csv",

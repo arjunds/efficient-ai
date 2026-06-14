@@ -518,7 +518,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
                     help="Allow vLLM CUDA graphs/TorchInductor compilation")
 
     ap.add_argument("--ncu_launch_count", type=int, default=20000)
-    ap.add_argument("--ncu_replay_mode", default="application", choices=["application", "kernel"])
+    ap.add_argument("--ncu_replay_mode", default="kernel", choices=["application", "kernel"])
 
     ap.add_argument("--save_predictions", action="store_true")
 
