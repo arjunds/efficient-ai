@@ -10,11 +10,11 @@ PROFILE_SCRIPT = "energy_profile_vllm.py"
 BACKEND = "vllm"
 
 MODELS = [
-    # "google/gemma-7b",
+    "google/gemma-7b",
     # "mistralai/Mistral-7B-v0.1",
     # "deepseek-ai/deepseek-llm-7b-base",
     # "meta-llama/Meta-Llama-3-8B",
-    "Qwen/Qwen2-7B-Instruct",
+    # "Qwen/Qwen2-7B-Instruct",
     # "mistralai/Mixtral-8x7B-Instruct-v0.1"
     # "microsoft/Phi-3-mini-4k-instruct"
 ]
@@ -42,8 +42,21 @@ GPU_MEMORY_UTILIZATION = 0.90
 MAX_MODEL_LEN = 2048
 NCU_LAUNCH_COUNT = 20000
 NCU_REPLAY_MODE = "kernel"
+NCU_PROFILE_FROM_START = "no"
 ENFORCE_EAGER = True
 SAVE_PREDICTIONS = False
+
+# Gemma's NCU replay is much more memory hungry than its energy pass. Keep
+# full-run energy settings, but profile a small representative window.
+GEMMA_NCU_OVERRIDES = {
+    "limit": 5,
+    "max_new_tokens": 16,
+    "nvtx_start": 0,
+    "nvtx_count": 1,
+    "gpu_memory_utilization": 0.50,
+    "max_model_len": 1024,
+    "ncu_replay_mode": "application",
+}
 
 LOG_ROOT = "logs"
 
@@ -122,6 +135,27 @@ def intensity_complete(intensity_path):
     return all(key in intensity for key in required_keys)
 
 
+def ncu_settings_for_model(model):
+    settings = {
+        "limit": LIMIT,
+        "batch_size": BATCH_SIZE,
+        "max_new_tokens": MAX_NEW_TOKENS,
+        "nvtx_start": NVTX_START,
+        "nvtx_count": NVTX_COUNT,
+        "tensor_parallel_size": TENSOR_PARALLEL_SIZE,
+        "gpu_memory_utilization": GPU_MEMORY_UTILIZATION,
+        "max_model_len": MAX_MODEL_LEN,
+        "ncu_launch_count": NCU_LAUNCH_COUNT,
+        "ncu_replay_mode": NCU_REPLAY_MODE,
+        "ncu_profile_from_start": NCU_PROFILE_FROM_START,
+    }
+
+    if "gemma" in model.lower():
+        settings.update(GEMMA_NCU_OVERRIDES)
+
+    return settings
+
+
 for model in MODELS:
     model_name = model.split("/")[-1]
 
@@ -179,32 +213,37 @@ for model in MODELS:
             if ncu_complete(ncu_status_json):
                 print("[skip] ncu already done")
             else:
+                ncu_settings = ncu_settings_for_model(model)
                 cmd = [
                     sys.executable, "-u", PROFILE_SCRIPT,
                     "--mode", "ncu",
                     "--model", model,
                     "--task", task,
                     "--dtype", dtype,
-                    "--limit", str(LIMIT),
-                    "--batch_size", str(BATCH_SIZE),
-                    "--max_new_tokens", str(MAX_NEW_TOKENS),
+                    "--limit", str(ncu_settings["limit"]),
+                    "--batch_size", str(ncu_settings["batch_size"]),
+                    "--max_new_tokens", str(ncu_settings["max_new_tokens"]),
                     "--run_dir", run_dir,
                     "--gpu_id", str(GPU_ID),
                     "--power_interval_ms", str(POWER_INTERVAL_MS),
-                    "--nvtx_start", str(NVTX_START),
-                    "--nvtx_count", str(NVTX_COUNT),
-                    "--tensor_parallel_size", str(TENSOR_PARALLEL_SIZE),
-                    "--gpu_memory_utilization", str(GPU_MEMORY_UTILIZATION),
-                    "--max_model_len", str(MAX_MODEL_LEN),
-                    "--ncu_launch_count", str(NCU_LAUNCH_COUNT),
-                    "--ncu_replay_mode", NCU_REPLAY_MODE,
+                    "--nvtx_start", str(ncu_settings["nvtx_start"]),
+                    "--nvtx_count", str(ncu_settings["nvtx_count"]),
+                    "--tensor_parallel_size", str(ncu_settings["tensor_parallel_size"]),
+                    "--gpu_memory_utilization", str(ncu_settings["gpu_memory_utilization"]),
+                    "--max_model_len", str(ncu_settings["max_model_len"]),
+                    "--ncu_launch_count", str(ncu_settings["ncu_launch_count"]),
+                    "--ncu_replay_mode", ncu_settings["ncu_replay_mode"],
+                    "--ncu_profile_from_start", ncu_settings["ncu_profile_from_start"],
                 ]
                 if ENFORCE_EAGER:
                     cmd.append("--enforce_eager")
                 if SAVE_PREDICTIONS:
                     cmd.append("--save_predictions")
 
-                run(cmd, os.path.join(run_dir, "ncu.log"))
+                ncu_returncode = run(cmd, os.path.join(run_dir, "ncu.log"))
+                if ncu_returncode != 0 or not ncu_complete(ncu_status_json):
+                    print("[skip] intensity because ncu pass did not complete", flush=True)
+                    continue
 
             # -------------------------
             # PASS C: INTENSITY

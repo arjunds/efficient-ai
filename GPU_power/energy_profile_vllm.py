@@ -30,6 +30,10 @@ from typing import List, Optional
 
 # Avoid FlashInfer sampler JIT compilation on cluster nodes without nvcc.
 os.environ.setdefault("VLLM_USE_FLASHINFER_SAMPLER", "0")
+# Avoid vLLM/Torch internals invoking TorchInductor on clusters where Triton
+# helper compilation cannot link libcuda cleanly.
+os.environ.setdefault("TORCH_COMPILE_DISABLE", "1")
+os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
 
 import torch
 from transformers import PreTrainedTokenizer, PreTrainedTokenizerBase, PreTrainedTokenizerFast
@@ -96,7 +100,7 @@ from energy_profile import (
 def load_vllm_engine(args) -> LLM:
     token = os.environ.get("HUGGINGFACE_HUB_TOKEN")
 
-    kwargs = {}
+    kwargs = vllm_engine_kwargs(args)
     if token:
         kwargs["download_dir"] = None  # use default
     os.environ.setdefault("HF_TOKEN", token or "")
@@ -109,8 +113,20 @@ def load_vllm_engine(args) -> LLM:
         max_model_len=args.max_model_len,
         enforce_eager=args.enforce_eager,
         trust_remote_code=True,
+        **kwargs,
     )
     return llm
+
+
+def vllm_engine_kwargs(args) -> dict:
+    kwargs = {}
+
+    # vLLM 0.10.x expects GemmaConfig.rope_theta, but some transformers
+    # versions omit it for google/gemma-7b. Gemma's default RoPE theta is 10000.
+    if args.model and "gemma" in args.model.lower():
+        kwargs["hf_overrides"] = {"rope_theta": 10000.0}
+
+    return kwargs
 
 
 def generate_vllm_single(
@@ -184,6 +200,26 @@ def generate_vllm_batch(
     }
 
 
+def cuda_profiler_start(enabled: bool) -> None:
+    if not enabled or not torch.cuda.is_available():
+        return
+
+    try:
+        torch.cuda.cudart().cudaProfilerStart()
+    except Exception as exc:
+        print(f"[warn] cudaProfilerStart failed: {exc}", flush=True)
+
+
+def cuda_profiler_stop(enabled: bool) -> None:
+    if not enabled or not torch.cuda.is_available():
+        return
+
+    try:
+        torch.cuda.cudart().cudaProfilerStop()
+    except Exception as exc:
+        print(f"[warn] cudaProfilerStop failed: {exc}", flush=True)
+
+
 def run_energy_pass(args) -> dict:
     maybe_mkdir(args.run_dir)
 
@@ -245,6 +281,7 @@ def run_energy_pass(args) -> dict:
                 if in_nvtx and torch.cuda.is_available():
                     if win_t0_wall is None:
                         win_t0_wall = time.time()
+                    cuda_profiler_start(under_ncu)
                     torch.cuda.nvtx.range_push("PROFILE_WINDOW")
 
                 try:
@@ -252,6 +289,7 @@ def run_energy_pass(args) -> dict:
                 finally:
                     if in_nvtx and torch.cuda.is_available():
                         torch.cuda.nvtx.range_pop()
+                        cuda_profiler_stop(under_ncu)
                         win_t1_wall = time.time()
 
                 prompt_tokens = out["prompt_tokens"]
@@ -295,6 +333,7 @@ def run_energy_pass(args) -> dict:
 
             win_t0_wall = time.time()
             if args.nvtx_count > 0 and torch.cuda.is_available():
+                cuda_profiler_start(under_ncu)
                 torch.cuda.nvtx.range_push("PROFILE_WINDOW")
 
             try:
@@ -302,6 +341,7 @@ def run_energy_pass(args) -> dict:
             finally:
                 if args.nvtx_count > 0 and torch.cuda.is_available():
                     torch.cuda.nvtx.range_pop()
+                    cuda_profiler_stop(under_ncu)
                 win_t1_wall = time.time()
 
             elapsed_s = out["elapsed_s"]
@@ -405,7 +445,7 @@ def build_ncu_child_command(args, ncu_base: str) -> List[str]:
         "ncu",
         "--target-processes", "all",
         "--replay-mode", args.ncu_replay_mode,
-        "--profile-from-start", "yes",
+        "--profile-from-start", args.ncu_profile_from_start,
         "--launch-count", str(args.ncu_launch_count),
         "--metrics", ",".join(requested_ncu_metrics()),
         "-o", ncu_base,
@@ -449,6 +489,7 @@ def run_ncu_pass(args) -> dict:
 
     env = os.environ.copy()
     env["UNDER_NCU"] = "1"
+    env.setdefault("VLLM_ENABLE_V1_MULTIPROCESSING", "0")
 
     print("[ncu] launching:")
     print("  " + " ".join(cmd), flush=True)
@@ -519,6 +560,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
 
     ap.add_argument("--ncu_launch_count", type=int, default=20000)
     ap.add_argument("--ncu_replay_mode", default="kernel", choices=["application", "kernel"])
+    ap.add_argument("--ncu_profile_from_start", default="no", choices=["yes", "no"])
 
     ap.add_argument("--save_predictions", action="store_true")
 
