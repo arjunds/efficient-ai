@@ -392,19 +392,24 @@ def parse_ncu_csv(ncu_csv: str) -> Dict[str, float]:
 
         for col in df.columns:
             col_name = str(col).strip()
+            metric_name, unit_from_col = split_ncu_metric_column(col_name)
             if not (
-                col_name.startswith("sm__")
-                or col_name.startswith("smsp__")
-                or col_name.startswith("dram__")
-                or col_name.startswith("l2__")
+                metric_name.startswith("sm__")
+                or metric_name.startswith("smsp__")
+                or metric_name.startswith("dram__")
+                or metric_name.startswith("l2__")
+                or metric_name.startswith("lts__")
             ):
                 continue
 
             vals = pd.to_numeric(df[col], errors="coerce")
             total = vals.sum(skipna=True)
+            unit = unit_from_col or infer_ncu_unit_from_series(df[col])
 
             if pd.notna(total):
-                metrics[col_name] = float(total)
+                metrics[metric_name] = metrics.get(metric_name, 0.0) + (
+                    float(total) * ncu_unit_scale(metric_name, unit)
+                )
 
         if metrics:
             return metrics
@@ -428,6 +433,7 @@ def parse_ncu_csv(ncu_csv: str) -> Dict[str, float]:
     header = rows[header_i]
     name_idx = next((j for j, c in enumerate(header) if "Metric" in c or c.strip() == "Name"), None)
     val_idx = next((j for j, c in enumerate(header) if "Value" in c), None)
+    unit_idx = next((j for j, c in enumerate(header) if "Unit" in c), None)
 
     if name_idx is None or val_idx is None:
         return metrics
@@ -437,14 +443,79 @@ def parse_ncu_csv(ncu_csv: str) -> Dict[str, float]:
             continue
 
         name = row[name_idx].strip()
-        raw_val = row[val_idx].strip().replace(",", "")
+        raw_val = row[val_idx].strip()
+        unit = row[unit_idx].strip() if unit_idx is not None and len(row) > unit_idx else ""
+        val = parse_ncu_metric_value(raw_val)
 
-        try:
-            metrics[name] = metrics.get(name, 0.0) + float(raw_val)
-        except Exception:
+        if val is None:
             continue
 
+        metrics[name] = metrics.get(name, 0.0) + val * ncu_unit_scale(name, unit)
+
     return metrics
+
+
+def split_ncu_metric_column(col_name: str) -> Tuple[str, str]:
+    stripped = col_name.strip()
+    match = re.match(r"^(.+?)\s*[\[(]([^)\]]+)[\])]$", stripped)
+    if match:
+        return match.group(1).strip(), match.group(2).strip()
+    return stripped, ""
+
+
+def infer_ncu_unit_from_series(series) -> str:
+    for value in series:
+        if value is None:
+            continue
+        text = str(value).strip()
+        if not text or parse_ncu_metric_value(text) is not None:
+            continue
+        unit = text.replace(",", "")
+        if ncu_unit_scale("", unit) != 1.0:
+            return unit
+    return ""
+
+
+def parse_ncu_metric_value(raw_val: str) -> Optional[float]:
+    cleaned = raw_val.strip().replace(",", "")
+    if cleaned in ("", "-", "--", "nan", "NaN", "N/A"):
+        return None
+
+    try:
+        return float(cleaned)
+    except Exception:
+        return None
+
+
+def ncu_unit_scale(metric_name: str, unit: str) -> float:
+    unit_norm = unit.strip().lower().replace(" ", "")
+
+    if "byte" not in metric_name.lower() and "byte" not in unit_norm:
+        return 1.0
+
+    byte_scales = {
+        "byte": 1.0,
+        "bytes": 1.0,
+        "b": 1.0,
+        "kbyte": 1e3,
+        "kbytes": 1e3,
+        "kb": 1e3,
+        "mbyte": 1e6,
+        "mbytes": 1e6,
+        "mb": 1e6,
+        "gbyte": 1e9,
+        "gbytes": 1e9,
+        "gb": 1e9,
+        "tbyte": 1e12,
+        "tbytes": 1e12,
+        "tb": 1e12,
+        "kibyte": 1024.0,
+        "mibyte": 1024.0 ** 2,
+        "gibyte": 1024.0 ** 3,
+        "tibyte": 1024.0 ** 4,
+    }
+
+    return byte_scales.get(unit_norm, 1.0)
 
 
 def compute_flops_and_bytes_from_metrics(metrics: dict) -> dict:
@@ -464,6 +535,19 @@ def compute_flops_and_bytes_from_metrics(metrics: dict) -> dict:
 
     tensor_insts = float(metrics.get("sm__inst_executed_pipe_tensor.sum", 0.0))
     global_bytes = float(metrics.get("smsp__sass_data_bytes_mem_global.sum", 0.0))
+    dram_bytes = float(metrics.get("dram__bytes.sum", 0.0))
+    l2_bytes = float(metrics.get("lts__t_bytes.sum", 0.0))
+    bytes_window = global_bytes or dram_bytes or l2_bytes
+    selected_bytes_metric = (
+        "smsp__sass_data_bytes_mem_global.sum"
+        if global_bytes > 0 else
+        "dram__bytes.sum"
+        if dram_bytes > 0 else
+        "lts__t_bytes.sum"
+        if l2_bytes > 0 else
+        None
+    )
+    bytes_scale_note = None
 
     scalar_flops = (
         fadd
@@ -474,10 +558,24 @@ def compute_flops_and_bytes_from_metrics(metrics: dict) -> dict:
         + 2.0 * hfma
     )
 
+    if (
+        selected_bytes_metric is not None
+        and 0.0 < bytes_window < 1e6
+        and (tensor_insts > 1e6 or scalar_flops > 1e6)
+    ):
+        bytes_window *= 1e9
+        if selected_bytes_metric == "smsp__sass_data_bytes_mem_global.sum":
+            global_bytes *= 1e9
+        elif selected_bytes_metric == "dram__bytes.sum":
+            dram_bytes *= 1e9
+        elif selected_bytes_metric == "lts__t_bytes.sum":
+            l2_bytes *= 1e9
+        bytes_scale_note = "scaled suspicious byte metric from Gbyte display value"
+
     return {
         "scalar_flops": float(scalar_flops),
         "tensor_insts": float(tensor_insts),
-        "bytes_window": float(global_bytes),
+        "bytes_window": float(bytes_window),
         "metric_debug": {
             "fadd": fadd,
             "fmul": fmul,
@@ -487,6 +585,10 @@ def compute_flops_and_bytes_from_metrics(metrics: dict) -> dict:
             "hfma": hfma,
             "tensor_insts": tensor_insts,
             "global_bytes": global_bytes,
+            "dram_bytes": dram_bytes,
+            "l2_bytes": l2_bytes,
+            "selected_bytes_metric": selected_bytes_metric,
+            "bytes_scale_note": bytes_scale_note,
         },
     }
 
