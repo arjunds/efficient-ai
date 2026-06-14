@@ -5,19 +5,26 @@ energy_profile_vllm.py
 Energy + throughput benchmarking using vLLM offline inference.
 Reuses power logging and data helpers from energy_profile.py.
 
-Example:
+Example energy:
   python energy_profile_vllm.py \
+      --mode energy \
       --model Qwen/Qwen2-7B-Instruct \
       --task alpaca \
       --dtype float16 \
       --limit 50 \
       --max_new_tokens 64 \
       --run_dir logs/vllm_qwen2_alpaca_float16
+
+Example NCU/intensity:
+  python energy_profile_vllm.py --mode ncu --model Qwen/Qwen2-7B-Instruct --task alpaca --run_dir logs/vllm_qwen2_alpaca_float16
+  python energy_profile_vllm.py --mode intensity --run_dir logs/vllm_qwen2_alpaca_float16
 """
 
 import argparse
 import json
 import os
+import subprocess
+import sys
 import time
 from typing import List, Optional
 
@@ -32,6 +39,11 @@ from energy_profile import (
     energy_j_from_samples,
     write_json,
     maybe_mkdir,
+    now_tag,
+    requested_ncu_metrics,
+    export_ncu_rep_to_csv,
+    newest_file,
+    build_intensity_results,
     safe_mean,
     evaluate_example,
 )
@@ -131,10 +143,12 @@ def generate_vllm_batch(
 def run_energy_pass(args) -> dict:
     maybe_mkdir(args.run_dir)
 
+    under_ncu = os.environ.get("UNDER_NCU", "") == "1"
+
     power_csv = os.path.join(args.run_dir, "power.csv")
     anchor_path = os.path.join(args.run_dir, "time_anchor.json")
     window_path = os.path.join(args.run_dir, "window_times.json")
-    results_path = os.path.join(args.run_dir, "results.json")
+    results_path = os.path.join(args.run_dir, "results_under_ncu.json" if under_ncu else "results.json")
     predictions_path = os.path.join(args.run_dir, "predictions.jsonl")
 
     examples = load_task_examples(args.task, args.limit)
@@ -147,12 +161,13 @@ def run_energy_pass(args) -> dict:
     smi_file = None
     dt = args.power_interval_ms / 1000.0
 
-    smi_proc, smi_file, dt = start_smi_logger(power_csv, args.gpu_id, args.power_interval_ms)
+    if not under_ncu:
+        smi_proc, smi_file, dt = start_smi_logger(power_csv, args.gpu_id, args.power_interval_ms)
 
-    write_json(anchor_path, {
-        "wall_time_s": time.time(),
-        "perf_counter_s": time.perf_counter(),
-    })
+        write_json(anchor_path, {
+            "wall_time_s": time.time(),
+            "perf_counter_s": time.perf_counter(),
+        })
 
     total_examples = 0
     total_prompt_tokens = 0
@@ -168,7 +183,7 @@ def run_energy_pass(args) -> dict:
     overall_t0 = time.time()
 
     pred_f = None
-    if args.save_predictions:
+    if args.save_predictions and not under_ncu:
         pred_f = open(predictions_path, "w")
 
     try:
@@ -278,12 +293,13 @@ def run_energy_pass(args) -> dict:
         if pred_f is not None:
             pred_f.close()
 
-    write_json(window_path, {
-        "nvtx_start": args.nvtx_start,
-        "nvtx_count": args.nvtx_count,
-        "window_wall_t0": win_t0_wall,
-        "window_wall_t1": win_t1_wall,
-    })
+    if not under_ncu:
+        write_json(window_path, {
+            "nvtx_start": args.nvtx_start,
+            "nvtx_count": args.nvtx_count,
+            "window_wall_t0": win_t0_wall,
+            "window_wall_t1": win_t1_wall,
+        })
 
     results = {
         "backend": "vllm",
@@ -316,11 +332,12 @@ def run_energy_pass(args) -> dict:
         "power_csv": power_csv if os.path.exists(power_csv) else None,
         "time_anchor_json": anchor_path if os.path.exists(anchor_path) else None,
         "window_times_json": window_path if os.path.exists(window_path) else None,
-        "predictions_jsonl": predictions_path if args.save_predictions else None,
+        "predictions_jsonl": predictions_path if args.save_predictions and not under_ncu else None,
         "sampling_dt_s": dt,
+        "under_ncu": under_ncu,
     }
 
-    if os.path.exists(power_csv):
+    if not under_ncu and os.path.exists(power_csv):
         samples = parse_power_samples(power_csv)
         powers = [p for _, p in samples]
 
@@ -339,11 +356,100 @@ def run_energy_pass(args) -> dict:
     return results
 
 
+def build_ncu_child_command(args, ncu_base: str) -> List[str]:
+    cmd = [
+        "ncu",
+        "--target-processes", "all",
+        "--replay-mode", args.ncu_replay_mode,
+        "--profile-from-start", "yes",
+        "--launch-count", str(args.ncu_launch_count),
+        "--metrics", ",".join(requested_ncu_metrics()),
+        "-o", ncu_base,
+        sys.executable,
+        os.path.abspath(__file__),
+        "--mode", "energy",
+        "--model", args.model,
+        "--task", args.task,
+        "--dtype", args.dtype,
+        "--limit", str(args.limit),
+        "--batch_size", str(args.batch_size),
+        "--max_new_tokens", str(args.max_new_tokens),
+        "--run_dir", args.run_dir,
+        "--gpu_id", str(args.gpu_id),
+        "--power_interval_ms", str(args.power_interval_ms),
+        "--nvtx_start", str(args.nvtx_start),
+        "--nvtx_count", str(args.nvtx_count),
+        "--tensor_parallel_size", str(args.tensor_parallel_size),
+        "--gpu_memory_utilization", str(args.gpu_memory_utilization),
+        "--max_model_len", str(args.max_model_len),
+    ]
+
+    if args.enforce_eager:
+        cmd.append("--enforce_eager")
+
+    if args.save_predictions:
+        cmd.append("--save_predictions")
+
+    return cmd
+
+
+def run_ncu_pass(args) -> dict:
+    maybe_mkdir(args.run_dir)
+
+    if not args.enforce_eager:
+        args.enforce_eager = True
+        print("[ncu] enabling --enforce_eager for vLLM profiling", flush=True)
+
+    ncu_base = os.path.join(args.run_dir, f"ncu_{now_tag()}")
+    cmd = build_ncu_child_command(args, ncu_base)
+
+    env = os.environ.copy()
+    env["UNDER_NCU"] = "1"
+
+    print("[ncu] launching:")
+    print("  " + " ".join(cmd), flush=True)
+
+    ret = subprocess.run(cmd, env=env)
+
+    rep_path = f"{ncu_base}.ncu-rep"
+    csv_path = None
+
+    if os.path.exists(rep_path):
+        csv_path = export_ncu_rep_to_csv(rep_path)
+        print(f"[ncu] exported csv -> {csv_path}", flush=True)
+    else:
+        newest_rep = newest_file(args.run_dir, ".ncu-rep", prefix="ncu_")
+        if newest_rep is not None:
+            csv_path = export_ncu_rep_to_csv(newest_rep)
+            print(f"[ncu] exported newest csv -> {csv_path}", flush=True)
+        else:
+            print("[warn] no NCU report found", flush=True)
+
+    summary = {
+        "returncode": ret.returncode,
+        "ncu_base": ncu_base,
+        "ncu_rep": rep_path if os.path.exists(rep_path) else None,
+        "ncu_csv": csv_path,
+        "status": "ok" if ret.returncode == 0 and csv_path is not None else "failed_or_partial",
+    }
+
+    out_path = os.path.join(args.run_dir, "ncu_status.json")
+    write_json(out_path, summary)
+    print(f"[saved] {out_path}", flush=True)
+
+    if ret.returncode != 0:
+        print(f"[warn] NCU exited with return code {ret.returncode}", flush=True)
+
+    return summary
+
+
 def build_arg_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description="vLLM energy profiling")
 
-    ap.add_argument("--model", required=True)
-    ap.add_argument("--task", required=True, choices=["alpaca", "sharegpt", "math", "multi_turn"])
+    ap.add_argument("--mode", default="energy", choices=["energy", "ncu", "intensity"])
+
+    ap.add_argument("--model")
+    ap.add_argument("--task", choices=["alpaca", "sharegpt", "math", "multi_turn"])
 
     ap.add_argument("--dtype", default="float16", choices=["float16", "bfloat16"])
     ap.add_argument("--limit", type=int, default=50)
@@ -365,18 +471,44 @@ def build_arg_parser() -> argparse.ArgumentParser:
     ap.add_argument("--enforce_eager", action="store_true",
                     help="Disable CUDA graphs (required for NCU profiling)")
 
+    ap.add_argument("--ncu_launch_count", type=int, default=20000)
+    ap.add_argument("--ncu_replay_mode", default="application", choices=["application", "kernel"])
+
     ap.add_argument("--save_predictions", action="store_true")
 
     return ap
 
 
+def validate_args(args) -> None:
+    if args.mode in ("energy", "ncu"):
+        missing = []
+        if not args.model:
+            missing.append("--model")
+        if not args.task:
+            missing.append("--task")
+
+        if missing:
+            raise ValueError(f"{args.mode} mode requires: {', '.join(missing)}")
+
+    if args.mode == "intensity" and not args.run_dir:
+        raise ValueError("intensity mode requires --run_dir")
+
+
 def main() -> None:
     args = build_arg_parser().parse_args()
+    validate_args(args)
 
     if args.batch_size == 0:
         args.batch_size = args.limit
 
-    run_energy_pass(args)
+    if args.mode == "energy":
+        run_energy_pass(args)
+    elif args.mode == "ncu":
+        run_ncu_pass(args)
+    elif args.mode == "intensity":
+        build_intensity_results(args.run_dir)
+    else:
+        raise ValueError(f"Unknown mode: {args.mode}")
 
 
 if __name__ == "__main__":
