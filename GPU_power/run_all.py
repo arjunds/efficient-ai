@@ -10,10 +10,10 @@ PROFILE_SCRIPT = "energy_profile_vllm.py"
 BACKEND = "vllm"
 
 MODELS = [
-    "google/gemma-7b",
-    # "mistralai/Mistral-7B-v0.1",
-    # "deepseek-ai/deepseek-llm-7b-base",
-    # "meta-llama/Meta-Llama-3-8B",
+    # "google/gemma-7b",
+    "mistralai/Mistral-7B-v0.1",
+    "deepseek-ai/deepseek-llm-7b-base",
+    "meta-llama/Meta-Llama-3-8B",
     # "Qwen/Qwen2-7B-Instruct",
     # "mistralai/Mixtral-8x7B-Instruct-v0.1"
     # "microsoft/Phi-3-mini-4k-instruct"
@@ -46,9 +46,10 @@ NCU_PROFILE_FROM_START = "no"
 ENFORCE_EAGER = True
 SAVE_PREDICTIONS = False
 
-# Gemma's NCU replay is much more memory hungry than its energy pass. Keep
-# full-run energy settings, but profile a small representative window.
-GEMMA_NCU_OVERRIDES = {
+# Some 7B models are fine for the energy pass but painful under NCU kernel
+# replay. Keep full-run energy settings, but profile a small representative
+# window with application replay.
+SMALL_NCU_OVERRIDES = {
     "limit": 5,
     "max_new_tokens": 16,
     "nvtx_start": 0,
@@ -150,8 +151,8 @@ def ncu_settings_for_model(model):
         "ncu_profile_from_start": NCU_PROFILE_FROM_START,
     }
 
-    if "gemma" in model.lower():
-        settings.update(GEMMA_NCU_OVERRIDES)
+    if any(name in model.lower() for name in ("gemma", "mistral")):
+        settings.update(SMALL_NCU_OVERRIDES)
 
     return settings
 

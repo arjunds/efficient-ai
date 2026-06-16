@@ -108,6 +108,7 @@ def load_vllm_engine(args) -> LLM:
     llm = LLM(
         model=args.model,
         dtype=args.dtype,
+        tokenizer_mode=args.tokenizer_mode,
         tensor_parallel_size=args.tensor_parallel_size,
         gpu_memory_utilization=args.gpu_memory_utilization,
         max_model_len=args.max_model_len,
@@ -466,6 +467,7 @@ def build_ncu_child_command(args, ncu_base: str) -> List[str]:
         "--tensor_parallel_size", str(args.tensor_parallel_size),
         "--gpu_memory_utilization", str(args.gpu_memory_utilization),
         "--max_model_len", str(args.max_model_len),
+        "--tokenizer_mode", args.tokenizer_mode,
     ]
 
     if args.enforce_eager:
@@ -553,6 +555,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
     ap.add_argument("--tensor_parallel_size", type=int, default=1)
     ap.add_argument("--gpu_memory_utilization", type=float, default=0.90)
     ap.add_argument("--max_model_len", type=int, default=2048)
+    ap.add_argument("--tokenizer_mode", default="auto",
+                    help="vLLM tokenizer mode")
     ap.add_argument("--enforce_eager", action="store_true", default=True,
                     help="Disable CUDA graphs/TorchInductor compilation")
     ap.add_argument("--no_enforce_eager", dest="enforce_eager", action="store_false",
