@@ -37,7 +37,6 @@ import time
 from typing import List, Optional
 
 from nvml_logger import NvmlPowerLogger
-from iter_logger import IterationStatsLogger
 from dram_counter import DramCounter, peak_hbm_bw_for
 
 
@@ -156,14 +155,10 @@ def run_load(args):
     tokenizer = AutoTokenizer.from_pretrained(
         args.model, use_fast=True, token=token, trust_remote_code=True)
 
-    # Attach iteration logger (patches the scheduler class) BEFORE building the
-    # engine so its scheduler instance uses the patched method.
-    iter_log = IterationStatsLogger(
-        out_csv=os.path.join(args.run_dir, "iter_log.csv"),
-        ctx_sidecar=os.path.join(args.run_dir, "iter_ctx.jsonl"))
-    iter_log.attach()
-
-    engine, emeta = build_async_engine(args)
+    # Per-iteration logging is done by a vLLM StatLoggerBase wired into the engine
+    # (the async core runs in its own process, so an in-process hook can't see it).
+    iter_csv = os.path.join(args.run_dir, "iter_log.csv")
+    engine, emeta = build_async_engine(args, iter_log_csv=iter_csv)
 
     nvml = NvmlPowerLogger(args.gpu_id,
                            os.path.join(args.run_dir, "power_trace.csv"),
@@ -180,10 +175,13 @@ def run_load(args):
     finally:
         dram.stop()
         nvml.stop()
-        iter_log.detach()
+        try:
+            if hasattr(engine, "shutdown"):
+                engine.shutdown()
+        except Exception:
+            pass
 
-    filled = reconcile_dram_into_iter_log(
-        os.path.join(args.run_dir, "iter_log.csv"), dram)
+    filled = reconcile_dram_into_iter_log(iter_csv, dram)
 
     baselines = load_baselines(args.run_dir)
     from gate_dram import import_models, hf_to_model_key

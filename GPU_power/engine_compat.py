@@ -2,41 +2,65 @@
 """
 engine_compat.py
 
-Thin compatibility shim over vLLM's async engine so the load driver doesn't care
-whether the installed vLLM uses the V1 (AsyncLLM) or V0 (AsyncLLMEngine) API.
-
-Both expose an async-generator `.generate(prompt, sampling_params, request_id)`
-yielding RequestOutput; only construction differs. We detect and adapt.
-
-The tokenizer/CUDA-version compatibility shims live in energy_profile_vllm.py and
-are imported (and applied) before vLLM is touched.
+Thin compatibility shim over vLLM's async engine. Confirmed against the cluster's
+vllm 0.10.2 (V1 engine): AsyncLLM.from_engine_args accepts a `stat_loggers` list
+of factories Callable[[VllmConfig, int], StatLoggerBase]; the async engine runs
+its core in a separate process (multiprocessing is mandatory), so per-iteration
+logging goes through the stat-logger API (iter_logger.make_iter_logger_factory),
+NOT an in-process monkeypatch.
 """
 
 import os
-from typing import Any, List, Optional
 
-# Reuse the cluster compat shims + engine-kwargs helper already in the repo.
+# NOTE: do NOT set VLLM_ENABLE_V1_MULTIPROCESSING=0 — the V1 AsyncLLM requires the
+# multiprocessing engine-core client and setting that var makes core init fail.
 os.environ.setdefault("VLLM_USE_FLASHINFER_SAMPLER", "0")
 os.environ.setdefault("TORCH_COMPILE_DISABLE", "1")
 os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
-# CRITICAL for iter_logger: the scheduler monkeypatch only sees the engine core
-# if it runs in THIS process. V1 defaults to a separate engine-core process, so
-# disable that. NVML/DRAM sampling read the physical GPU and are unaffected.
-os.environ.setdefault("VLLM_ENABLE_V1_MULTIPROCESSING", "0")
 
 
-def build_async_engine(args):
-    """Return (engine, meta) where meta carries version/config for run_meta.json."""
-    from energy_profile_vllm import (
-        _install_transformers_tokenizer_compat, vllm_engine_kwargs,
-    )
+def _install_transformers_tokenizer_compat():
+    """vLLM expects all_special_tokens_extended, which newer transformers
+    tokenizers hide behind __getattr__. Inlined so the load path has NO dependency
+    on the old pandas/datasets-importing modules."""
+    from transformers import (PreTrainedTokenizer, PreTrainedTokenizerBase,
+                              PreTrainedTokenizerFast)
+    from transformers.tokenization_utils_base import (
+        PreTrainedTokenizerBase as TokenizerBaseImpl)
+    for cls in (PreTrainedTokenizerBase, PreTrainedTokenizer, PreTrainedTokenizerFast):
+        if not hasattr(cls, "all_special_tokens_extended"):
+            cls.all_special_tokens_extended = property(
+                lambda self: self.all_special_tokens)
+    original_getattr = TokenizerBaseImpl.__getattr__
+    if getattr(original_getattr, "_vllm_compat_patched", False):
+        return
+
+    def compat_getattr(self, key):
+        if key == "all_special_tokens_extended":
+            return self.all_special_tokens
+        return original_getattr(self, key)
+
+    compat_getattr._vllm_compat_patched = True
+    TokenizerBaseImpl.__getattr__ = compat_getattr
+
+
+def vllm_engine_kwargs(args) -> dict:
+    kwargs = {}
+    if getattr(args, "model", None) and "gemma" in args.model.lower():
+        kwargs["hf_overrides"] = {"rope_theta": 10000.0}
+    return kwargs
+
+
+def build_async_engine(args, iter_log_csv=None):
+    """Return (engine, meta). If iter_log_csv is given, a per-iteration stat
+    logger is attached via stat_loggers."""
     _install_transformers_tokenizer_compat()
 
     import vllm
     vllm_version = getattr(vllm, "__version__", "unknown")
 
     from vllm import AsyncEngineArgs
-    extra = vllm_engine_kwargs(args)  # gemma rope_theta override etc.
+    extra = vllm_engine_kwargs(args)
 
     engine_args = AsyncEngineArgs(
         model=args.model,
@@ -46,31 +70,34 @@ def build_async_engine(args):
         max_model_len=args.max_model_len,
         enforce_eager=args.enforce_eager,
         trust_remote_code=True,
-        disable_log_stats=False,
-        disable_log_requests=True,
         **extra,
     )
 
-    engine = None
-    api = None
-    # V1 first.
+    stat_loggers = None
+    if iter_log_csv:
+        from iter_logger import make_iter_logger_factory
+        stat_loggers = [make_iter_logger_factory(iter_log_csv)]
+
     try:
         from vllm.v1.engine.async_llm import AsyncLLM
-        engine = AsyncLLM.from_engine_args(engine_args)
-        api = "v1"
+        _v1 = True
     except Exception:
-        engine = None
-    if engine is None:
+        _v1 = False
+
+    if _v1:
+        kw = {}
+        if stat_loggers is not None:
+            kw["stat_loggers"] = stat_loggers
+        engine = AsyncLLM.from_engine_args(engine_args, **kw)
+        api = "v1"
+    else:
         from vllm import AsyncLLMEngine
         engine = AsyncLLMEngine.from_engine_args(engine_args)
         api = "v0"
 
-    meta = {
-        "vllm_version": vllm_version,
-        "engine_api": api,
-        "max_num_seqs": getattr(engine_args, "max_num_seqs", None),
-        "block_size": getattr(engine_args, "block_size", None),
-    }
+    meta = {"vllm_version": vllm_version, "engine_api": api,
+            "max_num_seqs": getattr(engine_args, "max_num_seqs", None),
+            "block_size": getattr(engine_args, "block_size", None)}
     return engine, meta
 
 
@@ -78,17 +105,16 @@ def make_sampling_params(output_len: int, force_exact: bool = True):
     from vllm import SamplingParams
     kw = dict(max_tokens=output_len, temperature=0.0)
     if force_exact:
-        # Force exactly output_len tokens so decode-window accounting is clean.
         kw["ignore_eos"] = True
         try:
-            SamplingParams(min_tokens=1)  # probe support
+            SamplingParams(min_tokens=1)
             kw["min_tokens"] = output_len
         except Exception:
             pass
     return SamplingParams(**kw)
 
 
-def build_prompt(tokenizer, input_len: Optional[int], text: Optional[str]) -> Any:
+def build_prompt(tokenizer, input_len, text=None):
     """Controlled-length token prompt if input_len given, else a text prompt."""
     if input_len and tokenizer is not None:
         base = tokenizer("the quick brown fox jumps over the lazy dog ",
@@ -96,7 +122,6 @@ def build_prompt(tokenizer, input_len: Optional[int], text: Optional[str]) -> An
         if not base:
             base = [1]
         ids = (base * (input_len // len(base) + 1))[:input_len]
-        # dict prompt form is accepted across recent vLLM versions
         return {"prompt_token_ids": ids}
     return text if text is not None else "Hello"
 
@@ -109,9 +134,7 @@ async def drain_generate(engine, prompt, sampling_params, request_id) -> dict:
     async for out in engine.generate(prompt, sampling_params, request_id):
         last = out
     t1 = time.time()
-
-    prompt_tokens = 0
-    gen_tokens = 0
+    prompt_tokens = gen_tokens = 0
     if last is not None:
         try:
             prompt_tokens = len(last.prompt_token_ids or [])

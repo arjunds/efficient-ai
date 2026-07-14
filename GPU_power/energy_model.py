@@ -6,20 +6,29 @@ Calibrate the LIMINAL energy extension from one measured run:
 
     E_iter = e_bit · (weight_bytes + Σ_seq KV_bytes(ctx_seq)) + P_static · t_iter
 
-- P_static is anchored by the idle baseline (run_meta.idle_power_w), which fixes
-  the static/dynamic split independently of the fit (handoff requirement).
-- e_bit is then fit by least-squares through the origin against the per-iteration
-  *dynamic* energy (measured iteration energy minus P_static·t_iter).
-- We also report a joint 2-parameter fit (e_bit, P_static) as a cross-check.
+P_static is anchored by the idle baseline (run_meta.idle_power_w). e_bit is fit by
+least-squares.
 
-bytes/iter uses ~/models.py: weight_bytes = active_params·dtype_bytes,
-Σ KV_bytes = kv_tokens_resident · kv_bytes_per_token. (For non-chunked GQA/MLA,
-Σ_seq KV_bytes(ctx_seq) is exactly linear in Σ ctx = kv_tokens_resident.)
+IMPORTANT — we fit over TIME BINS, not per scheduler-iteration. The V1 stat logger
+timestamps each record() callback, but that cadence is async/jittery (~ms) and
+finer than the power sampling, so per-iteration energy = ∫power over a ~6 ms
+window is dominated by sampling noise, and instantaneous power = E_iter/t_iter
+explodes when t_iter is tiny. Binning to ~200 ms averages the jitter: within a bin
+the model becomes
 
-Writes calibration.json. Also exposes helpers reused by validate_waveform.py.
+    E_bin = e_bit · bytes_bin + P_static · Δ,   bytes_bin = Σ_{iters in bin} bytes_iter
 
-Usage:
-  python energy_model.py --run_dir logs/<run>
+which is exactly the roofline/energy relation (power ∝ HBM-bytes/s). This is the
+methodologically sound version and gives stable coefficients.
+
+We restrict to decode-phase iterations (the LIMINAL decode model); prefill iters
+move similar bytes but do far more compute, so their energy needs separate
+treatment.
+
+Writes calibration.json. Helpers (bin_run, load_power_samples) are reused by
+validate_waveform.py.
+
+Usage: python energy_model.py --run_dir logs/<run> [--bin_s 0.2] [--phase decode]
 """
 
 import argparse
@@ -30,6 +39,7 @@ import os
 from typing import List, Optional, Tuple
 
 DTYPE_BYTES = {"float16": 2, "bfloat16": 2, "fp8": 1, "float32": 4, "auto": 2}
+DEFAULT_BIN_S = 0.2
 
 
 # ---------------- trace loading / integration ----------------
@@ -42,33 +52,8 @@ def load_power_samples(power_csv: str) -> Tuple[List[float], List[float]]:
             except (ValueError, KeyError, TypeError):
                 continue
             ts.append(t); ps.append(p)
-    # ensure sorted by time
     order = sorted(range(len(ts)), key=lambda i: ts[i])
     return [ts[i] for i in order], [ps[i] for i in order]
-
-
-def integrate_window(ts: List[float], ps: List[float], t0: float, t1: float
-                     ) -> Optional[float]:
-    """Trapezoidal ∫ power dt over [t0, t1], interpolating at the edges."""
-    if len(ts) < 2 or t1 <= t0:
-        return None
-    lo = bisect.bisect_left(ts, t0)
-    hi = bisect.bisect_right(ts, t1)
-    pts = []
-    if lo > 0:  # left edge interpolation
-        pts.append((t0, _interp(ts, ps, t0)))
-    for i in range(lo, hi):
-        pts.append((ts[i], ps[i]))
-    if hi < len(ts):
-        pts.append((t1, _interp(ts, ps, t1)))
-    pts = [(t, p) for (t, p) in pts if t0 <= t <= t1]
-    if len(pts) < 2:
-        return None
-    e = 0.0
-    for i in range(len(pts) - 1):
-        (ta, pa), (tb, pb) = pts[i], pts[i + 1]
-        e += 0.5 * (pa + pb) * (tb - ta)
-    return e
 
 
 def _interp(ts, ps, t):
@@ -78,18 +63,35 @@ def _interp(ts, ps, t):
     if i >= len(ts):
         return ps[-1]
     t0, t1 = ts[i - 1], ts[i]
-    p0, p1 = ps[i - 1], ps[i]
     if t1 == t0:
-        return p0
-    return p0 + (p1 - p0) * (t - t0) / (t1 - t0)
+        return ps[i]
+    return ps[i - 1] + (ps[i] - ps[i - 1]) * (t - t0) / (t1 - t0)
+
+
+def integrate_window(ts, ps, t0, t1) -> Optional[float]:
+    """Trapezoidal ∫ power dt over [t0, t1] with edge interpolation."""
+    if len(ts) < 2 or t1 <= t0 or t1 < ts[0] or t0 > ts[-1]:
+        return None
+    lo = bisect.bisect_left(ts, t0)
+    hi = bisect.bisect_right(ts, t1)
+    pts = [(t0, _interp(ts, ps, t0))]
+    for i in range(lo, hi):
+        if t0 < ts[i] < t1:
+            pts.append((ts[i], ps[i]))
+    pts.append((t1, _interp(ts, ps, t1)))
+    if len(pts) < 2:
+        return None
+    e = 0.0
+    for i in range(len(pts) - 1):
+        (ta, pa), (tb, pb) = pts[i], pts[i + 1]
+        e += 0.5 * (pa + pb) * (tb - ta)
+    return e
 
 
 # ---------------- model byte accounting ----------------
 def model_byte_constants(meta: dict) -> Tuple[float, float, str]:
-    """Return (weight_bytes, kv_bytes_per_token, source)."""
     if meta.get("weight_bytes") and meta.get("kv_bytes_per_token"):
         return float(meta["weight_bytes"]), float(meta["kv_bytes_per_token"]), "run_meta"
-
     from gate_dram import import_models, hf_to_model_key
     models = import_models()
     key = meta.get("model_key") or hf_to_model_key(meta.get("model", ""), models)
@@ -100,48 +102,82 @@ def model_byte_constants(meta: dict) -> Tuple[float, float, str]:
     dtype_b = DTYPE_BYTES.get(meta.get("dtype", "float16"), 2)
     kv_b = meta.get("kv_cache_dtype")
     kv_b = DTYPE_BYTES.get(kv_b, dtype_b) if kv_b not in (None, "auto") else dtype_b
-    weight_bytes = m.active_params() * dtype_b
-    kv_bytes_per_token = m.kv_bytes_per_token(kv_b)
-    return float(weight_bytes), float(kv_bytes_per_token), f"models.py:{key}"
+    return float(m.active_params() * dtype_b), float(m.kv_bytes_per_token(kv_b)), f"models.py:{key}"
 
 
 def iter_rows(iter_csv: str) -> List[dict]:
-    out = []
     with open(iter_csv) as f:
-        for row in csv.DictReader(f):
-            out.append(row)
-    return out
+        return list(csv.DictReader(f))
 
 
-def iter_bytes(row: dict, weight_bytes: float, kv_bpt: float) -> Optional[float]:
-    kv = row.get("kv_tokens_resident")
+def _f(x):
     try:
-        kv_tokens = float(kv) if kv not in (None, "") else 0.0
-    except ValueError:
-        kv_tokens = 0.0
-    return weight_bytes + kv_tokens * kv_bpt
+        return float(x)
+    except (TypeError, ValueError):
+        return None
+
+
+def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase: str = "decode"):
+    """Bin a run into fixed-width time bins. Returns (bins, info) where each bin is
+    {b0,b1,dt,E,bytes,n} with E=measured energy (J), bytes=Σ iter bytes whose
+    midpoint lands in the bin, n=#iters."""
+    meta = json.load(open(os.path.join(run_dir, "run_meta.json")))
+    ts, ps = load_power_samples(os.path.join(run_dir, "power_trace.csv"))
+    rows = iter_rows(os.path.join(run_dir, "iter_log.csv"))
+    weight_bytes, kv_bpt, byte_src = model_byte_constants(meta)
+
+    tms, byts = [], []
+    for r in rows:
+        if phase and (r.get("phase") or "").strip() != phase:
+            continue
+        t0 = _f(r.get("t_start")); t1 = _f(r.get("t_end"))
+        if t0 is None or t1 is None:
+            continue
+        kv = _f(r.get("kv_tokens_resident")) or 0.0
+        tms.append(0.5 * (t0 + t1))
+        byts.append(weight_bytes + kv * kv_bpt)
+
+    info = {"weight_bytes": weight_bytes, "kv_bytes_per_token": kv_bpt,
+            "byte_source": byte_src, "idle_power_w": meta.get("idle_power_w"),
+            "meta": meta, "n_iters_total": len(tms), "bin_s": bin_s, "phase": phase}
+    if not ts or not tms:
+        return [], info
+
+    order = sorted(range(len(tms)), key=lambda i: tms[i])
+    tms = [tms[i] for i in order]; byts = [byts[i] for i in order]
+
+    w0 = meta.get("window_wall_t0") or tms[0]
+    w1 = meta.get("window_wall_t1") or tms[-1]
+    w0 = max(w0, ts[0]); w1 = min(w1, ts[-1])
+
+    bins = []
+    b0 = w0
+    while b0 < w1:
+        b1 = min(b0 + bin_s, w1)
+        E = integrate_window(ts, ps, b0, b1)
+        lo = bisect.bisect_left(tms, b0); hi = bisect.bisect_left(tms, b1)
+        n = hi - lo
+        if E is not None and n > 0:
+            bins.append({"b0": b0, "b1": b1, "dt": b1 - b0,
+                         "E": E, "bytes": sum(byts[lo:hi]), "n": n})
+        b0 = b1
+    return bins, info
 
 
 # ---------------- fitting ----------------
 def _ls_through_origin(xs, ys):
     sxx = sum(x * x for x in xs)
-    sxy = sum(x * y for x, y in zip(xs, ys))
-    return (sxy / sxx) if sxx else None
+    return (sum(x * y for x, y in zip(xs, ys)) / sxx) if sxx else None
 
 
 def _ls_two_feature(x1, x2, y):
-    """Least squares y = a·x1 + b·x2 (no intercept). Returns (a, b)."""
-    s11 = sum(a * a for a in x1)
-    s22 = sum(a * a for a in x2)
+    s11 = sum(a * a for a in x1); s22 = sum(a * a for a in x2)
     s12 = sum(a * b for a, b in zip(x1, x2))
-    s1y = sum(a * c for a, c in zip(x1, y))
-    s2y = sum(a * c for a, c in zip(x2, y))
+    s1y = sum(a * c for a, c in zip(x1, y)); s2y = sum(a * c for a, c in zip(x2, y))
     det = s11 * s22 - s12 * s12
     if abs(det) < 1e-30:
         return None, None
-    a = (s1y * s22 - s2y * s12) / det
-    b = (s11 * s2y - s12 * s1y) / det
-    return a, b
+    return (s1y * s22 - s2y * s12) / det, (s11 * s2y - s12 * s1y) / det
 
 
 def _r2(y, yhat):
@@ -154,63 +190,50 @@ def _r2(y, yhat):
     return 1 - ss_res / ss_tot if ss_tot else None
 
 
-def calibrate(run_dir: str, phase: str = "decode") -> dict:
-    meta = json.load(open(os.path.join(run_dir, "run_meta.json")))
-    ts, ps = load_power_samples(os.path.join(run_dir, "power_trace.csv"))
-    rows = iter_rows(os.path.join(run_dir, "iter_log.csv"))
-    weight_bytes, kv_bpt, byte_src = model_byte_constants(meta)
-
-    p_static = meta.get("idle_power_w")
-
-    bytes_list, t_list, e_list = [], [], []
-    for r in rows:
-        if (r.get("phase") or "").strip() != phase:
-            continue
-        try:
-            t0 = float(r["t_start"]); t1 = float(r["t_end"])
-        except (ValueError, KeyError):
-            continue
-        t_iter = t1 - t0
-        if t_iter <= 0:
-            continue
-        e_meas = integrate_window(ts, ps, t0, t1)
-        if e_meas is None:
-            continue
-        b = iter_bytes(r, weight_bytes, kv_bpt)
-        bytes_list.append(b); t_list.append(t_iter); e_list.append(e_meas)
-
-    n = len(e_list)
-    result = {
-        "run_dir": run_dir, "phase": phase, "n_iters_fit": n,
-        "weight_bytes": weight_bytes, "kv_bytes_per_token": kv_bpt,
-        "byte_source": byte_src, "idle_power_w": p_static,
-    }
-    if n < 3:
-        result["error"] = f"too few {phase} iters with clean energy windows ({n})"
+def calibrate(run_dir: str, phase: str = "decode", bin_s: float = DEFAULT_BIN_S) -> dict:
+    bins, info = bin_run(run_dir, bin_s, phase)
+    result = {"run_dir": run_dir, "phase": phase, "bin_s": bin_s,
+              "n_bins": len(bins), "n_iters_total": info["n_iters_total"],
+              "weight_bytes": info["weight_bytes"],
+              "kv_bytes_per_token": info["kv_bytes_per_token"],
+              "byte_source": info["byte_source"], "idle_power_w": info["idle_power_w"]}
+    if len(bins) < 3:
+        result["error"] = f"too few {phase} bins ({len(bins)}); try smaller --bin_s"
         return result
 
-    # Joint 2-parameter fit (cross-check).
-    e_bit_joint, p_static_joint = _ls_two_feature(bytes_list, t_list, e_list)
+    xs = [b["bytes"] for b in bins]
+    dts = [b["dt"] for b in bins]
+    Es = [b["E"] for b in bins]
 
-    # Primary: anchor P_static from idle, fit e_bit through the origin on dynamic E.
+    e_bit_joint, p_static_joint = _ls_two_feature(xs, dts, Es)
+
+    p_static = info["idle_power_w"]
     if p_static is None:
-        p_static = p_static_joint  # fall back to fitted static if no idle baseline
+        p_static = p_static_joint
         result["p_static_source"] = "joint_fit (no idle baseline!)"
     else:
         result["p_static_source"] = "idle_baseline"
-    dyn_e = [e - p_static * t for e, t in zip(e_list, t_list)]
-    e_bit = _ls_through_origin(bytes_list, dyn_e)
 
-    yhat = [e_bit * b + p_static * t for b, t in zip(bytes_list, t_list)]
+    dyn = [E - p_static * dt for E, dt in zip(Es, dts)]
+    e_bit = _ls_through_origin(xs, dyn)
+    e_bit_agg = sum(dyn) / sum(xs) if sum(xs) else None
+    yhat = [e_bit * x + p_static * dt for x, dt in zip(xs, dts)]
+
+    # per-bin power view (more interpretable than energy for flat signals)
+    meas_w = [E / dt for E, dt in zip(Es, dts)]
+    pred_w = [y / dt for y, dt in zip(yhat, dts)]
+
     result.update({
         "e_bit_j_per_byte": e_bit,
+        "e_bit_aggregate": e_bit_agg,
         "p_static_w": p_static,
         "e_bit_joint": e_bit_joint,
         "p_static_joint": p_static_joint,
-        "r2": _r2(e_list, yhat),
-        "mean_bytes_per_iter": sum(bytes_list) / n,
-        "mean_energy_per_iter_j": sum(e_list) / n,
-        "mean_t_iter_s": sum(t_list) / n,
+        "r2_energy": _r2(Es, yhat),
+        "r2_power": _r2(meas_w, pred_w),
+        "mean_power_w": sum(meas_w) / len(meas_w),
+        "mean_bytes_per_bin": sum(xs) / len(xs),
+        "mean_dynamic_power_w": sum(dyn) / sum(dts) if sum(dts) else None,
     })
     return result
 
@@ -218,15 +241,13 @@ def calibrate(run_dir: str, phase: str = "decode") -> dict:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run_dir", required=True)
-    ap.add_argument("--phase", default="decode",
-                    choices=["decode", "prefill", "mixed"])
+    ap.add_argument("--phase", default="decode", choices=["decode", "prefill", "mixed"])
+    ap.add_argument("--bin_s", type=float, default=DEFAULT_BIN_S)
     args = ap.parse_args()
-    cal = calibrate(args.run_dir, args.phase)
-    out = os.path.join(args.run_dir, "calibration.json")
-    with open(out, "w") as f:
+    cal = calibrate(args.run_dir, args.phase, args.bin_s)
+    with open(os.path.join(args.run_dir, "calibration.json"), "w") as f:
         json.dump(cal, f, indent=2)
     print(json.dumps(cal, indent=2))
-    print(f"[saved] {out}")
 
 
 if __name__ == "__main__":

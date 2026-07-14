@@ -1,15 +1,15 @@
 {
-  "hostname": "node6.cl.upenn.edu",
+  "hostname": "node12.cl.upenn.edu",
   "in_slurm": true,
-  "slurm_job_id": "62598",
+  "slurm_job_id": "62623",
   "cuda_visible_devices": "0",
   "python": {
-    "version": "3.12.13",
+    "version": "3.12.11",
     "executable": "/usr/bin/python3"
   },
   "container_runtimes": {
-    "apptainer": "/usr/bin/apptainer",
-    "singularity": "/usr/bin/singularity",
+    "apptainer": null,
+    "singularity": null,
     "enroot": null,
     "podman": null,
     "docker": null,
@@ -18,31 +18,32 @@
   "commands": {
     "nvidia-smi": {
       "path": "/usr/bin/nvidia-smi",
-      "query": "NVIDIA L40, 300.00 W, 46068 MiB"
+      "query": "NVIDIA H200, 700.00 W, 143771 MiB"
     },
     "dcgmi": {
       "path": null
     },
     "ncu": {
-      "path": null
+      "path": "/usr/local/cuda/bin/ncu",
+      "version": "NVIDIA (R) Nsight Compute Command Line Profiler"
     }
   },
   "imports": {
     "torch": {
-      "ok": false,
-      "error": "No module named 'torch'"
+      "ok": true,
+      "version": "2.8.0+cu128"
     },
     "vllm": {
-      "ok": false,
-      "error": "No module named 'vllm'"
+      "ok": true,
+      "version": "0.10.2"
     },
     "transformers": {
-      "ok": false,
-      "error": "No module named 'transformers'"
+      "ok": true,
+      "version": "4.56.1"
     },
     "pynvml": {
-      "ok": false,
-      "error": "No module named 'pynvml'"
+      "ok": true,
+      "version": "?"
     },
     "pandas": {
       "ok": false,
@@ -54,14 +55,19 @@
     }
   },
   "nvml": {
-    "ok": false,
-    "error": "No module named 'pynvml'"
+    "ok": true,
+    "gpu_name": "NVIDIA H200",
+    "power_w": 75.349
   },
   "pypi": {
     "reachable": true,
-    "via": "urllib"
+    "via": "pip index"
   },
   "vllm_api": {
-    "import_error": "No module named 'vllm'"
+    "vllm_version": "0.10.2",
+    "scheduler_class": "vllm.v1.core.sched.scheduler.Scheduler",
+    "engine_api": "v1",
+    "schedule_signature": "(self) -> 'SchedulerOutput'",
+    "async_engine_module": "vllm.v1.engine.async_llm"
   }
 }

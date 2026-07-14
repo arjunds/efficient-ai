@@ -1,0 +1,7 @@
+cpu-bind=MASK - node10, task  0  0 [1116035]: mask 0xf00000000000000 set
+start: Tue Jul 14 09:07:39 EDT 2026 on node10.cl.upenn.edu
+INFO:    Converting OCI blobs to SIF format
+WARNING: 'nodev' mount option set on /tmp, it could be a source of failure during build process
+INFO:    Starting build...
+INFO:    Fetching OCI image...
+slurmstepd: error: *** JOB 62613 ON node10 CANCELLED AT 2026-07-14T09:09:17 ***
