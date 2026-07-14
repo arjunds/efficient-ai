@@ -371,10 +371,12 @@ def run_self_test(args):
             dur = t1 - t0
             p = e_iter / dur if dur > 0 else P_STATIC
             ts = t0
+            # 500 Hz: several interior samples per iteration so per-iter energy
+            # integration isn't dominated by trapezoid-boundary effects.
             while ts < t1:
-                w.writerow([f"{ts:.6f}", f"{p + rng.uniform(-3, 3):.3f}",
+                w.writerow([f"{ts:.6f}", f"{p + rng.uniform(-2, 2):.3f}",
                             1400, 1200, 95, 60, 55])
-                ts += 0.01
+                ts += 0.002
 
     write_json(os.path.join(args.run_dir, "run_meta.json"), {
         "mode": "self_test", "model": "synthetic-Llama3-8B",

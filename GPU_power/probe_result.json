@@ -1,0 +1,67 @@
+{
+  "hostname": "node6.cl.upenn.edu",
+  "in_slurm": true,
+  "slurm_job_id": "62598",
+  "cuda_visible_devices": "0",
+  "python": {
+    "version": "3.12.13",
+    "executable": "/usr/bin/python3"
+  },
+  "container_runtimes": {
+    "apptainer": "/usr/bin/apptainer",
+    "singularity": "/usr/bin/singularity",
+    "enroot": null,
+    "podman": null,
+    "docker": null,
+    "runai": null
+  },
+  "commands": {
+    "nvidia-smi": {
+      "path": "/usr/bin/nvidia-smi",
+      "query": "NVIDIA L40, 300.00 W, 46068 MiB"
+    },
+    "dcgmi": {
+      "path": null
+    },
+    "ncu": {
+      "path": null
+    }
+  },
+  "imports": {
+    "torch": {
+      "ok": false,
+      "error": "No module named 'torch'"
+    },
+    "vllm": {
+      "ok": false,
+      "error": "No module named 'vllm'"
+    },
+    "transformers": {
+      "ok": false,
+      "error": "No module named 'transformers'"
+    },
+    "pynvml": {
+      "ok": false,
+      "error": "No module named 'pynvml'"
+    },
+    "pandas": {
+      "ok": false,
+      "error": "No module named 'pandas'"
+    },
+    "matplotlib": {
+      "ok": false,
+      "error": "No module named 'matplotlib'"
+    }
+  },
+  "nvml": {
+    "ok": false,
+    "error": "No module named 'pynvml'"
+  },
+  "pypi": {
+    "reachable": true,
+    "via": "urllib"
+  },
+  "vllm_api": {
+    "import_error": "No module named 'vllm'"
+  }
+}
