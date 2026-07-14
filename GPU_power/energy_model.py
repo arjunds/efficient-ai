@@ -117,7 +117,8 @@ def _f(x):
         return None
 
 
-def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase: str = "decode"):
+def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase: str = "decode",
+            include_empty: bool = False):
     """Bin a run into fixed-width time bins. Returns (bins, info) where each bin is
     {b0,b1,dt,E,bytes,n} with E=measured energy (J), bytes=Σ iter bytes whose
     midpoint lands in the bin, n=#iters."""
@@ -157,7 +158,7 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase: str = "decode"):
         E = integrate_window(ts, ps, b0, b1)
         lo = bisect.bisect_left(tms, b0); hi = bisect.bisect_left(tms, b1)
         n = hi - lo
-        if E is not None and n > 0:
+        if E is not None and (n > 0 or include_empty):
             bins.append({"b0": b0, "b1": b1, "dt": b1 - b0,
                          "E": E, "bytes": sum(byts[lo:hi]), "n": n})
         b0 = b1

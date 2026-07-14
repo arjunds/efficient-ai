@@ -75,7 +75,10 @@ def main():
         raise SystemExit(f"calibration missing coefficients ({cal.get('error')}); "
                          "run energy_model.py first")
 
-    bins, info = bin_run(args.run_dir, args.bin_s, cal.get("phase", "decode"))
+    # include_empty: idle bins (no decode activity) predict P_static — essential
+    # for scoring active<->idle transitions in a scheduled/bursty run.
+    bins, info = bin_run(args.run_dir, args.bin_s, cal.get("phase", "decode"),
+                         include_empty=True)
     meas_w, pred_w, tmid = [], [], []
     for b in bins:
         meas_w.append(b["E"] / b["dt"])

@@ -109,42 +109,64 @@ def avg_power_in_window(power_csv, t0, t1) -> Optional[float]:
 
 
 # ------------------------------------------------------------------ load mode
+def parse_schedule(args):
+    """Return [(concurrency, duration_s), ...]. A schedule like
+    '8:15,0:10,8:15' alternates load and idle so the power waveform actually
+    moves (the strong test of waveform prediction). Falls back to a single
+    fixed-concurrency segment."""
+    sched = getattr(args, "concurrency_schedule", None)
+    if sched:
+        out = []
+        for part in sched.split(","):
+            c, dur = part.split(":")
+            out.append((int(c), float(dur)))
+        return out
+    return [(args.concurrency, args.duration_s)]
+
+
 async def _run_load_async(args, engine, tokenizer, meta):
     from engine_compat import make_sampling_params, build_prompt, drain_generate
 
     sp = make_sampling_params(args.output_len, force_exact=True)
     completions: List[dict] = []
-    stop_at = None
     counter = {"n": 0}
 
-    def next_prompt():
-        counter["n"] += 1
-        return build_prompt(tokenizer, args.input_len,
-                            text=f"Write a short story. #{counter['n']}")
+    def fresh():
+        counter["n"] += 1        # atomic across coroutines (no await between)
+        return counter["n"]
 
-    async def worker(wid: int):
-        i = 0
-        while stop_at is None or time.time() < stop_at:
-            rid = f"w{wid}-{i}"
-            i += 1
+    async def worker(deadline: float):
+        while time.time() < deadline:
+            k = fresh()
+            prompt = build_prompt(tokenizer, args.input_len, text=f"story {k}")
             try:
-                res = await drain_generate(engine, next_prompt(), sp, rid)
-                completions.append(res)
+                completions.append(await drain_generate(engine, prompt, sp, f"r{k}"))
             except Exception:
                 pass
 
-    # Warmup: fill the pipeline so we measure steady state, not ramp-up.
+    schedule = parse_schedule(args)
+
+    # Warmup at the first segment's concurrency so we measure steady state.
+    c0 = max(1, schedule[0][0])
     warm = [asyncio.create_task(
-        drain_generate(engine, next_prompt(), sp, f"warm-{i}"))
-        for i in range(args.concurrency)]
+        drain_generate(engine, build_prompt(tokenizer, args.input_len,
+                                            text=f"warm {i}"), sp, f"warm-{i}"))
+        for i in range(c0)]
     await asyncio.gather(*warm, return_exceptions=True)
 
     win_t0 = time.time()
-    stop_at = win_t0 + args.duration_s
-    workers = [asyncio.create_task(worker(w)) for w in range(args.concurrency)]
-    await asyncio.gather(*workers, return_exceptions=True)
+    segments = []
+    for (c, dur) in schedule:
+        seg_start = time.time()
+        deadline = seg_start + dur
+        if c <= 0:
+            await asyncio.sleep(dur)          # idle segment -> power falls to P_static
+        else:
+            tasks = [asyncio.create_task(worker(deadline)) for _ in range(c)]
+            await asyncio.gather(*tasks, return_exceptions=True)
+        segments.append({"concurrency": c, "t0": seg_start, "t1": time.time()})
     win_t1 = time.time()
-    return win_t0, win_t1, completions
+    return win_t0, win_t1, completions, segments
 
 
 def run_load(args):
@@ -169,8 +191,9 @@ def run_load(args):
     if dram.error:
         print(f"[warn] DRAM counter: {dram.error}", flush=True)
 
+    segments = []
     try:
-        win_t0, win_t1, completions = asyncio.run(
+        win_t0, win_t1, completions, segments = asyncio.run(
             _run_load_async(args, engine, tokenizer, emeta))
     finally:
         dram.stop()
@@ -205,7 +228,9 @@ def run_load(args):
         "gpu_mem_util": args.gpu_memory_utilization,
         "input_len": args.input_len,
         "output_len": args.output_len,
-        "concurrency_or_rate": args.concurrency,
+        "concurrency_or_rate": args.concurrency_schedule or args.concurrency,
+        "concurrency_schedule": args.concurrency_schedule,
+        "segments": segments,
         "idle_power_w": baselines.get("idle_power_w"),
         "prefill_ceiling_power_w": baselines.get("prefill_ceiling_power_w"),
         "kv_cache_dtype": args.kv_cache_dtype,
@@ -406,6 +431,9 @@ def build_arg_parser():
 
     ap.add_argument("--concurrency", type=int, default=8,
                     help="number of concurrent clients (NOT batch_size)")
+    ap.add_argument("--concurrency_schedule", default=None,
+                    help="segments 'c:dur,c:dur' e.g. '8:15,0:10,8:15' (0=idle); "
+                         "moves the power waveform for a strong validation")
     ap.add_argument("--arrival_rate", type=float, default=0.0,
                     help=">0 => open-loop Poisson arrivals at this req/s (unused "
                          "unless you switch the worker model)")
