@@ -28,11 +28,12 @@ from datetime import datetime
 PROFILE = "energy_profile_load.py"
 
 # Only models present in ~/models.py (byte accounting needs a config).
+# Qwen is fully open (proven); the others are gated — they run if the HF token
+# has license access, else that model is skipped (per-model try/except).
 MODELS = [
+    "Qwen/Qwen2-7B-Instruct",
     "meta-llama/Meta-Llama-3-8B",
     "mistralai/Mistral-7B-v0.1",
-    # "Qwen/Qwen2-7B-Instruct",
-    # "google/gemma-7b",
 ]
 
 # (input_len, output_len); include a realistic ~2048-ctx point.
@@ -41,12 +42,12 @@ WORKLOADS = [
     (2048, 128),
 ]
 
-CONCURRENCY = [1, 2, 4, 8, 16, 32, 64, 128]
+CONCURRENCY = [1, 2, 4, 8, 16, 32, 64]
 
 DTYPE = "float16"
-DURATION_S = 60
-IDLE_S = 20
-CEILING_S = 20
+DURATION_S = 45
+IDLE_S = 15
+CEILING_S = 15
 GPU_ID = 0
 MAX_MODEL_LEN = 4096
 GPU_MEM_UTIL = 0.90
@@ -126,18 +127,28 @@ def gate_concurrency_1(model, model_dir):
     run([sys.executable, "-u", "gate_dram.py", "--run_dir", gate_dir],
         os.path.join(gate_dir, "gate.log"))
     gate = load_json(os.path.join(gate_dir, "gate_result.json"))
+    # c=1 run is a valid data point regardless of the gate; analyze it.
+    analyze(gate_dir)
+
     if gate.get("flagged_missing"):
         print(f"[{ts()}] [skip model] not in models.py: {model}", flush=True)
         return False
-    if not gate.get("passed"):
+    passed = gate.get("passed")
+    if passed is True:
+        print(f"[{ts()}] DRAM gate PASSED for {model} "
+              f"(ratio={gate.get('ratio'):.2f})", flush=True)
+    elif passed is False:
+        # Counter present but ratio out of range -> genuinely broken; abort.
         print(f"[{ts()}] [skip model] DRAM gate FAILED ({model}): "
               f"ratio={gate.get('ratio')}. Fix counter before sweeping.",
               flush=True)
         return False
-    # c=1 run is also a valid data point; analyze it.
-    analyze(gate_dir)
-    print(f"[{ts()}] DRAM gate PASSED for {model} "
-          f"(ratio={gate.get('ratio'):.2f})", flush=True)
+    else:
+        # Counter unavailable (no dcgmi) -> non-fatal. Energy calibration uses
+        # NVML power + analytic bytes and does not need the DRAM counter.
+        print(f"[{ts()}] [warn] DRAM gate unavailable ({model}): "
+              f"{gate.get('error')}. Proceeding (calibration doesn't need it).",
+              flush=True)
     return True
 
 
@@ -199,6 +210,49 @@ def sweep_model(model):
             best_tps = max(best_tps, tps)
 
 
+def aggregate_summary():
+    """Roll every completed run dir into one CSV: one row per operating point."""
+    import csv
+    rows = []
+    for root, _, files in os.walk(LOG_ROOT):
+        if "results.json" not in files:
+            continue
+        res = load_json(os.path.join(root, "results.json"))
+        if res.get("aggregate_tokens_per_sec") is None:
+            continue
+        meta = load_json(os.path.join(root, "run_meta.json"))
+        cal = load_json(os.path.join(root, "calibration.json"))
+        wav = load_json(os.path.join(root, "waveform_validation.json")).get("metrics", {})
+        rows.append({
+            "run_dir": root,
+            "model": meta.get("model"),
+            "gpu": meta.get("gpu_name"),
+            "concurrency": meta.get("concurrency_or_rate"),
+            "input_len": meta.get("input_len"),
+            "output_len": meta.get("output_len"),
+            "tokens_per_s": res.get("aggregate_tokens_per_sec"),
+            "avg_power_w": res.get("avg_power_window_w"),
+            "idle_power_w": meta.get("idle_power_w"),
+            "e_bit_j_per_byte": cal.get("e_bit_j_per_byte"),
+            "e_bit_aggregate": cal.get("e_bit_aggregate"),
+            "p_static_w": cal.get("p_static_w"),
+            "r2_energy": cal.get("r2_energy"),
+            "waveform_mape_pct": wav.get("mean_abs_pct_err"),
+            "waveform_rmse_w": wav.get("rmse_w"),
+            "n_bins": cal.get("n_bins"),
+        })
+    if not rows:
+        print(f"[{ts()}] no completed runs to summarize", flush=True)
+        return
+    rows.sort(key=lambda r: (str(r["model"]), r["input_len"] or 0,
+                             r["output_len"] or 0, r["concurrency"] or 0))
+    out = os.path.join(LOG_ROOT, "sweep_summary.csv")
+    with open(out, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+        w.writeheader(); w.writerows(rows)
+    print(f"[{ts()}] wrote {out} ({len(rows)} operating points)", flush=True)
+
+
 def main():
     os.makedirs(LOG_ROOT, exist_ok=True)
     for model in MODELS:
@@ -206,6 +260,7 @@ def main():
             sweep_model(model)
         except Exception as e:
             print(f"[{ts()}] [error] model {model}: {e}", flush=True)
+        aggregate_summary()   # refresh after each model so partial results are usable
     print("=" * 70)
     print(f"[{ts()}] SWEEP COMPLETE")
     print("=" * 70)
