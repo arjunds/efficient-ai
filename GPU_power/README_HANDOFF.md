@@ -104,8 +104,44 @@ python run_load_sweep.py                             # full resume-safe sweep
   dense 7B, not DeepSeek-V3) — it'll be flagged/skipped. Only sweep models with a
   config.
 
+## Probe results (SLURM job 62598, node6, COMPLETED in 2s)
+
+- **self_test math VALIDATED**: recovered `e_bit=1.29987e-10` vs truth `1.3e-10`
+  (0.01% err), `P_static=70.0` (idle-anchored, exact), calibration R²=0.990,
+  waveform R²=0.987, RMSE 1.73 W, mean abs err 0.82%. Joint-fit cross-check
+  agrees (e_bit 1.289e-10, P_static 70.93). The calibration→waveform pipeline is
+  correct.
+- **All modules compile** (py_compile clean).
+- **Container runtime EXISTS on compute nodes**: `/usr/bin/apptainer` +
+  `/usr/bin/singularity` (absent on login node — that's why it looked unavailable).
+  → the SLURM path is viable; see `launch_slurm.sbatch`.
+- **PyPI reachable** from compute nodes (can pip-install vLLM into a bind-mounted
+  target dir).
+- **GPU on `standby`**: NVIDIA **L40**, 300 W limit, 46 GB (not A100). L40 is in
+  `dram_counter.PEAK_HBM_BW` (864 GB/s).
+- **`dcgmi` NOT present** on the node or stock image → DRAM gate #1 blocked until
+  DCGM is sourced (see NOTE in `launch_slurm.sbatch`). Calibration still works off
+  NVML power; only the byte-reconciliation check is unavailable meanwhile.
+- No modules for cuda/python (`module avail`/`spider` empty) — bring-your-own
+  container is the model.
+
+## Recommended next steps (morning)
+
+1. **Fastest data**: `./launch_runai.sh` (known-good A100 path), then the
+   Quickstart. OR
+2. **SLURM path** (now unblocked): do the one-time setup in
+   `launch_slurm.sbatch`'s header (pull the sif, pip-install vLLM to `pydeps/`),
+   then `sbatch launch_slurm.sbatch`. Pin the SAME vLLM you use for
+   `energy_profile_vllm.py`.
+3. **Sort out `dcgmi`** for the DRAM gate (DCGM image / apt in overlay), else
+   gate #1 stays unavailable.
+4. First real run: `--mode idle` then `--mode load --concurrency 1`, run
+   `gate_dram.py`, then `energy_model.py` + `validate_waveform.py`; confirm the
+   overlay tracks before `run_load_sweep.py`.
+
 ## Status
 
-Code complete and committed on `vllm_ragged`. `self_test` path is fully
-exercisable with no GPU. No GPU run has executed yet (env unresolved). The SLURM
-probe was submitted; results in `egy-probe-*.out`.
+Code complete, committed on `vllm_ragged`. `self_test` validated end-to-end with
+no GPU (probe job 62598). No *real* vLLM run has executed yet — that needs the
+container setup above (RunAI known-good, or the now-confirmed SLURM+apptainer
+path). Everything is staged.

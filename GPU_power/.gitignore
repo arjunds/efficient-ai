@@ -1,0 +1,5 @@
+logs/
+pydeps/
+*.sif
+egy-*.out
+__pycache__/
