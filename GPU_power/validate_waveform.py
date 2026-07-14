@@ -85,6 +85,16 @@ def main():
         pred_w.append(e_bit * b["bytes"] / b["dt"] + p_static)
         tmid.append(0.5 * (b["b0"] + b["b1"]))
 
+    # Dump the binned series so the overlay can be plotted anywhere (matplotlib
+    # is flaky inside the container).
+    import csv
+    with open(os.path.join(args.run_dir, "waveform_series.csv"), "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["t_rel_s", "measured_w", "predicted_w"])
+        t0 = tmid[0] if tmid else 0
+        for t, mw, pw in zip(tmid, meas_w, pred_w):
+            w.writerow([f"{t - t0:.3f}", f"{mw:.2f}", f"{pw:.2f}"])
+
     m = metrics(meas_w, pred_w)
     meta = info["meta"]
     title = (f"{meta.get('model_key') or meta.get('model')} "
