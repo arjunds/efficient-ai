@@ -70,3 +70,42 @@ batch), log NVML power + per-iteration scheduler state on one clock, calibrate
   since no dcgmi), then each point → calibrate + validate.
 - Resume-safe: re-submit `sweep.sbatch` to continue if preempted.
 - Watch: `logs/load_sweep/sweep_summary.csv` grows as points complete.
+
+## SWEEP RESULTS (job 62628, COMPLETED 44 min, 28 operating points)
+Full table: `logs/load_sweep/sweep_summary.csv`. Llama-3-8B was **skipped** (HF
+403 — token not authorized for meta-llama/Meta-Llama-3-8B; request access to
+include it). Qwen2-7B-Instruct and Mistral-7B-v0.1 completed fully.
+
+Qwen2-7B, workload (in=512, out=128), H200, idle P_static=117 W:
+
+| conc | tok/s | power W | tok/J | e_bit (J/byte) | waveform MAPE |
+|-----:|------:|--------:|------:|---------------:|--------------:|
+| 1  | 166  | 369 | 0.45  | 1.08e-10 | 1.4% |
+| 2  | 325  | 370 | 0.88  | 1.10e-10 | 2.2% |
+| 4  | 646  | 372 | 1.74  | 1.12e-10 | 2.0% |
+| 8  | 1269 | 375 | 3.38  | 1.15e-10 | 2.5% |
+| 16 | 2497 | 388 | 6.44  | 1.22e-10 | 2.5% |
+| 32 | 4748 | 406 | 11.68 | 1.36e-10 | 3.6% |
+| 64 | 8122 | 410 | 19.81 | 1.60e-10 | 4.6% |
+
+Findings (hold for both models; Mistral similar with a sharper high-load rise):
+1. **Batching efficiency**: c1→c64 throughput scales ~49× while power rises only
+   ~11% → **tokens/joule improves ~44×** (0.45→19.8). The core efficiency result.
+2. **e_bit is not constant** — it grows with concurrency (1.08→1.60e-10 for Qwen,
+   up to 2.74e-10 for Mistral at c64/2048). Interpretation: low concurrency is
+   HBM-bound (energy ≈ weight-byte movement); as concurrency rises the workload
+   shifts compute-bound and the pure-bytes coefficient absorbs the extra FLOP
+   energy. A concurrency- (or arithmetic-intensity-) dependent e_bit is the
+   natural next refinement of the model.
+3. **Context length matters**: (2048,128) draws more power and higher e_bit than
+   (512,128) at the same concurrency (more KV + attention compute); Mistral
+   c64/2048 hit 545 W (near the 700 W cap).
+4. **Waveform prediction MAPE 1.4–6.5%** across all points (higher at high
+   concurrency, where compute contribution is largest).
+5. `r2_energy` per fixed-load point is often negative — expected: within one
+   fixed-load run power is nearly flat (no variance to explain). The meaningful
+   waveform R² (0.83) comes from the bursty active↔idle run (`logs/wave/`).
+
+Next options: request Llama-3 access to add it; fit a concurrency/intensity-aware
+e_bit; run bigger-context or Poisson-arrival workloads; sort out dcgmi for the
+DRAM gate; re-run on A100 when the queue frees for cross-GPU comparison.
