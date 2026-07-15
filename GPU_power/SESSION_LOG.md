@@ -132,11 +132,26 @@ open-loop needs finer bins / transition-aware modeling — a real regime differe
 - **62694** A100 full sweep — queued (runs when an A100 frees), separate
   `logs/load_sweep_a100/` (set via `SWEEP_LOG_ROOT`). For cross-GPU comparison.
 
-## Still-open handoff items (not yet run)
-1. **DRAM byte reconciliation (handoff gate #1)** — no `dcgmi`, but `ncu` IS in
-   the sif → do an OFFLINE ncu measurement of `dram__bytes_read/write.sum` on an
-   isolated c=1 decode, reconcile vs analytic weight+KV bytes. Validates e_bit's
-   byte accounting.
-2. **Long-context sweep (8k–32k ctx)** — at 512–2048 ctx the Σ KV term is tiny
-   vs the 14 GB weights, so the model's context-dependence is barely tested.
-3. Concurrency to 128 (handoff listed it); gemma-7b (gated like Llama-3).
+## DRAM reconciliation (handoff gate #1): BLOCKED by permissions — definitive
+Tried the offline NCU route (ncu IS in the sif). Result (job 62703, trivial
+kernel): **`ERR_NVGPUCTRPERM` — user lacks GPU performance-counter access.** This
+is a driver-level admin restriction (`NVreg_RestrictProfilingToAdminUsers=1`,
+NVIDIA's default), NOT a code bug. Consequences:
+- `ncu` metric collection and DCGM profiling fields are BOTH unavailable to this
+  user on these nodes. **This is the real reason the original DRAM counter was
+  "broken" / the old test.sh fought a "DCGM lock".** Hardware byte measurement is
+  impossible here without a sysadmin enabling profiling (set the driver flag to 0,
+  or add the user to a privileged group), or a node/queue where it's enabled.
+- **Impact is limited**: the energy calibration does NOT use a measured DRAM
+  counter — it uses NVML power (allowed) + analytic weight+KV bytes from
+  models.py. So e_bit/P_static and the waveform validation stand. What we CANNOT
+  do here is the independent hardware cross-check of the analytic byte accounting.
+- **Action for the meeting/admin**: request `nvidia-smi`-profiling permission
+  (ERR_NVGPUCTRPERM page) if hardware byte reconciliation is required; otherwise
+  present the analytic-bytes model as-is (well-motivated; weights dominate and are
+  exact from config).
+
+## Still-open items
+1. **Long-context sweep (up to 30k ctx)** — running (job 62702) after fixing the
+   max_model_len cap (Qwen2 max is 32768).
+2. Concurrency to 128 (handoff listed it); gemma-7b (gated like Llama-3).
