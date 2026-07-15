@@ -109,3 +109,34 @@ Findings (hold for both models; Mistral similar with a sharper high-load rise):
 Next options: request Llama-3 access to add it; fit a concurrency/intensity-aware
 e_bit; run bigger-context or Poisson-arrival workloads; sort out dcgmi for the
 DRAM gate; re-run on A100 when the queue frees for cross-GPU comparison.
+
+## OPEN-LOOP POISSON demo (job 62696, Qwen2-7B, H200) — `logs/poisson/`
+`--arrival_rate R` launches requests at Poisson(R req/s) independent of
+completion (vs closed-loop concurrency).
+
+| arrival rate | tok/s | e_bit (J/byte) | waveform MAPE |
+|-------------:|------:|---------------:|--------------:|
+| 1  | 106  | 7.3e-11  | 33%  |
+| 4  | 464  | 1.10e-10 | 6.3% |
+| 16 | 1959 | 1.35e-10 | 4.9% |
+
+Finding: at higher arrival rate the open-loop e_bit converges to the closed-loop
+values and MAPE drops; **λ=1 is idle-dominated** (power is a spike train between
+arrivals) and the 200 ms decode-bin model fits poorly (33%). Low-utilization
+open-loop needs finer bins / transition-aware modeling — a real regime difference.
+
+## Jobs queued after the first sweep
+- **62695** Llama-3-8B retry — `--begin` +2h (H200), joins `logs/load_sweep/`.
+  Runs only if HF access was granted (else 403-skips). Resubmit anytime with
+  `SWEEP_MODELS=meta-llama/Meta-Llama-3-8B sbatch sweep.sbatch`.
+- **62694** A100 full sweep — queued (runs when an A100 frees), separate
+  `logs/load_sweep_a100/` (set via `SWEEP_LOG_ROOT`). For cross-GPU comparison.
+
+## Still-open handoff items (not yet run)
+1. **DRAM byte reconciliation (handoff gate #1)** — no `dcgmi`, but `ncu` IS in
+   the sif → do an OFFLINE ncu measurement of `dram__bytes_read/write.sum` on an
+   isolated c=1 decode, reconcile vs analytic weight+KV bytes. Validates e_bit's
+   byte accounting.
+2. **Long-context sweep (8k–32k ctx)** — at 512–2048 ctx the Σ KV term is tiny
+   vs the 14 GB weights, so the model's context-dependence is barely tested.
+3. Concurrency to 128 (handoff listed it); gemma-7b (gated like Llama-3).
