@@ -30,11 +30,14 @@ PROFILE = "energy_profile_load.py"
 # Only models present in ~/models.py (byte accounting needs a config).
 # Qwen is fully open (proven); the others are gated — they run if the HF token
 # has license access, else that model is skipped (per-model try/except).
+# Override with SWEEP_MODELS="a,b" (e.g. a single-model Llama-3 retry).
 MODELS = [
     "Qwen/Qwen2-7B-Instruct",
     "meta-llama/Meta-Llama-3-8B",
     "mistralai/Mistral-7B-v0.1",
 ]
+if os.environ.get("SWEEP_MODELS"):
+    MODELS = [m for m in os.environ["SWEEP_MODELS"].split(",") if m.strip()]
 
 # (input_len, output_len); include a realistic ~2048-ctx point.
 WORKLOADS = [
@@ -56,7 +59,9 @@ GPU_MEM_UTIL = 0.90
 SATURATION_GAIN = 1.03      # <3% gain counts as a stall
 SATURATION_STALLS = 2
 
-LOG_ROOT = "logs/load_sweep"
+# Override with SWEEP_LOG_ROOT (e.g. a separate dir for A100 so resume-skip logic
+# doesn't treat H200 runs as already-done).
+LOG_ROOT = os.environ.get("SWEEP_LOG_ROOT", "logs/load_sweep")
 
 
 def ts():

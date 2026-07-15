@@ -169,6 +169,48 @@ async def _run_load_async(args, engine, tokenizer, meta):
     return win_t0, win_t1, completions, segments
 
 
+async def _run_open_loop_async(args, engine, tokenizer, meta):
+    """Open-loop Poisson arrivals: requests are launched at rate `arrival_rate`
+    (req/s) with exponential inter-arrival gaps, independent of completion. The
+    running batch then fluctuates with load (queue can build) — a different
+    regime from closed-loop concurrency."""
+    import random
+    from engine_compat import make_sampling_params, build_prompt, drain_generate
+
+    rng = random.Random(0)
+    sp = make_sampling_params(args.output_len, force_exact=True)
+    completions: List[dict] = []
+    counter = {"n": 0}
+
+    def fresh():
+        counter["n"] += 1
+        return counter["n"]
+
+    async def one():
+        k = fresh()
+        try:
+            completions.append(await drain_generate(
+                engine, build_prompt(tokenizer, args.input_len, text=f"s{k}"),
+                sp, f"r{k}"))
+        except Exception:
+            pass
+
+    # brief warmup so the first measured bin isn't a cold cache
+    await asyncio.gather(*[asyncio.create_task(one()) for _ in range(2)],
+                         return_exceptions=True)
+
+    win_t0 = time.time()
+    deadline = win_t0 + args.duration_s
+    tasks = []
+    while time.time() < deadline:
+        tasks.append(asyncio.create_task(one()))
+        await asyncio.sleep(rng.expovariate(args.arrival_rate))
+    await asyncio.gather(*tasks, return_exceptions=True)  # drain in-flight
+    win_t1 = time.time()
+    return win_t0, win_t1, completions, [
+        {"arrival_rate": args.arrival_rate, "t0": win_t0, "t1": win_t1}]
+
+
 def run_load(args):
     from transformers import AutoTokenizer
     from engine_compat import build_async_engine
@@ -192,9 +234,11 @@ def run_load(args):
         print(f"[warn] DRAM counter: {dram.error}", flush=True)
 
     segments = []
+    runner = (_run_open_loop_async if args.arrival_rate > 0
+              else _run_load_async)
     try:
         win_t0, win_t1, completions, segments = asyncio.run(
-            _run_load_async(args, engine, tokenizer, emeta))
+            runner(args, engine, tokenizer, emeta))
     finally:
         dram.stop()
         nvml.stop()
@@ -228,7 +272,10 @@ def run_load(args):
         "gpu_mem_util": args.gpu_memory_utilization,
         "input_len": args.input_len,
         "output_len": args.output_len,
-        "concurrency_or_rate": args.concurrency_schedule or args.concurrency,
+        "concurrency_or_rate": (args.concurrency_schedule
+                                or (f"poisson:{args.arrival_rate}"
+                                    if args.arrival_rate > 0 else args.concurrency)),
+        "arrival_rate": args.arrival_rate,
         "concurrency_schedule": args.concurrency_schedule,
         "segments": segments,
         "idle_power_w": baselines.get("idle_power_w"),
