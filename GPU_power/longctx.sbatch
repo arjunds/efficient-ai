@@ -22,7 +22,7 @@ apptainer exec --nv -B "${HARNESS}:/workspace" \
   -B "$HOME/models.py:/workspace/models.py" "$SIF" bash -lc "
     cd /workspace
     BL=logs/load_sweep/Qwen2-7B-Instruct/baselines.json
-    for CTX in 4096 16384 32768; do
+    for CTX in 4096 16384 30720; do
       for C in 1 8 16; do
         RD=logs/longctx/${MODEL##*/}/ctx\${CTX}_c\${C}
         echo \"================ ctx=\${CTX} concurrency=\${C} ================\"
@@ -30,7 +30,7 @@ apptainer exec --nv -B "${HARNESS}:/workspace" \
         [ -f \$BL ] && cp \$BL \$RD/baselines.json
         python3 energy_profile_load.py --mode load --model ${MODEL} \
           --concurrency \$C --input_len \$CTX --output_len 128 --duration_s 55 \
-          --run_dir \$RD --max_model_len 33792 --gpu_memory_utilization 0.9 2>&1 | tail -5
+          --run_dir \$RD --max_model_len 32768 --gpu_memory_utilization 0.9 2>&1 | tail -5
         python3 energy_model.py      --run_dir \$RD 2>&1 | grep -E 'e_bit_j|e_bit_agg|p_static_w|r2_energy|mean_bytes|n_bins|error'
         python3 validate_waveform.py --run_dir \$RD 2>&1 | grep -E 'rmse_w|mean_abs_pct|error'
       done
