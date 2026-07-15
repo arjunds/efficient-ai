@@ -151,7 +151,33 @@ NVIDIA's default), NOT a code bug. Consequences:
   present the analytic-bytes model as-is (well-motivated; weights dominate and are
   exact from config).
 
+## LONG-CONTEXT sweep (job 62702, Qwen2-7B, H200) — `logs/longctx/`
+Exercises the Σ KV_bytes(ctx) term (invisible at 512-2048 ctx). power W / e_bit
+(J/byte); MAPE in text.
+
+| ctx  | c=1            | c=8            | c=16            |
+|-----:|:---------------|:---------------|:----------------|
+| 4096 | 371W / 1.09e-10| 395W / 1.27e-10| 415W / 1.45e-10 |
+| 16384| 386W / 1.13e-10| 453W / 1.67e-10| 488W / 2.12e-10 |
+| 30720| 396W / 1.16e-10| 491W / 2.01e-10| 537W / 2.81e-10 |
+
+tok/s at c=16 DROPS with context: 2274 (4k) → 1827 (16k) → 1458 (30k).
+Waveform MAPE 1.7% (c1/4k) → 10.1% (c16/30k).
+
+Findings:
+1. **The KV term now bites.** At c=1, e_bit barely moves with context
+   (1.09→1.16e-10) — weights dominate regardless. But at c=16, resident KV
+   (16×30720 ≈ 0.5M tokens ≈ 28 GB/iter) rivals the 14 GB weights, so power
+   (415→537 W) and e_bit (1.45→2.81e-10) climb sharply with context. This is the
+   context-dependence that 512-2048 ctx couldn't show.
+2. **Throughput falls with context** at load (attention compute + KV pressure):
+   c=16 goes 2274→1458 tok/s from 4k→30k.
+3. **e_bit now spans 1.09e-10 → 2.81e-10 (2.6×)** across concurrency AND context
+   — strong motivation for a context/arithmetic-intensity-aware e_bit rather than
+   a constant. MAPE rising to ~10% in the compute-heavy long-context corner is the
+   pure-bytes model's limit (attention FLOPs grow with ctx, not captured by bytes)
+   — the clearest signal of where the model needs a compute term.
+
 ## Still-open items
-1. **Long-context sweep (up to 30k ctx)** — running (job 62702) after fixing the
-   max_model_len cap (Qwen2 max is 32768).
-2. Concurrency to 128 (handoff listed it); gemma-7b (gated like Llama-3).
+1. Concurrency to 128 (handoff listed it); gemma-7b (gated like Llama-3).
+2. Llama-3-8B (job 62695, +2h) and A100 sweep (job 62694, queued) — pending.
