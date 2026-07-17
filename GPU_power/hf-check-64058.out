@@ -1,0 +1,3 @@
+cpu-bind=MASK - node10, task  0  0 [3125453]: mask 0x30 set
+ACCESS OK: meta-llama/Meta-Llama-3-8B
+ACCESS OK: google/gemma-7b

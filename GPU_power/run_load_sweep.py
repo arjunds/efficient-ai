@@ -61,7 +61,7 @@ SATURATION_STALLS = 2
 
 # Override with SWEEP_LOG_ROOT (e.g. a separate dir for A100 so resume-skip logic
 # doesn't treat H200 runs as already-done).
-LOG_ROOT = os.environ.get("SWEEP_LOG_ROOT", "logs/load_sweep")
+LOG_ROOT = os.environ.get("SWEEP_LOG_ROOT") or "logs/load_sweep"
 
 
 def ts():
