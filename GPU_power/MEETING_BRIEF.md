@@ -3,9 +3,9 @@
 Standalone talk-ready summary of the `vllm_ragged` profiling iteration (LIMINAL
 energy extension). Data collected on **NVIDIA H200** via SLURM + Apptainer.
 
-> Status: Qwen2-7B + Mistral-7B fully swept; Llama-3-8B + gemma-7b sweeping now
-> (cross-model table below auto-updates via `sweep_summary.csv`). A100 comparison
-> queued.
+> Status: **4 models fully swept** (Qwen2-7B, Llama-3-8B, Mistral-7B, gemma-7b) ×
+> concurrency 1–64 × two workloads, plus long-context, Poisson, and waveform
+> validation runs. A100 comparison queued for cross-GPU.
 
 ---
 
@@ -57,9 +57,20 @@ The prior data had two blocking problems; both are resolved.
 - **Waveform validation:** bursty active↔idle **R² 0.83, MAPE <7%**; fixed-load
   MAPE 1.6–2.4%.
 - **`e_bit` spans 1.08e-10 → 2.81e-10 (2.6×)** across load and context.
-- **Cross-model (c=1..64, 512/128):** _(filled when Llama-3 + gemma finish; see
-  `sweep_summary.csv`. Mistral tracks Qwen closely, with a sharper power/e_bit
-  rise at c64/2048 — 545 W near the 700 W cap.)_
+- **Cross-model (4 models, 512/128), c=1 → c=64:**
+
+  | model | tok/J c1→c64 | e_bit c1→c64 (J/byte) |
+  |-------|--------------|------------------------|
+  | Qwen2-7B-Instruct | 0.45 → 19.8 | 1.08e-10 → 1.60e-10 |
+  | Meta-Llama-3-8B   | 0.43 → 17.5 | 1.07e-10 → 1.69e-10 |
+  | Mistral-7B-v0.1   | 0.46 → 17.0 | 1.03e-10 → 1.88e-10 |
+  | gemma-7b          | 0.36 → 12.6 | 1.05e-10 → 1.85e-10 |
+
+  **Strikingly consistent across architectures:** all four start at
+  `e_bit ≈ 1.03–1.08e-10` at c=1 (pure weight-movement / memory-bound) and rise
+  to `1.6–1.9e-10` by c=64 (compute contribution grows). tok/J improves 12–20×.
+  This universality is a strong point — the coefficient and its load-dependence
+  aren't a quirk of one model.
 
 ## The take (synthesis for the analysis-side agent)
 1. **`e_bit` as a single constant is insufficient.** It rises systematically with
