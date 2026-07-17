@@ -19,7 +19,7 @@ export APPTAINERENV_HF_TOKEN="$APPTAINERENV_HUGGINGFACE_HUB_TOKEN"
 export APPTAINERENV_HF_HOME="$HOME/.cache/huggingface"
 
 apptainer exec --nv -B "${HARNESS}:/workspace" \
-  -B "$HOME/models.py:/workspace/models.py" "$SIF" bash -lc "
+  -B "$HOME/models.py:/workspace/models.py" -B /shared_data0 "$SIF" bash -lc "
     cd /workspace
     BL=logs/load_sweep/Qwen2-7B-Instruct/baselines.json
     for CTX in 4096 16384 30720; do

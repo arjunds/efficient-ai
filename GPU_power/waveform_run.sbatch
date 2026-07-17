@@ -24,7 +24,7 @@ export APPTAINERENV_HF_TOKEN="$APPTAINERENV_HUGGINGFACE_HUB_TOKEN"
 export APPTAINERENV_HF_HOME="$HOME/.cache/huggingface"
 
 apptainer exec --nv -B "${HARNESS}:/workspace" \
-  -B "$HOME/models.py:/workspace/models.py" "$SIF" bash -lc "
+  -B "$HOME/models.py:/workspace/models.py" -B /shared_data0 "$SIF" bash -lc "
     cd /workspace
     # seed idle baseline for this run dir's parent (reuse first_run's if present)
     mkdir -p logs

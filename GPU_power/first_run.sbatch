@@ -29,7 +29,7 @@ echo "==== SIF ===="; ls -laL "$SIF"
 
 apptainer exec --nv \
   -B "${HARNESS}:/workspace" \
-  -B "$HOME/models.py:/workspace/models.py" \
+  -B "$HOME/models.py:/workspace/models.py" -B /shared_data0 \
   "$SIF" bash -lc "
     set +e
     cd /workspace

@@ -17,7 +17,7 @@ DIRS="${@:-logs/first_run/c1 logs/first_run/c8}"
 
 apptainer exec \
   -B "${HARNESS}:/workspace" \
-  -B "$HOME/models.py:/workspace/models.py" \
+  -B "$HOME/models.py:/workspace/models.py" -B /shared_data0 \
   "$SIF" bash -lc "
     cd /workspace
     for d in ${DIRS}; do

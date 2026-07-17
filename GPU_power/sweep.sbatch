@@ -25,7 +25,7 @@ echo "==== sweep start $(date) on $(hostname) ===="
 nvidia-smi --query-gpu=name,power.limit,memory.total --format=csv,noheader
 
 apptainer exec --nv -B "${HARNESS}:/workspace" \
-  -B "$HOME/models.py:/workspace/models.py" "$SIF" bash -lc "
+  -B "$HOME/models.py:/workspace/models.py" -B /shared_data0 "$SIF" bash -lc "
     cd /workspace
     mkdir -p logs/load_sweep
     python3 -u run_load_sweep.py 2>&1 | tee logs/load_sweep/sweep_console.log
