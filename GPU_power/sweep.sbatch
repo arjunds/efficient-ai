@@ -17,6 +17,7 @@ HARNESS="$HOME/efficient-ai/GPU_power"
 export APPTAINERENV_HUGGINGFACE_HUB_TOKEN="$(cat ~/.cache/huggingface/token 2>/dev/null)"
 export APPTAINERENV_HF_TOKEN="$APPTAINERENV_HUGGINGFACE_HUB_TOKEN"
 export APPTAINERENV_HF_HOME="$HOME/.cache/huggingface"
+export APPTAINERENV_HF_XET_CACHE="/shared_data0/adsampat/hf_cache/xet"
 # forward optional sweep overrides into the container
 export APPTAINERENV_SWEEP_MODELS="${SWEEP_MODELS:-}"
 export APPTAINERENV_SWEEP_LOG_ROOT="${SWEEP_LOG_ROOT:-}"

@@ -24,6 +24,7 @@ RD="logs/first_run"
 export APPTAINERENV_HUGGINGFACE_HUB_TOKEN="$(cat ~/.cache/huggingface/token 2>/dev/null)"
 export APPTAINERENV_HF_TOKEN="$APPTAINERENV_HUGGINGFACE_HUB_TOKEN"
 export APPTAINERENV_HF_HOME="$HOME/.cache/huggingface"
+export APPTAINERENV_HF_XET_CACHE="/shared_data0/adsampat/hf_cache/xet"
 
 echo "==== SIF ===="; ls -laL "$SIF"
 
