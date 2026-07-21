@@ -20,6 +20,33 @@ energy extension). Data collected on **NVIDIA H200** via SLURM + Apptainer.
   memory-bound → compute-bound. That's the finding that should drive the next
   model refinement.
 
+## FOLLOW-UP RESULT: two-term (memory+compute) model on ragged traffic
+The single-term `e_bit` drifted 2.6× with load/context — evidence a compute term
+was missing. We added it: `E = e_bit·bytes + e_flop·FLOPs + P_static·t`, fit on
+real ragged traffic (alpaca + sharegpt, variable-length → heterogeneous batches;
+sharegpt's long prompts give arithmetic-intensity spread up to ~2000×), pooled
+across each model's operating points.
+
+| model | e_bit (J/byte) | e_flop (pJ/flop) | R²_dyn |
+|-------|---------------:|-----------------:|-------:|
+| Qwen2-7B   | 1.11e-10 | 0.86 | 0.65 |
+| Llama-3-8B | 1.11e-10 | 0.86 | 0.69 |
+| Mistral-7B | 1.10e-10 | 0.85 | 0.62 |
+| gemma-7b   | 1.18e-10 | 0.98 | 0.59 |
+
+- **The split flattens `e_bit`**: from a 2.6× drift down to <7% spread across four
+  architectures. A constant memory coefficient + a compute term replaces the
+  drifting single coefficient — the model was right, it just needed the FLOP term.
+- **Both coefficients are ~constant across models → hardware constants** (`e_bit` ≈
+  H200 HBM energy/byte, `e_flop` ≈ 0.86 pJ/flop compute energy). This is the key
+  claim: the coefficients are properties of the GPU, not fits to a model — so the
+  model should predict an *unseen* model's energy on H200 from its byte/FLOP
+  counts. That elevates it from "curve fit" to "predictive model."
+- Fit is well-identified (bytes↔flops r≈−0.6, AI span ~2000×), R²_dyn 0.6–0.7.
+- Plots: `plots_two_term/` — `coefficients_by_model.png`,
+  `ebit_drift_vs_two_term.png` (the drift→flat comparison), `two_term_fit_quality.png`.
+- Cross-GPU A100 fit queued (coefficients should scale with A100 bandwidth/FLOPs).
+
 ## Methodology (brief)
 - **Offered load, not static batch.** Drive vLLM (0.10.2, V1 engine) with N
   concurrent clients (closed-loop) *or* Poisson arrivals (open-loop), so vLLM's

@@ -207,12 +207,28 @@ read the JSON with a clean env.**
   expected for H200 — the success criterion. (Pooled R² weak on 2 runs — mostly
   low-variance decode bins; full sweep should firm it up.)
 
-Full sweep running: 64560 (H200, `logs/ragged/`), 64561 (A100, `logs/ragged_a100/`,
-queued — replaced the stale synthetic A100 job). Deliverables per model:
-two_term_fit.json (e_bit/e_flop/P_static + identifiability), binned_table.csv (for
-independent re-fit), logs/ragged/two_term_summary.csv. Key question the full sweep
-answers: does the two-term split flatten e_bit across concurrency/context (vs the
-single-term's 2.6× drift)?
+**Full sweep (64560, H200, 63 min, 4 models) — RESULT:**
+
+| model | e_bit (J/byte) | e_flop (pJ/flop) | R²_dyn | identifiable | AI span |
+|-------|---------------:|-----------------:|-------:|:------------:|--------:|
+| Qwen2-7B     | 1.105e-10 | 0.86 | 0.65 | yes | 2263× |
+| Llama-3-8B   | 1.110e-10 | 0.86 | 0.69 | yes | 2171× |
+| Mistral-7B   | 1.097e-10 | 0.85 | 0.62 | yes | 1748× |
+| gemma-7b     | 1.175e-10 | 0.98 | 0.59 | yes | 1667× |
+
+**Answer to the key question: YES, the two-term split flattens e_bit.** Single-term
+e_bit drifted 2.6× (1.05→2.81e-10) with load/context; the two-term e_bit is
+1.10–1.18e-10 across ALL 4 models (<7% spread). e_flop ≈ 0.85–0.98 pJ/flop, also
+~constant. **Both coefficients are ~constant across architectures → they behave as
+hardware constants (H200 HBM energy/byte and compute energy/flop), not per-model
+fits** — the transferability signal. R²_dyn 0.6–0.7 (real AI variance now, span
+~2000×). e_flop ~0.86 pJ/flop is a bit above the ~0.6 estimate but same order and
+physically reasonable for H200 fp16 under real load.
+
+Artifacts: per-model two_term_fit.json + binned_table.csv (independent re-fit),
+`two_term_summary.csv`, plots in `plots_two_term/` (coefficients_by_model,
+ebit_drift_vs_two_term [the money comparison], two_term_fit_quality). A100 version
+queued (64561, `logs/ragged_a100/`) for the cross-GPU coefficient comparison.
 
 ## Still-open items
 1. Concurrency to 128 (handoff listed it).
