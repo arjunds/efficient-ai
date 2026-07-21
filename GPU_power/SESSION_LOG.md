@@ -178,6 +178,41 @@ Findings:
    pure-bytes model's limit (attention FLOPs grow with ctx, not captured by bytes)
    — the clearest signal of where the model needs a compute term.
 
+## RAGGED WORKLOAD + TWO-TERM ENERGY MODEL (the research advance)
+Goal: stress the per-iteration model on genuinely ragged batches (real
+variable-length traffic) and fit the two-coefficient split
+`E = e_bit·bytes + e_flop·FLOPs + P_static·t` (memory + compute), which the
+synthetic fixed-length sweep can't pin (all similar arithmetic intensity).
+
+Design: real prompts (alpaca short, sharegpt long) via `--task`, same offered-load
+harness (concurrency + Poisson), 4 models, per-run idle baseline. FLOPs per
+iteration from models.py: `2·active_params·(prefill+decode) + attn_flops_per_token(1)·
+kv_tokens_resident`. Fit pooled over all of a model's operating points (low-AI
+decode + high-AI prefill) so the two coefficients are separable — see fit_two_term.py.
+
+Env fights to get here (all environmental, code was fine): datasets is slow to
+pip-install over NFS (isolated to a one-time install job); a killed install left
+datasets partially written (repaired); datasets pulls huggingface-hub 1.x which
+shadows the container's hub<1.0 and breaks transformers/vLLM. **Fix: decouple —
+dump prompts to JSON in a `datasets` step (pydeps on PYTHONPATH), then vLLM runs
+read the JSON with a clean env.**
+
+**Smoke validation (Qwen, 2 runs: alpaca c1 + sharegpt c16) — PASSED:**
+- Ragged batches confirmed: iter_log shows mixed iterations with large
+  prefill_tokens + varying kv_tokens_resident (the KV term is now load-bearing).
+- sharegpt gives arithmetic intensity up to **308×** (alpaca ~3×) — the high-AI
+  anchor that pins e_flop.
+- Pooled two-term fit (415 bins): **e_bit = 1.11e-10 J/byte, e_flop = 0.59
+  pJ/flop, identifiable=true** (bytes↔flops r=−0.61). e_flop ≈ the ~0.6 pJ/flop
+  expected for H200 — the success criterion. (Pooled R² weak on 2 runs — mostly
+  low-variance decode bins; full sweep should firm it up.)
+
+Full sweep running: 64560 (H200, `logs/ragged/`), 64561 (A100, `logs/ragged_a100/`,
+queued — replaced the stale synthetic A100 job). Deliverables per model:
+two_term_fit.json (e_bit/e_flop/P_static + identifiability), binned_table.csv (for
+independent re-fit), logs/ragged/two_term_summary.csv. Key question the full sweep
+answers: does the two-term split flatten e_bit across concurrency/context (vs the
+single-term's 2.6× drift)?
+
 ## Still-open items
-1. Concurrency to 128 (handoff listed it); gemma-7b (gated like Llama-3).
-2. Llama-3-8B (job 62695, +2h) and A100 sweep (job 62694, queued) — pending.
+1. Concurrency to 128 (handoff listed it).
