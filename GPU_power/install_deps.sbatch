@@ -18,9 +18,13 @@ export APPTAINERENV_HF_DATASETS_CACHE="/shared_data0/adsampat/hf_cache/datasets"
 
 apptainer exec -B "$HOME/efficient-ai/GPU_power:/workspace" -B /shared_data0 "$SIF" bash -lc '
   cd /workspace
-  echo "=== pip install datasets -> pydeps (slow over NFS; one-time) $(date) ==="
-  pip install --target=/shared_data0/adsampat/pydeps "datasets>=2.0" 2>&1 | tail -4
-  export PYTHONPATH=/shared_data0/adsampat/pydeps:$PYTHONPATH
+  PD=/shared_data0/adsampat/pydeps
+  echo "=== remove partial/bleeding-edge datasets, reinstall stable 3.x $(date) ==="
+  rm -rf $PD/datasets $PD/datasets-*.dist-info
+  # deps (pyarrow, dill, multiprocess, xxhash, fsspec, ...) already present -> only
+  # datasets reinstalled -> fast + complete.
+  pip install --target=$PD "datasets>=2.19,<4" 2>&1 | tail -4
+  export PYTHONPATH=$PD:$PYTHONPATH
   echo "=== import check $(date) ==="
   python3 -c "import datasets; print(\"datasets\", datasets.__version__)" 2>&1
   echo "=== pre-warm alpaca $(date) ==="
