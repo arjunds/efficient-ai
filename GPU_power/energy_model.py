@@ -105,6 +105,30 @@ def model_byte_constants(meta: dict) -> Tuple[float, float, str]:
     return float(m.active_params() * dtype_b), float(m.kv_bytes_per_token(kv_b)), f"models.py:{key}"
 
 
+def model_flop_constants(meta: dict):
+    """Return (matmul_flops_per_token, attn_flops_per_resident_token, active_params).
+
+    Per-iteration FLOPs (from the fields iter_log records) are modeled as:
+      flops_iter = matmul_per_tok · (prefill_tokens + decode_tokens)
+                   + attn_per_resident · kv_tokens_resident
+    where matmul_per_tok = 2·active_params (MAC=2 flops; includes lm_head) and
+    attn_per_resident = attn_flops_per_token(1) (the per-context-token attention
+    cost; Σ_seq attn_flops_per_token(ctx_seq) = attn_per_resident·Σctx, exact for
+    non-chunked GQA/MLA since attn_flops_per_token is linear in T). Prefill self-
+    attention (quadratic) is under-counted, but the matmul term dominates prefill
+    and drives the arithmetic-intensity spread; the analysis side can refine.
+    """
+    from gate_dram import import_models, hf_to_model_key
+    models = import_models()
+    key = meta.get("model_key") or hf_to_model_key(meta.get("model", ""), models)
+    if key is None or key not in models:
+        raise ValueError(f"model_key absent from models.py: {meta.get('model')}")
+    m = models[key]
+    matmul_per_tok = 2.0 * m.active_params()
+    attn_per_resident = float(m.attn_flops_per_token(1))
+    return matmul_per_tok, attn_per_resident, float(m.active_params())
+
+
 def iter_rows(iter_csv: str) -> List[dict]:
     with open(iter_csv) as f:
         return list(csv.DictReader(f))
@@ -117,17 +141,18 @@ def _f(x):
         return None
 
 
-def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase: str = "decode",
+def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
             include_empty: bool = False):
-    """Bin a run into fixed-width time bins. Returns (bins, info) where each bin is
-    {b0,b1,dt,E,bytes,n} with E=measured energy (J), bytes=Σ iter bytes whose
-    midpoint lands in the bin, n=#iters."""
+    """Bin a run into fixed-width time bins. phase=None includes ALL phases
+    (needed for the two-term fit: prefill bins are the high-arithmetic-intensity
+    points that pin e_flop). Each bin: {b0,b1,dt,E,bytes,flops,n,prefill,decode}."""
     meta = json.load(open(os.path.join(run_dir, "run_meta.json")))
     ts, ps = load_power_samples(os.path.join(run_dir, "power_trace.csv"))
     rows = iter_rows(os.path.join(run_dir, "iter_log.csv"))
     weight_bytes, kv_bpt, byte_src = model_byte_constants(meta)
+    matmul_per_tok, attn_per_resident, active_params = model_flop_constants(meta)
 
-    tms, byts = [], []
+    tms, byts, flps, prefs, decs = [], [], [], [], []
     for r in rows:
         if phase and (r.get("phase") or "").strip() != phase:
             continue
@@ -135,17 +160,26 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase: str = "decode",
         if t0 is None or t1 is None:
             continue
         kv = _f(r.get("kv_tokens_resident")) or 0.0
+        pref = _f(r.get("prefill_tokens")) or 0.0
+        dec = _f(r.get("decode_tokens")) or 0.0
         tms.append(0.5 * (t0 + t1))
         byts.append(weight_bytes + kv * kv_bpt)
+        flps.append(matmul_per_tok * (pref + dec) + attn_per_resident * kv)
+        prefs.append(pref); decs.append(dec)
 
     info = {"weight_bytes": weight_bytes, "kv_bytes_per_token": kv_bpt,
-            "byte_source": byte_src, "idle_power_w": meta.get("idle_power_w"),
-            "meta": meta, "n_iters_total": len(tms), "bin_s": bin_s, "phase": phase}
+            "matmul_flops_per_token": matmul_per_tok,
+            "attn_flops_per_resident_token": attn_per_resident,
+            "active_params": active_params, "byte_source": byte_src,
+            "idle_power_w": meta.get("idle_power_w"), "meta": meta,
+            "n_iters_total": len(tms), "bin_s": bin_s, "phase": phase}
     if not ts or not tms:
         return [], info
 
     order = sorted(range(len(tms)), key=lambda i: tms[i])
     tms = [tms[i] for i in order]; byts = [byts[i] for i in order]
+    flps = [flps[i] for i in order]; prefs = [prefs[i] for i in order]
+    decs = [decs[i] for i in order]
 
     w0 = meta.get("window_wall_t0") or tms[0]
     w1 = meta.get("window_wall_t1") or tms[-1]
@@ -159,8 +193,9 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase: str = "decode",
         lo = bisect.bisect_left(tms, b0); hi = bisect.bisect_left(tms, b1)
         n = hi - lo
         if E is not None and (n > 0 or include_empty):
-            bins.append({"b0": b0, "b1": b1, "dt": b1 - b0,
-                         "E": E, "bytes": sum(byts[lo:hi]), "n": n})
+            bins.append({"b0": b0, "b1": b1, "dt": b1 - b0, "E": E, "n": n,
+                         "bytes": sum(byts[lo:hi]), "flops": sum(flps[lo:hi]),
+                         "prefill": sum(prefs[lo:hi]), "decode": sum(decs[lo:hi])})
         b0 = b1
     return bins, info
 
@@ -239,14 +274,109 @@ def calibrate(run_dir: str, phase: str = "decode", bin_s: float = DEFAULT_BIN_S)
     return result
 
 
+def _pearson(x, y):
+    n = len(x)
+    if n < 2:
+        return None
+    mx = sum(x) / n; my = sum(y) / n
+    sxy = sum((a - mx) * (b - my) for a, b in zip(x, y))
+    sxx = sum((a - mx) ** 2 for a in x); syy = sum((b - my) ** 2 for b in y)
+    d = (sxx * syy) ** 0.5
+    return (sxy / d) if d else None
+
+
+def calibrate_two_term(run_dir: str, bin_s: float = DEFAULT_BIN_S) -> dict:
+    """Fit E_bin = e_bit·bytes + e_flop·flops + P_static·dt over ALL-phase bins.
+    P_static anchored from idle; (e_bit, e_flop) by 2-feature LS on the dynamic
+    energy. Also exports binned_table.csv for independent re-fitting."""
+    bins, info = bin_run(run_dir, bin_s, phase=None)
+    result = {"run_dir": run_dir, "model": "two_term", "bin_s": bin_s,
+              "n_bins": len(bins), "n_iters_total": info["n_iters_total"],
+              "weight_bytes": info["weight_bytes"],
+              "kv_bytes_per_token": info["kv_bytes_per_token"],
+              "matmul_flops_per_token": info["matmul_flops_per_token"],
+              "attn_flops_per_resident_token": info["attn_flops_per_resident_token"],
+              "active_params": info["active_params"],
+              "idle_power_w": info["idle_power_w"],
+              "task": info["meta"].get("task"),
+              "concurrency_or_rate": info["meta"].get("concurrency_or_rate")}
+
+    # always export the binned table (analysis side re-fits independently)
+    _export_binned_table(run_dir, bins)
+
+    if len(bins) < 4:
+        result["error"] = f"too few bins ({len(bins)})"
+        return result
+
+    bytes_ = [b["bytes"] for b in bins]
+    flops = [b["flops"] for b in bins]
+    dts = [b["dt"] for b in bins]
+    Es = [b["E"] for b in bins]
+
+    p_static = info["idle_power_w"]
+    result["p_static_source"] = "idle_baseline" if p_static is not None else "none"
+    if p_static is None:
+        result["error"] = "no idle baseline; cannot anchor P_static"
+        return result
+
+    dyn = [E - p_static * dt for E, dt in zip(Es, dts)]
+    e_bit, e_flop = _ls_two_feature(bytes_, flops, dyn)
+
+    # identifiability: bytes and flops must not be collinear across bins
+    r_bf = _pearson(bytes_, flops)
+    ai = [f / by for f, by in zip(flops, bytes_) if by]   # arithmetic intensity
+    yhat = [(e_bit or 0) * by + (e_flop or 0) * fl + p_static * dt
+            for by, fl, dt in zip(bytes_, flops, dts)]
+    meas_w = [E / dt for E, dt in zip(Es, dts)]
+    pred_w = [y / dt for y, dt in zip(yhat, dts)]
+
+    result.update({
+        "e_bit_j_per_byte": e_bit,
+        "e_flop_j_per_flop": e_flop,
+        "p_static_w": p_static,
+        "r2_energy": _r2(Es, yhat),
+        "r2_power": _r2(meas_w, pred_w),
+        "bytes_flops_pearson": r_bf,
+        "identifiable": (r_bf is not None and abs(r_bf) < 0.97),
+        "arithmetic_intensity_min": min(ai) if ai else None,
+        "arithmetic_intensity_max": max(ai) if ai else None,
+        "binned_table": os.path.join(run_dir, "binned_table.csv"),
+    })
+    if e_flop is not None:
+        result["e_flop_pJ_per_flop"] = e_flop * 1e12
+    if not result["identifiable"]:
+        result["warning"] = (f"bytes~flops collinear (r={r_bf:.3f}); e_bit/e_flop "
+                             "not separable — need more arithmetic-intensity spread "
+                             "(heavier prefill / longer prompts).")
+    return result
+
+
+def _export_binned_table(run_dir, bins):
+    with open(os.path.join(run_dir, "binned_table.csv"), "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["t_mid", "dt_s", "energy_bin_j", "bytes_bin", "flops_bin",
+                    "prefill_tokens", "decode_tokens", "n_iters"])
+        for b in bins:
+            w.writerow([f"{0.5*(b['b0']+b['b1']):.6f}", f"{b['dt']:.4f}",
+                        f"{b['E']:.4f}", f"{b['bytes']:.6e}", f"{b['flops']:.6e}",
+                        int(b["prefill"]), int(b["decode"]), b["n"]])
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--run_dir", required=True)
     ap.add_argument("--phase", default="decode", choices=["decode", "prefill", "mixed"])
     ap.add_argument("--bin_s", type=float, default=DEFAULT_BIN_S)
+    ap.add_argument("--two_term", action="store_true",
+                    help="fit E = e_bit·bytes + e_flop·flops + P_static·dt (all phases)")
     args = ap.parse_args()
-    cal = calibrate(args.run_dir, args.phase, args.bin_s)
-    with open(os.path.join(args.run_dir, "calibration.json"), "w") as f:
+    if args.two_term:
+        cal = calibrate_two_term(args.run_dir, args.bin_s)
+        out = os.path.join(args.run_dir, "calibration_two_term.json")
+    else:
+        cal = calibrate(args.run_dir, args.phase, args.bin_s)
+        out = os.path.join(args.run_dir, "calibration.json")
+    with open(out, "w") as f:
         json.dump(cal, f, indent=2)
     print(json.dumps(cal, indent=2))
 

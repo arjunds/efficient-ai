@@ -124,10 +124,27 @@ def parse_schedule(args):
     return [(args.concurrency, args.duration_s)]
 
 
-async def _run_load_async(args, engine, tokenizer, meta):
-    from engine_compat import make_sampling_params, build_prompt, drain_generate
+def make_prompt_fn(args, tokenizer):
+    """prompt(k): task mode draws a real variable-length prompt from the pool
+    (heterogeneous batch); synthetic mode builds a fixed input_len token prompt."""
+    import random
+    from engine_compat import build_prompt
+    pool = getattr(args, "prompt_pool", None)
+    rng = random.Random(1234)
 
-    sp = make_sampling_params(args.output_len, force_exact=True)
+    def prompt(k):
+        if pool:
+            return rng.choice(pool)
+        return build_prompt(tokenizer, args.input_len, text=f"s{k}")
+    return prompt
+
+
+async def _run_load_async(args, engine, tokenizer, meta):
+    from engine_compat import make_sampling_params, drain_generate
+
+    sp = make_sampling_params(args.output_len,
+                              force_exact=not getattr(args, "task", None))
+    prompt_fn = make_prompt_fn(args, tokenizer)
     completions: List[dict] = []
     counter = {"n": 0}
 
@@ -138,9 +155,8 @@ async def _run_load_async(args, engine, tokenizer, meta):
     async def worker(deadline: float):
         while time.time() < deadline:
             k = fresh()
-            prompt = build_prompt(tokenizer, args.input_len, text=f"story {k}")
             try:
-                completions.append(await drain_generate(engine, prompt, sp, f"r{k}"))
+                completions.append(await drain_generate(engine, prompt_fn(k), sp, f"r{k}"))
             except Exception:
                 pass
 
@@ -149,8 +165,7 @@ async def _run_load_async(args, engine, tokenizer, meta):
     # Warmup at the first segment's concurrency so we measure steady state.
     c0 = max(1, schedule[0][0])
     warm = [asyncio.create_task(
-        drain_generate(engine, build_prompt(tokenizer, args.input_len,
-                                            text=f"warm {i}"), sp, f"warm-{i}"))
+        drain_generate(engine, prompt_fn(i), sp, f"warm-{i}"))
         for i in range(c0)]
     await asyncio.gather(*warm, return_exceptions=True)
 
@@ -175,10 +190,12 @@ async def _run_open_loop_async(args, engine, tokenizer, meta):
     running batch then fluctuates with load (queue can build) — a different
     regime from closed-loop concurrency."""
     import random
-    from engine_compat import make_sampling_params, build_prompt, drain_generate
+    from engine_compat import make_sampling_params, drain_generate
 
     rng = random.Random(0)
-    sp = make_sampling_params(args.output_len, force_exact=True)
+    sp = make_sampling_params(args.output_len,
+                              force_exact=not getattr(args, "task", None))
+    prompt_fn = make_prompt_fn(args, tokenizer)
     completions: List[dict] = []
     counter = {"n": 0}
 
@@ -190,8 +207,7 @@ async def _run_open_loop_async(args, engine, tokenizer, meta):
         k = fresh()
         try:
             completions.append(await drain_generate(
-                engine, build_prompt(tokenizer, args.input_len, text=f"s{k}"),
-                sp, f"r{k}"))
+                engine, prompt_fn(k), sp, f"r{k}"))
         except Exception:
             pass
 
@@ -218,6 +234,17 @@ def run_load(args):
     token = os.environ.get("HUGGINGFACE_HUB_TOKEN") or os.environ.get("HF_TOKEN")
     tokenizer = AutoTokenizer.from_pretrained(
         args.model, use_fast=True, token=token, trust_remote_code=True)
+
+    # Real-dataset prompt pool (variable lengths -> ragged batches) if --task given.
+    args.prompt_pool = None
+    if getattr(args, "task", None):
+        from prompts import load_prompts
+        args.prompt_pool = load_prompts(args.task, n=args.prompt_pool_size)
+        lens = sorted(len(tokenizer(p, add_special_tokens=False)["input_ids"])
+                      for p in args.prompt_pool[:200])
+        print(f"[prompts] task={args.task} n={len(args.prompt_pool)} "
+              f"token-len p5/50/95={lens[len(lens)//20]}/{lens[len(lens)//2]}/"
+              f"{lens[len(lens)*19//20]}", flush=True)
 
     # Per-iteration logging is done by a vLLM StatLoggerBase wired into the engine
     # (the async core runs in its own process, so an in-process hook can't see it).
@@ -277,6 +304,7 @@ def run_load(args):
                                     if args.arrival_rate > 0 else args.concurrency)),
         "arrival_rate": args.arrival_rate,
         "concurrency_schedule": args.concurrency_schedule,
+        "task": getattr(args, "task", None),
         "segments": segments,
         "idle_power_w": baselines.get("idle_power_w"),
         "prefill_ceiling_power_w": baselines.get("prefill_ceiling_power_w"),
@@ -484,6 +512,11 @@ def build_arg_parser():
     ap.add_argument("--arrival_rate", type=float, default=0.0,
                     help=">0 => open-loop Poisson arrivals at this req/s (unused "
                          "unless you switch the worker model)")
+    ap.add_argument("--task", default=None, choices=["alpaca", "sharegpt"],
+                    help="real dataset prompts (variable length -> ragged batch); "
+                         "overrides --input_len. Output is natural EOS capped at "
+                         "--output_len.")
+    ap.add_argument("--prompt_pool_size", type=int, default=2000)
     ap.add_argument("--input_len", type=int, default=512)
     ap.add_argument("--output_len", type=int, default=128)
     ap.add_argument("--duration_s", type=float, default=60.0)
