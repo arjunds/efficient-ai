@@ -86,10 +86,26 @@ def load_prompts(task: str, n: int, seed: int = 0,
     return out
 
 
+def dump(task: str, n: int, out_path: str, seed: int = 0):
+    """Dump a prompt pool to a JSON list of strings. Run this in a step that has
+    `datasets` on PYTHONPATH; the vLLM run then reads the file with stdlib json
+    (so datasets' huggingface-hub 1.x never pollutes the transformers/vLLM env)."""
+    import json
+    ps = load_prompts(task, n, seed)
+    with open(out_path, "w") as f:
+        json.dump(ps, f)
+    lens = sorted(len(p) for p in ps)
+    print(f"[dump] {task} -> {out_path}: {len(ps)} prompts, char "
+          f"min/median/max={lens[0]}/{lens[len(lens)//2]}/{lens[-1]}")
+
+
 if __name__ == "__main__":
     import sys
-    t = sys.argv[1] if len(sys.argv) > 1 else "alpaca"
-    ps = load_prompts(t, 20)
-    lens = sorted(len(p) for p in ps)
-    print(f"{t}: {len(ps)} prompts, char len min/median/max="
-          f"{lens[0]}/{lens[len(lens)//2]}/{lens[-1]}")
+    if len(sys.argv) >= 5 and sys.argv[1] == "dump":
+        dump(sys.argv[2], int(sys.argv[3]), sys.argv[4])
+    else:
+        t = sys.argv[1] if len(sys.argv) > 1 else "alpaca"
+        ps = load_prompts(t, 20)
+        lens = sorted(len(p) for p in ps)
+        print(f"{t}: {len(ps)} prompts, char len min/median/max="
+              f"{lens[0]}/{lens[len(lens)//2]}/{lens[-1]}")

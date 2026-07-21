@@ -18,7 +18,6 @@ export APPTAINERENV_HF_TOKEN="$APPTAINERENV_HUGGINGFACE_HUB_TOKEN"
 export APPTAINERENV_HF_HOME="$HOME/.cache/huggingface"
 export APPTAINERENV_HF_XET_CACHE="/shared_data0/adsampat/hf_cache/xet"
 export APPTAINERENV_HF_DATASETS_CACHE="/shared_data0/adsampat/hf_cache/datasets"
-export APPTAINERENV_PYTHONPATH="/shared_data0/adsampat/pydeps"
 export APPTAINERENV_RAGGED_LOG_ROOT="${RAGGED_LOG_ROOT:-}"
 export APPTAINERENV_RAGGED_MODELS="${RAGGED_MODELS:-}"
 
@@ -29,8 +28,11 @@ apptainer exec --nv -B "$HOME/efficient-ai/GPU_power:/workspace" \
   -B "$HOME/models.py:/workspace/models.py" -B /shared_data0 "$SIF" bash -lc '
     cd /workspace
     mkdir -p logs/ragged
-    python3 -c "import datasets" 2>/dev/null || \
-      pip install --target=/shared_data0/adsampat/pydeps "datasets>=2.0" 2>&1 | tail -2
+    PD=/shared_data0/adsampat/pydeps
+    echo "=== dump prompts (datasets on path ONLY here) ==="
+    PYTHONPATH=$PD python3 prompts.py dump alpaca 2000 prompts_alpaca.json 2>&1 | tail -2
+    PYTHONPATH=$PD python3 prompts.py dump sharegpt 2000 prompts_sharegpt.json 2>&1 | tail -2
+    echo "=== sweep: CLEAN env (no pydeps -> transformers/vLLM use container hub) ==="
     python3 -u run_ragged_sweep.py 2>&1 | tee logs/ragged/ragged_console.log
     echo "==== TWO-TERM SUMMARY ===="
     cat logs/ragged/two_term_summary.csv 2>/dev/null

@@ -236,13 +236,17 @@ def run_load(args):
         args.model, use_fast=True, token=token, trust_remote_code=True)
 
     # Real-dataset prompt pool (variable lengths -> ragged batches) if --task given.
+    # Read a PRE-DUMPED prompts file (stdlib json) rather than importing `datasets`
+    # here: datasets pulls huggingface-hub 1.x which breaks transformers/vLLM, so
+    # dataset loading is isolated to an offline `prompts.py dump` step.
     args.prompt_pool = None
     if getattr(args, "task", None):
-        from prompts import load_prompts
-        args.prompt_pool = load_prompts(args.task, n=args.prompt_pool_size)
+        pf = args.prompt_file or f"prompts_{args.task}.json"
+        with open(pf) as f:
+            args.prompt_pool = json.load(f)
         lens = sorted(len(tokenizer(p, add_special_tokens=False)["input_ids"])
                       for p in args.prompt_pool[:200])
-        print(f"[prompts] task={args.task} n={len(args.prompt_pool)} "
+        print(f"[prompts] task={args.task} file={pf} n={len(args.prompt_pool)} "
               f"token-len p5/50/95={lens[len(lens)//20]}/{lens[len(lens)//2]}/"
               f"{lens[len(lens)*19//20]}", flush=True)
 
@@ -517,6 +521,8 @@ def build_arg_parser():
                          "overrides --input_len. Output is natural EOS capped at "
                          "--output_len.")
     ap.add_argument("--prompt_pool_size", type=int, default=2000)
+    ap.add_argument("--prompt_file", default=None,
+                    help="pre-dumped JSON prompt list (default prompts_<task>.json)")
     ap.add_argument("--input_len", type=int, default=512)
     ap.add_argument("--output_len", type=int, default=128)
     ap.add_argument("--duration_s", type=float, default=60.0)
