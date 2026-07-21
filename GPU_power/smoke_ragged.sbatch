@@ -16,15 +16,13 @@ export APPTAINERENV_HUGGINGFACE_HUB_TOKEN="$(cat ~/.cache/huggingface/token 2>/d
 export APPTAINERENV_HF_TOKEN="$APPTAINERENV_HUGGINGFACE_HUB_TOKEN"
 export APPTAINERENV_HF_HOME="$HOME/.cache/huggingface"
 export APPTAINERENV_HF_XET_CACHE="/shared_data0/adsampat/hf_cache/xet"
+export APPTAINERENV_HF_DATASETS_CACHE="/shared_data0/adsampat/hf_cache/datasets"
+export APPTAINERENV_PYTHONPATH="/shared_data0/adsampat/pydeps"
 
 apptainer exec --nv -B "$HOME/efficient-ai/GPU_power:/workspace" \
   -B "$HOME/models.py:/workspace/models.py" -B /shared_data0 "$SIF" bash -lc '
     cd /workspace
-    echo "=== install datasets to shared pydeps ==="
-    pip install --target=/shared_data0/adsampat/pydeps "datasets>=2.0" 2>&1 | tail -2
-    export PYTHONPATH=/shared_data0/adsampat/pydeps:$PYTHONPATH
-
-    echo "=== dataset load + length spread ==="
+    echo "=== dataset load + length spread (datasets preinstalled in pydeps) ==="
     python3 prompts.py alpaca 2>&1 | tail -2
     python3 prompts.py sharegpt 2>&1 | tail -2
 

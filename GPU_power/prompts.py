@@ -55,14 +55,24 @@ def load_prompts(task: str, n: int, seed: int = 0,
                 break
 
     elif task == "sharegpt":
-        # Vicuna-unfiltered ShareGPT; conversations vary from short to very long
-        # -> good arithmetic-intensity spread.
-        ds = load_dataset("anon8231489123/ShareGPT_Vicuna_unfiltered",
-                          split="train")
-        idx = list(range(len(ds)))
-        rng.shuffle(idx)
-        for i in idx:
-            p = _sharegpt_first_human(ds[i])
+        # datasets can't auto-infer this community repo's layout, so pull the raw
+        # JSON via huggingface_hub + stdlib json. Conversations vary from short to
+        # very long -> the arithmetic-intensity spread (long prompts = prefill-heavy
+        # high-AI points that pin e_flop).
+        import json as _json
+        from huggingface_hub import hf_hub_download, list_repo_files
+        repo = "anon8231489123/ShareGPT_Vicuna_unfiltered"
+        jsons = [f for f in list_repo_files(repo, repo_type="dataset")
+                 if f.endswith(".json")]
+        if not jsons:
+            raise RuntimeError(f"no .json files in {repo}")
+        # prefer the cleaned/split conversation file
+        jsons.sort(key=lambda f: (("clean" not in f), ("split" not in f), len(f)))
+        path = hf_hub_download(repo, jsons[0], repo_type="dataset")
+        data = _json.load(open(path))
+        rng.shuffle(data)
+        for ex in data:
+            p = _sharegpt_first_human(ex)
             if p and min_chars <= len(p) <= max_chars:
                 out.append(p)
             if len(out) >= n:
