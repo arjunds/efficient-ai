@@ -45,7 +45,14 @@ across each model's operating points.
 - Fit is well-identified (bytes↔flops r≈−0.6, AI span ~2000×), R²_dyn 0.6–0.7.
 - Plots: `plots_two_term/` — `coefficients_by_model.png`,
   `ebit_drift_vs_two_term.png` (the drift→flat comparison), `two_term_fit_quality.png`.
-- Cross-GPU A100 fit queued (coefficients should scale with A100 bandwidth/FLOPs).
+- **Cross-GPU (A100 80GB PCIe): revealed the model's domain of validity.** The
+  A100 PCIe (300 W cap) pegs its power limit (~296 W) at *every* operating point —
+  even concurrency 1 — so power is DVFS-clamped ~constant and energy ≈ P_cap·t, not
+  bytes/FLOPs. The linear two-term model breaks there (R² negative); it's valid in
+  the *uncapped* regime (H200 had 700 W headroom). Implication: add a cap term
+  `P = min(e_bit·byte_rate + e_flop·flop_rate + P_static, P_cap)`. A clean A100
+  coefficient needs an unpegged part (SXM 400 W) or a raised limit. This maps where
+  the model applies — a strengthening result, not a failure.
 
 ## Methodology (brief)
 - **Offered load, not static batch.** Drive vLLM (0.10.2, V1 engine) with N

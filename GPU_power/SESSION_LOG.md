@@ -227,8 +227,22 @@ physically reasonable for H200 fp16 under real load.
 
 Artifacts: per-model two_term_fit.json + binned_table.csv (independent re-fit),
 `two_term_summary.csv`, plots in `plots_two_term/` (coefficients_by_model,
-ebit_drift_vs_two_term [the money comparison], two_term_fit_quality). A100 version
-queued (64561, `logs/ragged_a100/`) for the cross-GPU coefficient comparison.
+ebit_drift_vs_two_term [the money comparison], two_term_fit_quality).
+
+**A100 cross-GPU (job 64561, 72 min, A100 80GB PCIe, `logs/ragged_a100/`) — a
+validity-boundary finding.** e_bit came out ~constant across models again but
+higher (~1.8e-10 vs H200's ~1.10e-10), yet **R²_dyn is NEGATIVE (−1.3 to −5.5)**.
+Cause (confirmed): the A100 PCIe has a **300 W power cap and this workload pegs it
+(~291–299 W) at EVERY concurrency/task — even c=1**. DVFS clamps power to the cap,
+so measured power is ~constant across all operating points; energy ≈ P_cap·t,
+governed by the cap, not by bytes/FLOPs → the linear two-term model can't fit it,
+and the A100 e_bit≈1.8e-10 is a clamp artifact, not a clean HW constant.
+- H200 (700 W, drew 370–540 W): uncapped → two-term valid (R² 0.65).
+- A100 PCIe (300 W, pegged): power-limited → model needs a saturation term
+  `P_iter = min(e_bit·byte_rate + e_flop·flop_rate + P_static, P_cap)`.
+- The cross-GPU run thus mapped the model's **domain of validity (uncapped
+  operation)** — a useful result. A clean A100 e_bit needs an unpegged part
+  (SXM A100 400 W) or a raised power limit (admin).
 
 ## Still-open items
 1. Concurrency to 128 (handoff listed it).
