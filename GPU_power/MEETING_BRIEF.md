@@ -43,8 +43,19 @@ across each model's operating points.
   model should predict an *unseen* model's energy on H200 from its byte/FLOP
   counts. That elevates it from "curve fit" to "predictive model."
 - Fit is well-identified (bytes↔flops r≈−0.6, AI span ~2000×), R²_dyn 0.6–0.7.
-- Plots: `plots_two_term/` — `coefficients_by_model.png`,
-  `ebit_drift_vs_two_term.png` (the drift→flat comparison), `two_term_fit_quality.png`.
+- **Rigorous checks (the evidence, not the R² alone):**
+  - FLOP term is *essential*: bytes-only R² is **negative** (−0.2 to −0.9); adding
+    FLOPs is what makes the model work.
+  - Coefficients tightly pinned (bootstrap 95%): `e_bit = 1.120 [1.115,1.126]×10⁻¹⁰
+    J/byte`, `e_flop = 0.875 [0.846,0.902] pJ/flop` — moderate per-bin R² but
+    precise slopes (9k bins over 2000× intensity).
+  - Held-out (leave-one-model-out) prediction: **6.5–11% MAPE** — coefficients
+    transfer across models, not per-model fits.
+  - Robustness: a more detailed prefill-attention FLOP term changes nothing (R²
+    0.69→0.69) — the result isn't sensitive to that approximation.
+- Plots: `plots_two_term/coefficients_by_model.png`, `two_term_fit_quality.png`
+  (the drift plot was dropped — the held-out + bytes-only-vs-two-term + CIs above
+  are the honest evidence).
 - **Cross-GPU (A100 80GB PCIe): revealed the model's domain of validity.** The
   A100 PCIe (300 W cap) pegs its power limit (~296 W) at *every* operating point —
   even concurrency 1 — so power is DVFS-clamped ~constant and energy ≈ P_cap·t, not
