@@ -129,6 +129,34 @@ def model_flop_constants(meta: dict):
     return matmul_per_tok, attn_per_resident, float(m.active_params())
 
 
+def get_model_obj(meta):
+    from gate_dram import import_models, hf_to_model_key
+    models = import_models()
+    key = meta.get("model_key") or hf_to_model_key(meta.get("model", ""), models)
+    if key is None or key not in models:
+        raise ValueError(f"model_key absent from models.py: {meta.get('model')}")
+    return models[key], key
+
+
+def weight_params_for_tokens(m, t):
+    """Params whose weights are read from HBM for an iteration processing t tokens.
+    Dense: active_params (constant). MoE: active_params (top-k) PLUS the extra
+    routed experts that get touched once t tokens route across them — expected
+    distinct experts = E·(1-(1-k/E)^t) under ~uniform routing. Reduces to
+    active_params at t=1 and rises toward total_params at large t (why an MoE's
+    per-batch weight traffic is NOT active_params·tokens)."""
+    base = m.active_params()
+    if getattr(m, "ffn", "mlp") != "moe" or t <= 1:
+        return base
+    E, k = m.n_routed_experts, m.n_active_experts
+    if not E or not k:
+        return base
+    frac_hit = 1.0 - (1.0 - k / E) ** t          # P(expert touched by >=1 of t tokens)
+    extra_experts = max(0.0, frac_hit * E - k)   # beyond the top-k already in base
+    per_expert = m._mlp_params(m.d_ff_expert)
+    return base + extra_experts * per_expert * m._n_moe_layers()
+
+
 def iter_rows(iter_csv: str) -> List[dict]:
     with open(iter_csv) as f:
         return list(csv.DictReader(f))
@@ -149,8 +177,10 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
     meta = json.load(open(os.path.join(run_dir, "run_meta.json")))
     ts, ps = load_power_samples(os.path.join(run_dir, "power_trace.csv"))
     rows = iter_rows(os.path.join(run_dir, "iter_log.csv"))
-    weight_bytes, kv_bpt, byte_src = model_byte_constants(meta)
+    weight_bytes, kv_bpt, byte_src = model_byte_constants(meta)  # t=1 reference
     matmul_per_tok, attn_per_resident, active_params = model_flop_constants(meta)
+    m_obj, _key = get_model_obj(meta)
+    dtype_b = DTYPE_BYTES.get(meta.get("dtype", "float16"), 2)
 
     tms, byts, flps, flps1, prefs, decs = [], [], [], [], [], []
     for r in rows:
@@ -164,7 +194,9 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
         dec = _f(r.get("decode_tokens")) or 0.0
         nr = _f(r.get("n_running")) or 1.0
         tms.append(0.5 * (t0 + t1))
-        byts.append(weight_bytes + kv * kv_bpt)
+        # per-iteration weight bytes: MoE occupancy-aware (dense = active_params).
+        wbytes = weight_params_for_tokens(m_obj, pref + dec) * dtype_b
+        byts.append(wbytes + kv * kv_bpt)
         # v1 (original): attention ~ resident tokens (correct for decode, but
         # under-counts prefill self-attention). v2 (#2 improvement): each token
         # processed this iter attends to the mean per-seq resident context
