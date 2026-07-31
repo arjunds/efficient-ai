@@ -152,7 +152,7 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
     weight_bytes, kv_bpt, byte_src = model_byte_constants(meta)
     matmul_per_tok, attn_per_resident, active_params = model_flop_constants(meta)
 
-    tms, byts, flps, prefs, decs = [], [], [], [], []
+    tms, byts, flps, flps1, prefs, decs = [], [], [], [], [], []
     for r in rows:
         if phase and (r.get("phase") or "").strip() != phase:
             continue
@@ -162,9 +162,17 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
         kv = _f(r.get("kv_tokens_resident")) or 0.0
         pref = _f(r.get("prefill_tokens")) or 0.0
         dec = _f(r.get("decode_tokens")) or 0.0
+        nr = _f(r.get("n_running")) or 1.0
         tms.append(0.5 * (t0 + t1))
         byts.append(weight_bytes + kv * kv_bpt)
-        flps.append(matmul_per_tok * (pref + dec) + attn_per_resident * kv)
+        # v1 (original): attention ~ resident tokens (correct for decode, but
+        # under-counts prefill self-attention). v2 (#2 improvement): each token
+        # processed this iter attends to the mean per-seq resident context
+        # (pref+dec)*kv/n_running -> reduces to kv for pure decode, captures the
+        # ~quadratic prefill attention. Aggregate approx (no per-seq ctx available).
+        matmul = matmul_per_tok * (pref + dec)
+        flps1.append(matmul + attn_per_resident * kv)
+        flps.append(matmul + attn_per_resident * (pref + dec) * kv / max(nr, 1.0))
         prefs.append(pref); decs.append(dec)
 
     info = {"weight_bytes": weight_bytes, "kv_bytes_per_token": kv_bpt,
@@ -178,8 +186,8 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
 
     order = sorted(range(len(tms)), key=lambda i: tms[i])
     tms = [tms[i] for i in order]; byts = [byts[i] for i in order]
-    flps = [flps[i] for i in order]; prefs = [prefs[i] for i in order]
-    decs = [decs[i] for i in order]
+    flps = [flps[i] for i in order]; flps1 = [flps1[i] for i in order]
+    prefs = [prefs[i] for i in order]; decs = [decs[i] for i in order]
 
     w0 = meta.get("window_wall_t0") or tms[0]
     w1 = meta.get("window_wall_t1") or tms[-1]
@@ -195,6 +203,7 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
         if E is not None and (n > 0 or include_empty):
             bins.append({"b0": b0, "b1": b1, "dt": b1 - b0, "E": E, "n": n,
                          "bytes": sum(byts[lo:hi]), "flops": sum(flps[lo:hi]),
+                         "flops_v1": sum(flps1[lo:hi]),
                          "prefill": sum(prefs[lo:hi]), "decode": sum(decs[lo:hi])})
         b0 = b1
     return bins, info
@@ -355,10 +364,11 @@ def _export_binned_table(run_dir, bins):
     with open(os.path.join(run_dir, "binned_table.csv"), "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["t_mid", "dt_s", "energy_bin_j", "bytes_bin", "flops_bin",
-                    "prefill_tokens", "decode_tokens", "n_iters"])
+                    "flops_bin_v1", "prefill_tokens", "decode_tokens", "n_iters"])
         for b in bins:
             w.writerow([f"{0.5*(b['b0']+b['b1']):.6f}", f"{b['dt']:.4f}",
                         f"{b['E']:.4f}", f"{b['bytes']:.6e}", f"{b['flops']:.6e}",
+                        f"{b.get('flops_v1', b['flops']):.6e}",
                         int(b["prefill"]), int(b["decode"]), b["n"]])
 
 
