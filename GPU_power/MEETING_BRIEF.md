@@ -65,6 +65,22 @@ across each model's operating points.
   coefficient needs an unpegged part (SXM 400 W) or a raised limit. This maps where
   the model applies — a strengthening result, not a failure.
 
+## HELD-OUT TRANSFERABILITY (#6): predicts an unseen MoE architecture
+Fit `(e_bit, e_flop)` on the 4 dense 8B models, predict a held-out **MoE**
+(Qwen3-30B-A3B, active 3B / total 30B) it never saw:
+- **Predict from dense coeffs: R² = 0.79, MAPE = 21%** (naive baseline 115%; MoE
+  self-fit ceiling R² 0.91). Transfers to a *different architecture*, not just a
+  bigger model.
+- **Required fixing the byte accounting for MoE routing** — and that fix is itself
+  a validation: with plain `active_params`, the MoE failed (R² −1.35, 62%) and its
+  self-fit `e_bit` inflated 4.4×; adding expert-occupancy bytes (weight bytes scale
+  with expected distinct experts touched per batch, `E·(1−(1−k/E)^t)`) dropped the
+  MoE self-fit `e_bit` from 4.82e-10 → **0.96e-10**, snapping onto the dense
+  models' ~1.1e-10. The inflation was purely the undercount — strong independent
+  evidence `e_bit` is a hardware constant.
+- Caveat: occupancy assumes uniform routing (real MoEs have imbalance) → 21% is
+  rougher than dense-to-dense (6–11%), but a solid cross-architecture result.
+
 ## Methodology (brief)
 - **Offered load, not static batch.** Drive vLLM (0.10.2, V1 engine) with N
   concurrent clients (closed-loop) *or* Poisson arrivals (open-loop), so vLLM's

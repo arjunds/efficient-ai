@@ -246,3 +246,16 @@ and the A100 e_bit≈1.8e-10 is a clamp artifact, not a clean HW constant.
 
 ## Still-open items
 1. Concurrency to 128 (handoff listed it).
+
+## HELD-OUT MoE (#6, job 67244 Qwen3-30B-A3B on H200) — transfers to a new arch
+Fit (e_bit,e_flop) on the 4 dense 8B models; predict the held-out MoE:
+- active_params bytes: FAILS — predict-from-dense R²=-1.35, MAPE 62%; MoE self-fit
+  e_bit=4.82e-10 (4.4x inflated). Diagnosis: MoE routing loads >top-k experts per
+  batch, so active_params (3B) undercounts real HBM weight traffic (total 30B, 10x).
+- expert-occupancy bytes (weight bytes scale with E*(1-(1-k/E)^t) distinct experts
+  touched): predict-from-dense **R²=0.79, MAPE 21%**; MoE self-fit e_bit collapses
+  to **0.96e-10** (matches dense ~1.1e-10), e_flop 0.67 pJ. The fix both makes the
+  MoE predictable AND confirms e_bit is a hardware constant (inflation was the
+  undercount). Naive baseline MAPE 115%; self-fit ceiling R²=0.91.
+- Implemented in energy_model.weight_params_for_tokens (dense unchanged). Caveat:
+  occupancy assumes uniform routing; 21% > dense-to-dense 6-11%.
