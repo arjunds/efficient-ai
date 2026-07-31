@@ -34,6 +34,8 @@ HF_TO_KEY = {
     "meta-llama/Meta-Llama-3-8B": "Llama3-8B",
     "meta-llama/Meta-Llama-3-70B": "Llama3-70B",
     "meta-llama/Llama-3.1-8B": "Llama3-8B",
+    "Qwen/Qwen3-30B-A3B": "Qwen3-30B",
+    "Qwen/Qwen3-4B": "Qwen3-4B",
 }
 
 
