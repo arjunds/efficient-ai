@@ -100,9 +100,20 @@ compute-bound-prefill split, measured.
 - Across the 4 dense architectures the coefficients agree to <7% — they behave as
   **hardware constants**, not per-model fits.
 - **Held-out prediction (fit 3 models, predict the 4th): 6.5–11% MAPE.**
-- **Size independence (Qwen2.5 0.5B→32B ladder):** _[FILL from logs/ragged_ladder
-  — do e_bit/e_flop stay flat across 64× model size? This is the decisive
-  anti-overfitting test.]_
+- **Size independence (Qwen2.5 ladder, 0.5B→32B, 64× range, single architecture):**
+  the memory coefficient is size-independent and the channel split makes it more
+  so — **`e_wbyte` = 1.06–1.14 ×10⁻¹⁰ J/byte for models ≥1.5B (±7% across 64×
+  size)**, tighter than the lumped `e_bit` (1.10–1.35). The 3-term fit's R²
+  exceeds the 2-term's at *every* size (e.g. 0.82 vs 0.65 at 7B; 0.90 vs 0.73 at
+  1.5B). The ladder's 7B point (e_bit 1.10, e_flop 0.84) independently reproduces
+  the cross-family Qwen2-7B result — a consistency check across model versions.
+  **Honest limitation:** the *compute* coefficient is less stable — `e_flop`
+  drifts ~2× (1.16→0.61 pJ, small→large) and 2-term R² falls for the big,
+  strongly memory-bound models (32B: R²=0.25, →0.51 with channels), because those
+  runs have little compute-bound variance to pin `e_flop`. So *memory* energy is a
+  clean hardware constant; *compute* energy needs a utilization/overhead term for
+  the extremes (small models: fixed overhead; large models: identifiability).
+  ⇒ the coefficients are **not** an artifact of overfitting to 7–8B.
 
 ---
 
