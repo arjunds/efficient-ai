@@ -88,21 +88,32 @@ def integrate_window(ts, ps, t0, t1) -> Optional[float]:
     return e
 
 
+# ---------------- model resolution ----------------
+def resolve_model_obj(meta):
+    """Return (Model, source_key). Try the hand-specified MODELS table first;
+    fall back to auto-ingesting a dense model from its HF config.json. This lets
+    the size-ladder and any new dense model be analyzed with zero hand entry."""
+    from gate_dram import import_models, hf_to_model_key
+    models = import_models()
+    key = meta.get("model_key") or hf_to_model_key(meta.get("model", ""), models)
+    if key is not None and key in models:
+        return models[key], f"models.py:{key}"
+    hf_id = meta.get("model")
+    if hf_id:
+        from models import model_from_hf_id
+        return model_from_hf_id(hf_id), f"hf_config:{hf_id}"
+    raise ValueError(f"model not resolvable: {hf_id} -> {key}")
+
+
 # ---------------- model byte accounting ----------------
 def model_byte_constants(meta: dict) -> Tuple[float, float, str]:
     if meta.get("weight_bytes") and meta.get("kv_bytes_per_token"):
         return float(meta["weight_bytes"]), float(meta["kv_bytes_per_token"]), "run_meta"
-    from gate_dram import import_models, hf_to_model_key
-    models = import_models()
-    key = meta.get("model_key") or hf_to_model_key(meta.get("model", ""), models)
-    if key is None or key not in models:
-        raise ValueError(f"model_key not resolvable/absent from models.py: "
-                         f"{meta.get('model')} -> {key}")
-    m = models[key]
+    m, src = resolve_model_obj(meta)
     dtype_b = DTYPE_BYTES.get(meta.get("dtype", "float16"), 2)
     kv_b = meta.get("kv_cache_dtype")
     kv_b = DTYPE_BYTES.get(kv_b, dtype_b) if kv_b not in (None, "auto") else dtype_b
-    return float(m.active_params() * dtype_b), float(m.kv_bytes_per_token(kv_b)), f"models.py:{key}"
+    return float(m.active_params() * dtype_b), float(m.kv_bytes_per_token(kv_b)), src
 
 
 def model_flop_constants(meta: dict):
@@ -118,24 +129,14 @@ def model_flop_constants(meta: dict):
     attention (quadratic) is under-counted, but the matmul term dominates prefill
     and drives the arithmetic-intensity spread; the analysis side can refine.
     """
-    from gate_dram import import_models, hf_to_model_key
-    models = import_models()
-    key = meta.get("model_key") or hf_to_model_key(meta.get("model", ""), models)
-    if key is None or key not in models:
-        raise ValueError(f"model_key absent from models.py: {meta.get('model')}")
-    m = models[key]
+    m, _src = resolve_model_obj(meta)
     matmul_per_tok = 2.0 * m.active_params()
     attn_per_resident = float(m.attn_flops_per_token(1))
     return matmul_per_tok, attn_per_resident, float(m.active_params())
 
 
 def get_model_obj(meta):
-    from gate_dram import import_models, hf_to_model_key
-    models = import_models()
-    key = meta.get("model_key") or hf_to_model_key(meta.get("model", ""), models)
-    if key is None or key not in models:
-        raise ValueError(f"model_key absent from models.py: {meta.get('model')}")
-    return models[key], key
+    return resolve_model_obj(meta)
 
 
 def weight_params_for_tokens(m, t):
