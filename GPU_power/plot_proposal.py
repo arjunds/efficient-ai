@@ -146,7 +146,44 @@ def fig_recommender():
     fig.tight_layout(); fig.savefig(f"{OUT}/fig4_recommender.png"); plt.close(fig)
 
 
-for f in [fig_size_independence, fig_phase, fig_transfer, fig_recommender]:
+def fig_size_transfer():
+    # leave-one-size-out: fit 3-term on other sizes, predict held size
+    feats = ["weight_bytes_bin", "kv_bytes_bin", "gemm_flops_bin"]
+    D = {}
+    for name, ap in SIZES:
+        d = load(os.path.join("logs/ragged_ladder", name))
+        if len(d["dyn"]) < 20:
+            continue
+        D[name] = (np.c_[[d[c] for c in feats]].T, d["dyn"], ap)
+    labels, mapes, aps = [], [], []
+    for held in D:
+        Xh, yh, ap = D[held]
+        Xtr = np.vstack([D[n][0] for n in D if n != held])
+        ytr = np.concatenate([D[n][1] for n in D if n != held])
+        coef, _ = fit(Xtr, ytr)
+        yhat = Xh @ coef
+        m = np.nanmean(np.abs((yh - yhat) / np.where(yh == 0, np.nan, yh))) * 100
+        labels.append(held.replace("Qwen2.5-", "").replace("-Instruct", ""))
+        mapes.append(m); aps.append(ap)
+    order = np.argsort(aps)
+    labels = [labels[i] for i in order]; mapes = [mapes[i] for i in order]
+    fig, ax = plt.subplots(figsize=(7.2, 4.3))
+    bars = ax.bar(labels, mapes, color=C["mem"])
+    for b, m in zip(bars, mapes):
+        ax.text(b.get_x()+b.get_width()/2, b.get_height()+0.3, f"{m:.1f}%",
+                ha="center", fontsize=9)
+    ax.axhline(7.2, ls="--", color=C["compute"])
+    ax.text(len(labels)-0.5, 7.6, "single 7B → all sizes: 7.2%",
+            ha="right", fontsize=9, color=C["compute"])
+    ax.set_ylabel("held-out MAPE (%)"); ax.set_xlabel("held-out model size")
+    ax.set_ylim(0, max(mapes)+3)
+    ax.set_title("Calibrate on other sizes, predict a held-out size\n"
+                 "(coefficients transfer across 64× model size)")
+    fig.tight_layout(); fig.savefig(f"{OUT}/fig5_size_transfer.png"); plt.close(fig)
+
+
+for f in [fig_size_independence, fig_phase, fig_transfer, fig_recommender,
+          fig_size_transfer]:
     try:
         f(); print("ok", f.__name__)
     except Exception as e:

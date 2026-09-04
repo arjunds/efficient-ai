@@ -8,6 +8,7 @@ FIGS = {
     "FIG2": "plots_proposal/fig2_phase_decomposition.png",
     "FIG3": "plots_proposal/fig3_transfer.png",
     "FIG4": "plots_proposal/fig4_recommender.png",
+    "FIG5": "plots_proposal/fig5_size_transfer.png",
 }
 
 
@@ -208,6 +209,10 @@ footer code{font-family:var(--font-mono); font-size:12.5px; color:var(--ink-2)}
     <figcaption><b>e_wbyte = 1.06–1.14 ×10⁻¹⁰ J/byte for models ≥1.5B (±7% over 64× size)</b> — tighter than the lumped e_bit, and independent of model size. The compute coefficient drifts ~2× and the fit weakens for large memory-bound models (32B) — so <em>memory</em> energy is a clean constant while <em>compute</em> energy needs a utilization/overhead term at the extremes.</figcaption>
   </figure>
   <p class="key" style="margin-top:22px"><b>Not overfit to 7–8B.</b> The FLOP term is essential (bytes-only R² is <em>negative</em>); coefficients have tight bootstrap CIs (e_bit 1.120 [1.115, 1.126]); and fitting on 3 dense models predicts the 4th at 6.5–11% MAPE.</p>
+  <figure>
+    <div class="plate"><img alt="Leave-one-size-out held-out MAPE: 4.6-6.9% for >=1.5B, 13% for 0.5B; single 7B predicts all sizes at 7.2%" src="%%FIG5%%"></div>
+    <figcaption><b>The decisive test:</b> fit on some sizes, predict a held-out size. Leave-one-size-out MAPE is <b>4.6–6.9%</b> for models ≥1.5B, and the fitted e_wbyte is invariant (1.073–1.078e-10) no matter which size is dropped. <b>A single 7B calibration predicts every size from 0.5B to 32B (64×) at 7.2% MAPE</b> — calibrate once, predict any size.</figcaption>
+  </figure>
 </section>
 
 <section class="reveal">

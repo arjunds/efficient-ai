@@ -114,6 +114,12 @@ compute-bound-prefill split, measured.
   clean hardware constant; *compute* energy needs a utilization/overhead term for
   the extremes (small models: fixed overhead; large models: identifiability).
   ⇒ the coefficients are **not** an artifact of overfitting to 7–8B.
+- **Size transfer (the decisive test, data in hand):** fitting on some sizes and
+  predicting a *held-out* size's per-bin energy works — leave-one-size-out MAPE
+  **4.6–6.9%** for ≥1.5B (0.5B 13%), with `e_wbyte` invariant at 1.073–1.078e-10
+  regardless of which size is dropped. Extrapolation holds too: fit ≤3B → predict
+  14B+32B at **8.0%**; **a single 7B calibration predicts all sizes 0.5B–32B (64×
+  range) at R²=0.95, 7.2% MAPE.** ⇒ calibrate once, predict any size.
 
 ---
 
