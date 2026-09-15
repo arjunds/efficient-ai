@@ -9,6 +9,7 @@ FIGS = {
     "FIG3": "plots_proposal/fig3_transfer.png",
     "FIG4": "plots_proposal/fig4_recommender.png",
     "FIG5": "plots_proposal/fig5_size_transfer.png",
+    "FIG6": "plots_proposal/fig6_roofline_energy.png",
 }
 
 
@@ -213,6 +214,22 @@ footer code{font-family:var(--font-mono); font-size:12.5px; color:var(--ink-2)}
     <div class="plate"><img alt="Leave-one-size-out held-out MAPE: 4.6-6.9% for >=1.5B, 13% for 0.5B; single 7B predicts all sizes at 7.2%" src="%%FIG5%%"></div>
     <figcaption><b>The decisive test:</b> fit on some sizes, predict a held-out size. Leave-one-size-out MAPE is <b>4.6–6.9%</b> for models ≥1.5B, and the fitted e_wbyte is invariant (1.073–1.078e-10) no matter which size is dropped. <b>A single 7B calibration predicts every size from 0.5B to 32B (64×) at 7.2% MAPE</b> — calibrate once, predict any size.</figcaption>
   </figure>
+</section>
+
+<section class="reveal">
+  <span class="snum">03·5 — Unification</span>
+  <h2>The energy layer on top of LIMINAL's roofline</h2>
+  <p>The multi-term model <em>is</em> the roofline tie-in. One observation bridges them: <strong>performance is bounded by the bottleneck resource (a <span style="font-family:var(--font-mono)">max</span>), but energy is the <em>sum</em> across resources</strong> — memory and compute draw power at the same time.</p>
+  <div class="formula">
+    LIMINAL <span class="cmt">(time)</span>:  t = max( bytes/(β·MBU), flops/(π·MFU) )   <span class="cmt"># bottleneck</span><br>
+    ours    <span class="cmt">(energy)</span>: E = <span class="mem">e_wbyte·Wb</span> + <span class="mem">e_kvbyte·KVb</span> + <span class="cmp">e_gemm·F</span>   <span class="cmt"># additive</span><br>
+    together: power = E / t   ·   perf/watt = tokens_s / power
+  </div>
+  <figure>
+    <div class="plate"><img alt="Left: compute energy share rises 1 to 35 percent as arithmetic intensity approaches the 206 ridge, all memory-bound. Right: analytic power vs measured within 5 percent." src="%%FIG6%%"></div>
+    <figcaption><b>Roofline predicts time at a consistent ~45% memory-bandwidth utilization</b> (44.6% ± 3.5% across all 40 operating points) — so LIMINAL's roofline gives the time, our coefficients give the energy, and the analytic pipeline predicts <b>measured power within ±5%</b>. Every point is memory-bound (intensity 1–107 &lt; ridge 206); compute-energy share climbs toward the ridge — an <em>energy roofline</em>.</figcaption>
+  </figure>
+  <div class="note"><b>Multi-term, guided by roofline:</b> each term is a resource (weight-BW, KV-BW, tensor-compute) whose coefficient scales with its datasheet spec. Attention is memory-bound — within a model its work is proportional to resident-KV tokens, collinear with the KV term — so a separate attention-<em>compute</em> coefficient is unidentifiable (the 4-term fit returns an unphysical ~65 pJ/flop). The parsimonious, roofline-correct model is the 3-term: weight + KV + compute.</div>
 </section>
 
 <section class="reveal">

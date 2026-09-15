@@ -82,6 +82,37 @@ On 9,274 bins across 4 dense models (H200):
 efficiency; `e_bit` is an effective coefficient, not the raw HBM cell energy —
 see caveats §6.)*
 
+## 3a. Roofline unification — the energy layer on top of LIMINAL
+
+The multi-term model *is* a roofline tie-in. The bridge is one observation:
+**performance is bounded by the bottleneck resource (a `max`), but energy is the
+sum across resources** — memory and compute draw power simultaneously.
+
+- **LIMINAL (time):** `t_iter = max(bytes/(β·MBU), flops/(π·MFU))` — roofline.
+- **Ours (energy):** `E_iter = e_wbyte·Wb + e_kvbyte·KVb + e_gemm·F` — additive.
+- **Together:** `power = E_iter/t_iter`, `perf/watt = tokens_s / power`.
+
+So each term maps to a hardware resource, and each coefficient should scale with
+that resource's datasheet spec (β for memory terms, π for compute) — the same
+scaling the recommender uses. Two results from wiring the analytic roofline time
+to the measured energy coefficients across all 40 operating points:
+
+- **Roofline predicts iteration time at a consistent utilization:** implied
+  **memory-bandwidth utilization = 44.6% ± 3.5%** across every model, concurrency,
+  and task — i.e. LIMINAL's roofline (with a single ~45% MBU) reproduces the
+  observed time. Combined with the energy coefficients, the analytic
+  (roofline-time + energy) pipeline predicts **measured power within ±5%**.
+- **Everything is memory-bound** (arithmetic intensity 1–107 FLOP/byte, all below
+  the ridge at π/β = 206) — which is *why* the memory coefficient is the clean
+  hardware constant. The compute-energy share rises from ~1% to ~35% as intensity
+  climbs toward the ridge (high concurrency + long prompts) — an "energy roofline."
+- **Attention is memory-bound, not compute:** within a model, attention work is
+  exactly proportional to resident-KV tokens (the same driver as `kv_bytes`), so it
+  is collinear with the KV term. That is why a 4-term model with a separate
+  attention-*flops* coefficient is unidentifiable and returns an unphysical value
+  (~65 pJ/flop). The roofline-correct parsimonious model is the **3-term**:
+  weight-bandwidth + KV-bandwidth (attention folded in) + tensor-core compute.
+
 ## 3b. Result B — energy splits by phase exactly as the recommender needs
 
 Using the fitted coefficients, dynamic-energy attribution per bin:
