@@ -127,6 +127,20 @@ tie-in) · `run_ragged_sweep.py` + `ragged_sweep.sbatch` (full sweep driver) ·
 `recommend_gpu.py` (the recommender the new coefficients feed) ·
 `PROPOSAL.md` (full context + results).
 
+## Re-integration (when data comes back)
+`pool_gpus.py` ingests multiple GPUs' logs, fits per-GPU coefficients, tests the
+scaling law, and writes `plots_proposal/fig7_gpu_scaling.png`:
+```
+python3 pool_gpus.py H200:logs/ragged L40S:logs/L40S A100-SXM:logs/A100
+```
+Each arg is `LABEL:log_dir` (log_dir scanned for binned_table.csv at any depth).
+Specs come from its built-in `GPU_SPECS` table (add your GPU there) or a
+`specs.json` in the log dir `{"bw":..,"peak_flops":..,"p_cap":..}`. It auto-flags
+cap-saturated GPUs and excludes them from the scaling fit. **So the fastest path:
+just get the new GPUs' `binned_table.csv`+`run_meta.json` into `logs/<GPU>/...` and
+run this — it does the rest.** (Requires the channel-column binning, i.e. run
+`energy_model.py --two_term` with the current code, not an old checkout.)
+
 ## What success looks like
 For each new GPU, measured `e_wbyte` ≈ `1.077e-10 × (4.8e12 / β_new)` and
 `e_gemm` ≈ `0.673e-12 × (990e12 / π_new)` to within ~10–20%. Drop the new
