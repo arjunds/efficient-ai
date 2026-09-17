@@ -3,3 +3,6 @@ pydeps/
 *.sif
 egy-*.out
 __pycache__/
+
+# generated prompt dumps (derived from public datasets; may contain third-party secrets)
+prompts_*.json
