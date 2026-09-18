@@ -225,3 +225,75 @@ Two explanations were live. The 72B kills one:
 Explanation 2 remains **unverified for a serving workload** — it rests on a
 colleague's GEMM microbenchmarks whose own OLS and WLS fits disagree by ~15%,
 and without `ncu` we cannot decompose the hierarchy ourselves here.
+
+---
+
+# UPDATE 2: 32B run (2026-09-18) — invariance confirmed on a third point
+
+`logs/B200_32B/`, Qwen2.5-32B-Instruct, 8 runs, c={1,4,16,64}, both tasks, TP=1,
+same grid as the 7B sweep. Attention fix applied: **0 crashes in 8 runs**.
+
+## Energy per byte is flat across a 1.8x range of realized bandwidth
+
+Direct c=1 measurement (no regression — each decode token is one full weight
+sweep, so this is just dynamic power / byte-rate):
+
+| GPU / model | tok/s | realized BW | % of peak | dyn W | **J/byte** |
+|---|---|---|---|---|---|
+| H200 Qwen2-7B | 165.6 | 2.52 TB/s | 53% | 251 | **0.997e-10** |
+| B200 Qwen2-7B | 182.8 | 2.78 TB/s | 35% | 324 | **1.163e-10** |
+| B200 Qwen2.5-32B | 62.7 | **4.11 TB/s** | 51% | 505 | **1.229e-10** |
+| B200 Qwen2-72B | 34.3 | 4.99 TB/s | 62% | 617 | **1.236e-10** |
+| scaling-law prediction for B200 | | | | | 0.646e-10 |
+
+Three B200 points spanning **2.78 -> 4.99 TB/s** of realized bandwidth give
+1.163, 1.229, 1.236e-10 J/byte — flat to within 6%, and about **1.9x above** the
+0.646e-10 the datasheet law predicts. Energy per byte does not depend on how
+hard the memory system is driven, and does not fall with peak bandwidth.
+
+This closes the argument: two agreeing points could be coincidence, three across
+a 1.8x utilization span on identical silicon cannot. **`e_byte` is ~invariant,
+not proportional to 1/peak bandwidth.**
+
+## The identifiability mechanism, confirmed
+
+Model size, dynamic-energy variance and fit quality move together exactly as the
+72B degeneracy predicted:
+
+| dataset | CV(dyn energy) | R² (3-term) | e_wbyte | e_gemm |
+|---|---|---|---|---|
+| B200 7B | **0.154** | **0.677** | 1.189e-10 | 0.485 pJ |
+| B200 32B | 0.105 | 0.237 | 1.248e-10 | 0.398 pJ |
+| B200 72B | **0.054** | **−0.573** | 1.236e-10 | 0.360 pJ |
+
+As the model saturates the GPU, power pins near its ceiling, the variance the
+regression needs collapses, and R² follows it down through zero. The 7B remains
+the only well-conditioned fit; treat 32B as weak and 72B as unusable.
+
+Note `e_wbyte` is nonetheless stable at 1.19–1.25e-10 across all three *despite*
+the collapsing fit quality — because in every case it is really measuring the
+same physical ratio. That is reassuring for the headline, and a warning against
+reading R² as if it validated the coefficient.
+
+## A nuance: the COMPUTE coefficient may behave differently
+
+`e_gemm` falls monotonically as utilization rises — 0.485 -> 0.398 -> 0.360 pJ
+against a 0.296 pJ prediction, i.e. +64%, +34%, **+21%**. The 72B value is close
+to the ~20% success criterion. So `e_flop ∝ 1/peak_FLOPS` may hold approximately
+once the compute is actually used, even though `e_byte ∝ 1/bandwidth` clearly
+does not.
+
+**Treat this as suggestive, not established.** It rests on fits whose R² is
+0.677, 0.237 and −0.573 respectively — the trend strengthens exactly as the fit
+quality degrades, which is the wrong direction for confidence. Confirming it
+needs a model that uses the compute hard while keeping power variance, which is
+the same narrow window the coefficient fitting needs.
+
+## Bottom line
+
+* **Memory channel:** the scaling law fails, robustly and by ~1.9x. Established
+  by direct measurement, no regression involved.
+* **Compute channel:** may follow the law once utilized; evidence is weak.
+* **Recommender:** `scaled_gpu()`'s `e_byte ∝ 1/bw` should go. Given B200 also
+  idles at 237 W vs H200's 117 W, a datasheet-driven recommender will pick a
+  B200 for memory-bound decode and lose on energy.

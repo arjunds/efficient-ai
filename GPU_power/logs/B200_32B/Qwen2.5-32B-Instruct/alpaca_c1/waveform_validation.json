@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/B200_32B/Qwen2.5-32B-Instruct/alpaca_c1",
+  "calibration": "logs/B200_32B/Qwen2.5-32B-Instruct/alpaca_c1/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 241,
+    "rmse_w": 35.821303927650604,
+    "mae_w": 24.27244271497671,
+    "r2": -11.131884778193355,
+    "mean_measured_w": 746.6778930850719,
+    "mean_predicted_w": 744.4438608149126,
+    "mean_abs_pct_err": 3.2507247020116687
+  },
+  "plot": null
+}
