@@ -1,0 +1,14 @@
+{
+  "n_runs": 6,
+  "n_bins": 1528,
+  "e_bit_j_per_byte": 1.253267364046923e-10,
+  "e_flop_j_per_flop": 3.9270354668060504e-13,
+  "e_flop_pJ_per_flop": 0.39270354668060503,
+  "r2_dynamic_energy": -0.6651750451132856,
+  "bytes_flops_pearson": -0.49406831120982053,
+  "identifiable": true,
+  "arithmetic_intensity_min": 0.6682526629611193,
+  "arithmetic_intensity_max": 2222.658036409833,
+  "ai_span_ratio": 3326.074342241945,
+  "glob": "logs/B200_large/Qwen2-72B-Instruct/*"
+}

@@ -1,0 +1,16 @@
+[warn] matplotlib unavailable, skipping plot: No module named 'matplotlib'
+{
+  "run_dir": "logs/B200/Qwen2-7B-Instruct/alpaca_c1",
+  "calibration": "logs/B200/Qwen2-7B-Instruct/alpaca_c1/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 230,
+    "rmse_w": 17.81558391768335,
+    "mae_w": 8.52046572436724,
+    "r2": -0.7493280105995717,
+    "mean_measured_w": 560.8718821663055,
+    "mean_predicted_w": 560.3394019603279,
+    "mean_abs_pct_err": 1.519146527983875
+  },
+  "plot": null
+}

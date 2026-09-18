@@ -1,0 +1,16 @@
+[warn] matplotlib unavailable, skipping plot: No module named 'matplotlib'
+{
+  "run_dir": "logs/B200/Mistral-7B-v0.1/sharegpt_c16",
+  "calibration": "logs/B200/Mistral-7B-v0.1/sharegpt_c16/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 233,
+    "rmse_w": 64.60562788396722,
+    "mae_w": 38.26156563739091,
+    "r2": -1.8933737578818706,
+    "mean_measured_w": 550.0636553669598,
+    "mean_predicted_w": 539.2894228422964,
+    "mean_abs_pct_err": 6.9558432490628315
+  },
+  "plot": null
+}

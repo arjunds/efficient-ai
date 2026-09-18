@@ -1,0 +1,14 @@
+{
+  "mode": "idle",
+  "idle_power_w": 237.822,
+  "nvml_summary": {
+    "gpu_name": "NVIDIA B200",
+    "power_limit_w": 1000.0,
+    "n_samples": 1501,
+    "duration_s": 15.000757217407227,
+    "mean_power_w": 237.98425916055965,
+    "median_power_w": 237.822,
+    "max_power_w": 240.71,
+    "min_power_w": 237.585
+  }
+}

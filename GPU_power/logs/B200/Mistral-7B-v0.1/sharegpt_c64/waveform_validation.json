@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/B200/Mistral-7B-v0.1/sharegpt_c64",
+  "calibration": "logs/B200/Mistral-7B-v0.1/sharegpt_c64/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 233,
+    "rmse_w": 120.15258777266715,
+    "mae_w": 87.46198742463922,
+    "r2": -23.614181102610978,
+    "mean_measured_w": 675.0954337089596,
+    "mean_predicted_w": 643.9059442118964,
+    "mean_abs_pct_err": 12.955499779360817
+  },
+  "plot": null
+}

@@ -24,6 +24,10 @@ import numpy as np
 ANCHOR = "H200"
 # datasheet specs: HBM bandwidth (bytes/s), peak fp16 dense (FLOP/s), power cap (W)
 GPU_SPECS = {
+    # peak_flops is DENSE fp16/bf16 (no 2:1 sparsity). NVIDIA markets Blackwell
+    # with the sparse number (B200 = 4.5 PFLOPS fp16 sparse) -- halve it to stay
+    # consistent with the H200 990 TFLOPS dense anchor.
+    "B200":        dict(bw=8.0e12,   peak_flops=2250e12, p_cap=1000.0),
     "H200":        dict(bw=4.8e12,   peak_flops=990e12, p_cap=700.0),
     "H100":        dict(bw=3.35e12,  peak_flops=990e12, p_cap=700.0),
     "A100-SXM":    dict(bw=2.039e12, peak_flops=312e12, p_cap=400.0),

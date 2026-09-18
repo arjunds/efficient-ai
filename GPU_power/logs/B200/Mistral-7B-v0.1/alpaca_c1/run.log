@@ -1,0 +1,63 @@
+/workspace/nvml_logger.py:31: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml
+[prompts] task=alpaca file=prompts_alpaca.json n=2000 token-len p5/50/95=18/26/63
+INFO 09-17 17:47:14 [__init__.py:216] Automatically detected platform cuda.
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+INFO 09-17 17:47:25 [__init__.py:742] Resolved architecture: MistralForCausalLM
+`torch_dtype` is deprecated! Use `dtype` instead!
+WARNING 09-17 17:47:25 [__init__.py:2767] Casting torch.bfloat16 to torch.float16.
+INFO 09-17 17:47:25 [__init__.py:1815] Using max model len 8192
+INFO 09-17 17:47:25 [scheduler.py:222] Chunked prefill is enabled with max_num_batched_tokens=2048.
+INFO 09-17 17:47:25 [__init__.py:3400] Cudagraph is disabled under eager mode
+/usr/local/lib/python3.12/dist-packages/vllm/transformers_utils/tokenizer_group.py:28: FutureWarning: It is strongly recommended to run mistral models with `--tokenizer-mode "mistral"` to ensure correct encoding and decoding.
+  self.tokenizer = get_tokenizer(self.tokenizer_id, **tokenizer_config)
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:26 [core.py:654] Waiting for init message from front-end.
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:26 [core.py:76] Initializing a V1 LLM engine (v0.10.2) with config: model='mistralai/Mistral-7B-v0.1', speculative_config=None, tokenizer='mistralai/Mistral-7B-v0.1', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.float16, max_seq_len=8192, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=True, kv_cache_dtype=auto, device_config=cuda, decoding_config=DecodingConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_backend=''), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=0, served_model_name=mistralai/Mistral-7B-v0.1, enable_prefix_caching=True, chunked_prefill_enabled=True, use_async_output_proc=True, pooler_config=None, compilation_config={"level":0,"debug_dump_path":"","cache_dir":"","backend":"","custom_ops":[],"splitting_ops":null,"use_inductor":true,"compile_sizes":[],"inductor_compile_config":{"enable_auto_functionalized_v2":false},"inductor_passes":{},"cudagraph_mode":0,"use_cudagraph":true,"cudagraph_num_of_warmups":0,"cudagraph_capture_sizes":[],"cudagraph_copy_inputs":false,"full_cuda_graph":false,"pass_config":{},"max_capture_size":0,"local_cache_dir":null}
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m W0917 17:47:27.226000 1346318 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m W0917 17:47:27.226000 1346318 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[W917 17:47:28.858678905 ProcessGroupNCCL.cpp:981] Warning: TORCH_NCCL_AVOID_RECORD_STREAMS is the default now, this environment variable is thus deprecated. (function operator())
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:28 [parallel_state.py:1165] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m WARNING 09-17 17:47:28 [topk_topp_sampler.py:62] FlashInfer is available, but it is not enabled. Falling back to the PyTorch-native implementation of top-p & top-k sampling. For the best performance, please set VLLM_USE_FLASHINFER_SAMPLER=1.
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:28 [gpu_model_runner.py:2338] Starting to load model mistralai/Mistral-7B-v0.1...
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:28 [gpu_model_runner.py:2370] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:28 [cuda.py:341] Using FlashInfer backend with HND KV cache layout on V1 engine by default for Blackwell (SM 10.0) GPUs.
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:29 [weight_utils.py:348] Using model weights format ['*.safetensors']
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/2 [00:00<?, ?it/s]
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m Loading safetensors checkpoint shards:  50% Completed | 1/2 [00:01<00:01,  1.90s/it]
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:02<00:00,  1.40s/it]
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:02<00:00,  1.47s/it]
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m 
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:32 [default_loader.py:268] Loading weights took 3.06 seconds
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:32 [gpu_model_runner.py:2392] Model loading took 13.4967 GiB and 3.600268 seconds
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:33 [gpu_worker.py:298] Available KV cache memory: 146.73 GiB
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:33 [kv_cache_utils.py:864] GPU KV cache size: 1,202,032 tokens
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:33 [kv_cache_utils.py:868] Maximum concurrency for 8,192 tokens per request: 195.14x
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:33 [utils.py:289] `_KV_CACHE_LAYOUT_OVERRIDE` variable detected. Setting KV cache layout to HND.
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m 2026-09-17 17:47:33,392 - INFO - autotuner.py:256 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m 2026-09-17 17:47:33,435 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process ends
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:33 [kernel_warmup.py:52] Warming up FlashInfer attention.
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m WARNING 09-17 17:47:33 [flashinfer.py:215] Using TRTLLM attention (auto-detected).
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m [rank0]:W0917 17:47:33.887000 1346318 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m [rank0]:W0917 17:47:33.887000 1346318 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m [rank0]:W0917 17:47:33.913000 1346318 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m [rank0]:W0917 17:47:33.913000 1346318 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:34 [gpu_worker.py:391] Free memory on device (177.65/178.35 GiB) on startup. Desired GPU memory utilization is (0.9, 160.52 GiB). Actual usage is 13.5 GiB for weight, 0.22 GiB for peak activation, 0.07 GiB for non-torch memory, and 0.0 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=157397255782` to fit into requested memory, or `--kv-cache-memory=175792922624` to fully utilize gpu memory. Current kv cache memory in use is 157554542182 bytes.
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:34 [core.py:218] init engine (profile, create kv cache, warmup model) took 1.61 seconds
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m /usr/local/lib/python3.12/dist-packages/vllm/transformers_utils/tokenizer_group.py:28: FutureWarning: It is strongly recommended to run mistral models with `--tokenizer-mode "mistral"` to ensure correct encoding and decoding.
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m   self.tokenizer = get_tokenizer(self.tokenizer_id, **tokenizer_config)
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m INFO 09-17 17:47:34 [__init__.py:3400] Cudagraph is disabled under eager mode
+INFO 09-17 17:47:34 [loggers.py:142] Engine 000: vllm cache_config_info with initialization after num_gpu_blocks is: 75127
+INFO 09-17 17:47:34 [async_llm.py:180] Torch profiler disabled. AsyncLLM CPU traces will not be collected.
+[warn] DRAM counter: dcgmi not found on PATH; DRAM counter disabled
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m WARNING 09-17 17:47:34 [cudagraph_dispatcher.py:102] cudagraph dispatching keys are not initialized. No cudagraph will be used.
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m [rank0]:W0917 17:47:34.654000 1346318 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m [rank0]:W0917 17:47:34.654000 1346318 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m [rank0]:W0917 17:47:34.656000 1346318 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=1346318)[0;0m [rank0]:W0917 17:47:34.656000 1346318 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[saved] logs/B200/Mistral-7B-v0.1/alpaca_c1 (reqs=31, tok/s=172.69804272530254, dram_filled=0)

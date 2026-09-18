@@ -1,0 +1,14 @@
+{
+  "n_runs": 8,
+  "n_bins": 1657,
+  "e_bit_j_per_byte": 1.2377695434815329e-10,
+  "e_flop_j_per_flop": 6.341818393081067e-13,
+  "e_flop_pJ_per_flop": 0.6341818393081068,
+  "r2_dynamic_energy": 0.5384756333205221,
+  "bytes_flops_pearson": -0.5074309701771608,
+  "identifiable": true,
+  "arithmetic_intensity_min": 0.906450228172696,
+  "arithmetic_intensity_max": 4139.554204487856,
+  "ai_span_ratio": 4566.774959980695,
+  "glob": "logs/B200/Mistral-7B-v0.1/*"
+}

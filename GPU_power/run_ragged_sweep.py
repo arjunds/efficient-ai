@@ -44,6 +44,28 @@ LOG_ROOT = os.environ.get("RAGGED_LOG_ROOT") or "logs/ragged"
 if os.environ.get("RAGGED_MODELS"):
     MODELS = [m for m in os.environ["RAGGED_MODELS"].split(",") if m.strip()]
 
+# Env overrides so a cross-GPU run can trim the grid without editing this file.
+# Defaults are unchanged, so the original H200 protocol still reproduces exactly.
+#   RAGGED_TASKS=alpaca,sharegpt   RAGGED_CONCURRENCY=1,4,16,64
+#   RAGGED_POISSON=               (empty => skip the open-loop points)
+#   RAGGED_DURATION_S=45          RAGGED_IDLE_S=15   RAGGED_OUTPUT_CAP=256
+def _env_list(name, default, cast=str):
+    v = os.environ.get(name)
+    if v is None:
+        return default
+    return [cast(x) for x in v.split(",") if x.strip()]
+
+TASKS = _env_list("RAGGED_TASKS", TASKS)
+CONCURRENCY = _env_list("RAGGED_CONCURRENCY", CONCURRENCY, int)
+POISSON_RATES = _env_list("RAGGED_POISSON", POISSON_RATES, float)
+DURATION_S = float(os.environ.get("RAGGED_DURATION_S", DURATION_S))
+IDLE_S = float(os.environ.get("RAGGED_IDLE_S", IDLE_S))
+OUTPUT_CAP = int(os.environ.get("RAGGED_OUTPUT_CAP", OUTPUT_CAP))
+# A big model needs a shorter context: a 72B leaves only ~28 GB for KV after
+# 145 GB of weights, so 8192 would not fit a useful number of sequences.
+MAX_MODEL_LEN = int(os.environ.get("RAGGED_MAX_MODEL_LEN", MAX_MODEL_LEN))
+GPU_MEM_UTIL = float(os.environ.get("RAGGED_GPU_MEM_UTIL", GPU_MEM_UTIL))
+
 
 def ts():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")

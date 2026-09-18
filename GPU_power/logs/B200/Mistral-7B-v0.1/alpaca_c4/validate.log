@@ -1,0 +1,16 @@
+[warn] matplotlib unavailable, skipping plot: No module named 'matplotlib'
+{
+  "run_dir": "logs/B200/Mistral-7B-v0.1/alpaca_c4",
+  "calibration": "logs/B200/Mistral-7B-v0.1/alpaca_c4/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 233,
+    "rmse_w": 16.662526559664688,
+    "mae_w": 10.77744441372549,
+    "r2": -34.21738750522574,
+    "mean_measured_w": 530.5750036914425,
+    "mean_predicted_w": 529.6892291628276,
+    "mean_abs_pct_err": 2.0312763207354463
+  },
+  "plot": null
+}

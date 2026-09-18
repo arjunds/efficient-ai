@@ -1,0 +1,2 @@
+model,e_bit_j_per_byte,e_flop_pJ_per_flop,p_none,r2_dyn,identifiable,bytes_flops_r,ai_span_ratio,n_bins
+Qwen2-72B-Instruct,1.253267364046923e-10,0.39270354668060503,,-0.6651750451132856,True,-0.49406831120982053,3326.074342241945,1528

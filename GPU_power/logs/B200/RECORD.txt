@@ -1,0 +1,125 @@
+======================================================================
+ GPU ENERGY-COEFFICIENT RECORD   Thu Sep 17 06:02:48 PM EDT 2026
+ log root: logs/B200
+======================================================================
+
+### 1. Hardware / datasheet ###
+{
+  "bw": 8000000000000.0,
+  "peak_flops": 2250000000000000.0,
+  "p_cap": 1000.0,
+  "gpu_name": "NVIDIA B200",
+  "power_max_limit_w": 1000.0,
+  "memory_total_mib": 183359.0,
+  "note": "peak_flops is DENSE fp16 (sparse/2)"
+}
+### 2. Measured idle P_static + power-cap check (gotcha #1) ###
+run                                           idle W   avg W   %cap     tok/s
+Mistral-7B-v0.1/alpaca_c1                      237.8   541.1    54%     172.7
+Mistral-7B-v0.1/alpaca_c16                     237.8   544.0    54%    2459.0
+Mistral-7B-v0.1/alpaca_c4                      237.8   530.6    53%     642.4
+Mistral-7B-v0.1/alpaca_c64                     237.8   617.5    62%    8490.7
+Mistral-7B-v0.1/sharegpt_c1                    237.8   542.2    54%     171.9
+Mistral-7B-v0.1/sharegpt_c16                   237.8   550.2    55%    2312.2
+Mistral-7B-v0.1/sharegpt_c4                    237.8   256.9    26%      93.4
+Mistral-7B-v0.1/sharegpt_c64                   237.8   675.1    68%    8127.5
+Qwen2-7B-Instruct/alpaca_c1                    237.1   560.9    56%     182.8
+Qwen2-7B-Instruct/alpaca_c16                   237.1   562.5    56%    2567.1
+Qwen2-7B-Instruct/alpaca_c4                    237.1   549.9    55%     668.7
+Qwen2-7B-Instruct/alpaca_c64                   237.1   641.6    64%    9312.4
+Qwen2-7B-Instruct/sharegpt_c1                  237.1   562.6    56%     181.7
+Qwen2-7B-Instruct/sharegpt_c16                 237.1   212.9    21%      91.0
+Qwen2-7B-Instruct/sharegpt_c4                  237.1   530.7    53%     600.7
+Qwen2-7B-Instruct/sharegpt_c64                 237.1   674.9    67%    8886.8
+
+power cap = 1000 W; worst observed = 68% of cap
+=> OK: below cap in every run; coefficients are meaningful
+
+### 3. Channel fit: 2 / 3 / 4-term, CIs, held-out (fit_channels.py) ###
+ROOT=logs/B200  n_bins=3255  models=['Mistral-7B-v0.1', 'Qwen2-7B-Instruct']
+
+=== A. CHANNEL SPLIT (nested models) ===
+
+ 2-term  [bytes, flops]
+   R2=0.569  held-out MAPE=6.6%
+    bytes=1.210e-10[1.20,1.22]
+    flops=0.632pJ[0.60,0.67]
+
+ 3-term  [wbytes, kvbytes, flops]
+   R2=0.676  held-out MAPE=6.7%
+    weight_bytes=1.189e-10[1.18,1.19]
+    kv_bytes=3.511e-10[3.21,3.76]
+    flops=0.481pJ[0.44,0.52]
+
+ 3-term  [bytes, gemm, attn]
+   R2=0.696  held-out MAPE=5.1%
+    bytes=1.184e-10[1.18,1.19]
+    gemm_flops=0.428pJ[0.39,0.47]
+    attn_flops=63.037pJ[55.78,69.11]
+
+ 4-term  [wbytes, kvbytes, gemm, attn]
+   R2=0.696  held-out MAPE=810363.6%
+    weight_bytes=1.184e-10[1.18,1.19]
+    kv_bytes=1.003e-10[0.57,1.47]
+    gemm_flops=0.426pJ[0.39,0.47]
+    attn_flops=67.248pJ[53.46,79.98]
+
+=== B. PHASE DECOMPOSITION (2-term coeffs) ===
+ e_bit=1.210e-10 J/byte, e_flop=0.632 pJ/flop
+ phase group                   n_bins  compute share  memory share
+ decode-heavy (prefill<5%)       1639           4.6%         95.4%
+ mixed (5-50%)                   1350          15.6%         84.4%
+ prefill-heavy (>50%)             266          32.0%         68.0%
+
+### 4. Identifiability + bootstrap + held-out transfer (diagnose_fit.py) ###
+    (gotcha #2: need identifiable=True and a wide arithmetic-intensity span)
+ROOT=logs/B200
+model                    n R2_bytesonly R2_2term_v1 R2_2term_v2  R2_constP e_bit(e-10) e_flop(pJ)  resid~AI
+Mistral-7B-v0.1       1657       -0.781       0.543       0.538      0.039       1.238      0.634     0.024
+Qwen2-7B-Instruct     1598       -1.167       0.620       0.617      0.019       1.187      0.627    -0.093
+
+Bootstrap 95% CI (pooled, v2): e_bit=1.210 [1.202,1.220] e-10 ; e_flop=0.635 [0.598,0.667] pJ/flop
+
+Leave-one-model-out (fit others, predict held; v2 flops):
+  predict Mistral-7B-v0.1      R2=  0.489  MAPE=   6.8%
+  predict Qwen2-7B-Instruct    R2=  0.540  MAPE=   6.5%
+
+### 5. Cross-GPU scaling law vs published H200 coefficients ###
+
+=== measured coefficients ===
+GPU          bw(TB/s) peak(TF)   e_wbyte  e_kvbyte e_gemm(pJ)    R2  held%   avgP   cap      n
+H200*            4.80      990     1.077      3.38      0.673     -      -      -    no      -
+B200             8.00     2250     1.189      3.51      0.485  0.68    6.7    535    no   3255
+  * H200 row is the published measurement, not refit here.
+
+=== scaling law vs H200 ===
+  predicted = H200 coeff x (H200 spec / this GPU's spec)
+GPU         coeff        measured  predicted    err%
+B200        e_wbyte         1.189      0.646     84%   <-- outside +/-20%
+B200        e_kvbyte        3.513      2.028     73%   <-- outside +/-20%
+B200        e_gemm          0.485      0.296     64%   <-- outside +/-20%
+
+  Success criterion (HANDOFF): measured within ~10-20% of predicted.
+  => at least one coefficient outside 20%
+
+### 6. Files to hand back ###
+    logs/B200/Mistral-7B-v0.1/alpaca_c16/binned_table.csv
+    logs/B200/Mistral-7B-v0.1/alpaca_c1/binned_table.csv
+    logs/B200/Mistral-7B-v0.1/alpaca_c4/binned_table.csv
+    logs/B200/Mistral-7B-v0.1/alpaca_c64/binned_table.csv
+    logs/B200/Mistral-7B-v0.1/sharegpt_c16/binned_table.csv
+    logs/B200/Mistral-7B-v0.1/sharegpt_c1/binned_table.csv
+    logs/B200/Mistral-7B-v0.1/sharegpt_c4/binned_table.csv
+    logs/B200/Mistral-7B-v0.1/sharegpt_c64/binned_table.csv
+    logs/B200/Qwen2-7B-Instruct/alpaca_c16/binned_table.csv
+    logs/B200/Qwen2-7B-Instruct/alpaca_c1/binned_table.csv
+    logs/B200/Qwen2-7B-Instruct/alpaca_c4/binned_table.csv
+    logs/B200/Qwen2-7B-Instruct/alpaca_c64/binned_table.csv
+    logs/B200/Qwen2-7B-Instruct/sharegpt_c16/binned_table.csv
+    logs/B200/Qwen2-7B-Instruct/sharegpt_c1/binned_table.csv
+    logs/B200/Qwen2-7B-Instruct/sharegpt_c4/binned_table.csv
+    logs/B200/Qwen2-7B-Instruct/sharegpt_c64/binned_table.csv
+
+  Once the H200 raw logs are on this server, the better pooled analysis is:
+    python3 pool_gpus.py H200:logs/ragged B200:logs/B200
+======================================================================

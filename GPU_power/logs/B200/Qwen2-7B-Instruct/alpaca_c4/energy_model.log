@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/B200/Qwen2-7B-Instruct/alpaca_c4",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 232,
+  "n_iters_total": 7984,
+  "weight_bytes": 15230566400.0,
+  "kv_bytes_per_token": 57344.0,
+  "byte_source": "models.py:Qwen2-7B-Instruct",
+  "idle_power_w": 237.1,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.2260109591360727e-10,
+  "e_bit_aggregate": 1.2281467405210546e-10,
+  "p_static_w": 237.1,
+  "e_bit_joint": 2.8571454006990754e-12,
+  "p_static_joint": 542.6064984295602,
+  "r2_energy": 0.23896973130964827,
+  "r2_power": -13.857294060983012,
+  "mean_power_w": 549.9053530453879,
+  "mean_bytes_per_bin": 508423855280.5517,
+  "mean_dynamic_power_w": 312.790747073132
+}

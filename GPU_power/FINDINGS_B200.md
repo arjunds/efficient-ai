@@ -1,0 +1,227 @@
+# B200 cross-GPU energy-coefficient measurement — findings
+
+Run 2026-09-17 on the Penn PARCC cluster (`dgx-b200`), following
+`HANDOFF_CROSSGPU.md`. Raw data: `logs/B200/` (16 runs, 3255 bins,
+`binned_table.csv` + `run_meta.json` per run). Machine-generated record:
+`logs/B200/RECORD.txt`.
+
+## Headline
+
+**The datasheet scaling law does not hold on B200.** Measured coefficients are
+64–84% above what scaling the H200 values by datasheet specs predicts.
+
+| coefficient | H200 (published) | B200 (measured) | predicted by law | error |
+|---|---|---|---|---|
+| `e_wbyte`  | 1.077e-10 J/B | **1.189e-10** [1.18, 1.19] | 0.646e-10 | **+84%** |
+| `e_kvbyte` | 3.380e-10 J/B | **3.511e-10** [3.21, 3.76] | 2.028e-10 | **+73%** |
+| `e_gemm`   | 0.673 pJ/flop | **0.485 pJ** [0.44, 0.52]  | 0.296 pJ  | **+64%** |
+
+3-term fit, R²=0.677, held-out-by-model MAPE 6.7%. 2-term: `e_bit`=1.210e-10
+[1.202, 1.220], `e_flop`=0.635 pJ [0.598, 0.667] (bootstrap 95% CI).
+
+Note the *pattern*: the two memory coefficients are within 4–10% of the **raw
+H200 values** (not the scaled ones), while the compute coefficient improved ~28%.
+The memory channel behaves as if it were hardware-invariant, not ∝ 1/bandwidth.
+
+## Why — hypothesis: the workload never exercises the bigger GPU
+
+> **SUPERSEDED — see the 72B UPDATE at the end of this document.** This section
+> proposed that low utilization explained the deviation. The 72B run doubled
+> realized bandwidth (35% -> 62% of peak) and energy per byte did NOT fall, which
+> refutes it. The section is kept for the measurements it records.
+
+| | H200 | B200 | ratio |
+|---|---|---|---|
+| peak HBM bandwidth | 4.8 TB/s | 8.0 TB/s | 1.67× |
+| **realized** bandwidth, Qwen2-7B c=1 decode | 2.52 TB/s (53% of peak) | 2.78 TB/s (**35% of peak**) | **1.10×** |
+| tokens/s, Qwen2-7B c=1 | 165.6 | 182.8 | 1.10× |
+
+B200 is only **10% faster** than H200 on this workload despite 1.67× the peak
+bandwidth and 2.27× the peak FLOPS. Realized bandwidth across the whole sweep is
+~2.4 TB/s — about **31% of peak**, at every concurrency from 1 to 64. A 7B model
+simply does not saturate a 180 GB B200. The extra capability the datasheet
+advertises is idle, so the energy per byte of *actual* traffic does not improve.
+
+At roughly equal realized bandwidth (2.5 vs 2.8 TB/s) the two GPUs cost roughly
+equal energy per byte (1.077 vs 1.189e-10) — consistent with DRAM energy/bit
+being set by memory technology and interface physics, while bandwidth gains come
+from added parallelism that raises throughput without lowering energy per bit.
+
+## Confounds tested and ruled out
+
+1. **Fixed/time-proportional overhead** (the obvious explanation for inflated
+   coefficients under low utilization). Adding an explicit per-bin time term to
+   the regression fits it to **0 W** and changes the coefficients not at all
+   (+84% → +84%). Dynamic energy is genuinely work-proportional; the excess is
+   not absorbed overhead.
+2. **Power capping** (HANDOFF gotcha #1). Worst observed is **68% of the 1000 W
+   cap**. Never capped, so the linear model is valid — unlike the A100-PCIe.
+3. **Crash-truncated runs.** 5 of 8 sharegpt runs hit CUDA errors (below).
+   Refitting on only the 13 clean runs gives `e_wbyte`=1.189e-10,
+   `e_gemm`=0.484 pJ — identical to 3 significant figures, R² improves to 0.708.
+4. **Identifiability** (gotcha #2). Bytes-only R² is **negative** (−0.78, −1.17)
+   while the 2-term fit is +0.54/+0.62, so the FLOP term earns its place. The two
+   models agree closely (`e_bit` 1.238 vs 1.187; `e_flop` 0.634 vs 0.627),
+   i.e. coefficients transfer across models on B200 as they did on H200.
+
+## Caveats — read before quoting these numbers
+
+- **Per-concurrency coefficients are not trustworthy individually.** Fitting each
+  concurrency separately gives negative R² for c=1/4/16 (regressors barely vary
+  within a group). Only the pooled fit is meaningful. The apparent trend
+  (`e_gemm` falling 0.62→0.35 pJ with concurrency) is suggestive, not established.
+- **Attention backend differs from the H200 runs.** vLLM auto-selected
+  FlashInfer + TRTLLM attention on Blackwell (the bundled `vllm_flash_attn 2.7.2`
+  has no sm_100 kernels). This should be second-order for the 3-term fit, whose
+  channels are weight/KV bytes and dense GEMM flops, but `attn_flops` is affected.
+- **`peak_flops` = 2250 TFLOPS dense** (NVIDIA quotes 4.5 PFLOPS *with 2:1
+  sparsity*; halved to match the H200 990 TFLOPS dense anchor). Corroborated
+  on-hardware: a warmed-up 8192³ fp16 matmul achieved **1520 TFLOPS = 68% of
+  2250**, the normal band for real cuBLAS.
+- **H200 numbers are the published ones**, not refit here — the H200 raw logs are
+  not on this server. `scaling_check.py` anchors on the documented coefficients.
+  With `logs/ragged` copied over, `pool_gpus.py H200:logs/ragged B200:logs/B200`
+  refits both from raw bins and is strictly better.
+- H200's own `e_bit` drifts 1.078 → 1.603e-10 across c=1→64 in
+  `sweep_summary_H200.csv`, so "hardware constant" was already approximate.
+
+## Implication for the recommender
+
+`recommend_gpu.py` currently derives non-H200 GPUs' coefficients by scaling
+datasheet specs (`scaled_gpu()`), assuming `e_byte ∝ 1/bw`. On this evidence that
+assumption is **wrong in the direction that matters**: it would predict a B200
+is ~1.67× more energy-efficient per byte than an H200 and recommend it for a 7B
+decode workload, when measurement says the two are within 10% — and the B200
+draws far more idle power (237 W vs 118 W), so it is likely *worse* in total
+energy for this workload.
+
+The defensible revision is to drive the model with **realized** bandwidth/FLOPS
+(peak × achievable utilization for that model+batch), not datasheet peak. That
+keeps the roofline tie-in in `roofline_energy.py` and makes the recommender
+utilization-aware rather than spec-sheet-aware.
+
+## Known issue: CUDA errors on long sequences
+
+5 of 8 `sharegpt` runs (long prompts, up to 23k chars) hit
+`CUDA error: an illegal memory access was encountered` in the FlashInfer/TRTLLM
+attention path; all 8 `alpaca` runs were clean. Three crashed near the end and
+still produced near-full bin counts; two were badly truncated (9 and 39 bins).
+Excluding them does not change the coefficients (see confound 3), but this
+**RESOLVED.** Root cause: `vllm/utils/flashinfer.py::use_trtllm_attention()`
+selects the TRTLLM kernel PER BATCH via `num_tokens <= 256`, so variable-length
+sharegpt traffic makes vLLM switch kernels mid-run. A/B/control test
+(`b200_attnfix.sbatch`, job 8430582) on the exact failing case:
+
+| config | result | tok/s |
+|---|---|---|
+| baseline (auto) | **CRASH** | 68 |
+| `VLLM_USE_TRTLLM_ATTENTION=0` | OK | **2487** |
+| `VLLM_ATTENTION_BACKEND=TRITON_ATTN_VLLM_V1` | OK | 1825 |
+| `VLLM_USE_TRTLLM_ATTENTION=1` | OK | 2428 |
+
+Forcing TRTLLM *on* also works, so neither kernel is broken — the **mid-run
+switching** is. Fix: pin it. `=0` is both correct and fastest. Verified on the
+72B run: 0 crashes in 6 runs.
+
+## Reproducing
+
+```
+sbatch b200_prefetch_models.sbatch   # CPU: cache weights (no GPU charge)
+sbatch b200_pull_sif.sbatch          # CPU: build vLLM 0.10.2 .sif
+sbatch b200_smoke.sbatch             # 1 GPU, ~3 min: go/no-go + cap check
+sbatch b200_sweep.sbatch             # 1 GPU, ~23 min: the 16-run sweep
+./b200_analyze.sh logs/B200          # CPU: writes logs/B200/RECORD.txt
+```
+
+---
+
+# UPDATE: 72B run (2026-09-17) — the utilization hypothesis FAILS
+
+`logs/B200_large/`, Qwen2-72B-Instruct, 6 runs, c={1,4,16}, both tasks, TP=1.
+Attention fix applied (`VLLM_USE_TRTLLM_ATTENTION=0`): **0 crashes in 6 runs**,
+versus 5 of 8 sharegpt runs crashing before.
+
+## The clean result — a direct ratio, no regression
+
+At concurrency 1 each decode token is exactly one full weight sweep, so realized
+bandwidth and energy/byte are **direct measurements**, immune to the
+identifiability problems that plague the fits.
+
+| GPU / model | tok/s | realized BW | % of peak | dyn W | **J/byte** |
+|---|---|---|---|---|---|
+| H200 Qwen2-7B | 165.6 | 2.52 TB/s | 53% | 251 | **0.997e-10** |
+| B200 Qwen2-7B | 182.8 | 2.78 TB/s | 35% | 324 | **1.163e-10** |
+| B200 Qwen2-72B | 34.3 | 4.99 TB/s | **62%** | 617 | **1.236e-10** |
+| scaling-law prediction for B200 | | | | | 0.646e-10 |
+
+The 72B nearly **doubled** realized bandwidth on B200 (2.78 -> 4.99 TB/s, 35% ->
+62% of peak) — the workload now genuinely exercises the GPU. **Energy per byte
+did not fall.** It rose slightly.
+
+So the utilization explanation for the 7B deviation is refuted. Energy per byte
+is ~invariant (1.0–1.24e-10) across two GPU generations, a 10x model-size range,
+and a 2x range of realized bandwidth. It is **not** proportional to 1/peak
+bandwidth.
+
+## The 72B *regression* coefficients are NOT usable — and why
+
+The 3-term fit on the 72B gives **R2 = -0.573** (worse than predicting the mean).
+Do not quote e_wbyte=1.236e-10 as a fitted coefficient. The cause is a
+degenerate regime, not a code bug:
+
+* Dynamic energy per bin barely varies: mean 128.4 J, **std 6.9 J, CV = 0.054**.
+* The regressors vary enormously: `gemm_flops_bin` CV = 2.16, `kv_bytes_bin`
+  CV = 1.11.
+* `weight_bytes_bin` is nearly **constant** (CV = 0.085), because with 145 GB of
+  weights almost every bin is dominated by one full weight sweep.
+
+With a near-constant regressor and a near-constant target, `e_wbyte` degenerates
+to `mean(dyn)/mean(weight_bytes)` — a ratio of means, not a slope. (Confirmed:
+128.4/9.899e11 = 1.297e-10 vs the "fitted" 1.236e-10.) Adding an explicit
+intercept changes nothing because `weight_bytes_bin` is already acting as one.
+
+The GPU is in a **near-constant-power regime**: per-bin power p50 = 880 W,
+p100 = 943 W against a 1000 W cap. Not hard-clamped (nothing above 950 W, so
+gotcha #1's DVFS clamp is not triggered), but power is pinned close enough to the
+practical ceiling that energy stops tracking work. This is the large-model
+analogue of gotcha #1 and deserves its own entry: **a model that saturates the
+GPU destroys coefficient identifiability**, which is the opposite failure mode
+from the 7B (too little variance in energy, rather than too little in AI).
+
+Practical consequence: coefficient fitting needs a model big enough to use the
+GPU but small enough that power still swings with the workload. The 7B and 72B
+bracket that window; something in the 30B class is the likely sweet spot.
+
+## Idle power — matters for the recommender
+
+B200 idles at **237 W** vs H200's **117 W**, roughly 2x. For a workload that
+does not saturate it, a B200 loses on total energy before doing any work.
+
+## Counter availability (gotcha #5) — partial
+
+Probed on the compute node: **`ncu` is NOT installed** (nor `nsys`), so
+`ncu_dram_check.py` cannot run and the analytic-vs-hardware byte validation is
+still out of reach by that route. **`dcgmi` IS present at `/usr/bin/dcgmi`.**
+
+Our runs recorded `dram_backend: None` because `dram_counter.py` looks for
+`dcgmi` *inside the container*, where it is absent. Binding `/usr/bin/dcgmi`
+(plus its libraries) into the container should enable DCGM field 1005
+(`DRAM_ACTIVE`) sampling and give in-run DRAM traffic. Caveat: DCGM reports an
+activity *fraction* scaled by an assumed peak bandwidth, so it partly begs the
+question it is being used to answer — it is weaker evidence than NCU byte counts.
+
+## Where this leaves the interpretation
+
+Two explanations were live. The 72B kills one:
+
+1. ~~Utilization~~ — **refuted**. Doubling realized bandwidth did not lower J/byte.
+2. **Memory-hierarchy scope** — still standing, and now better supported. Our
+   lumped J/byte (1.0–1.24e-10) sits right on vgao's full-hierarchy sum
+   (1.12e-10), while their DRAM-only term (0.66e-10) sits on the scaling-law
+   prediction (0.646e-10). The law plausibly governs the DRAM channel alone,
+   while our analytic byte model conflates DRAM with L2/L1/shared-memory traffic
+   that does not scale with HBM bandwidth.
+
+Explanation 2 remains **unverified for a serving workload** — it rests on a
+colleague's GEMM microbenchmarks whose own OLS and WLS fits disagree by ~15%,
+and without `ncu` we cannot decompose the hierarchy ourselves here.

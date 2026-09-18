@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/B200/Qwen2-7B-Instruct/sharegpt_c16",
+  "calibration": "logs/B200/Qwen2-7B-Instruct/sharegpt_c16/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 225,
+    "rmse_w": 56.84643628184534,
+    "mae_w": 48.33310334686298,
+    "r2": 0.5353234333665224,
+    "mean_measured_w": 212.54515210466315,
+    "mean_predicted_w": 249.34683355804148,
+    "mean_abs_pct_err": 22.740157970322663
+  },
+  "plot": null
+}

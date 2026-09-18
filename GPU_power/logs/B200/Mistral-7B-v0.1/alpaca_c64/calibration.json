@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/B200/Mistral-7B-v0.1/alpaca_c64",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 234,
+  "n_iters_total": 5849,
+  "weight_bytes": 14482931712.0,
+  "kv_bytes_per_token": 131072.0,
+  "byte_source": "models.py:Mistral-7B-v0.1",
+  "idle_power_w": 237.822,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.9624334766226139e-10,
+  "e_bit_aggregate": 2.0051374499533227e-10,
+  "p_static_w": 237.822,
+  "e_bit_joint": -6.462641880305537e-13,
+  "p_static_joint": 618.7937485247572,
+  "r2_energy": -9.0172133867169,
+  "r2_power": -35.51743625274601,
+  "mean_power_w": 617.4065886493738,
+  "mean_bytes_per_bin": 378199791213.40173,
+  "mean_dynamic_power_w": 379.68162647274585
+}

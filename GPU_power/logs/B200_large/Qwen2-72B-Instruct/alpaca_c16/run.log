@@ -1,0 +1,90 @@
+/workspace/nvml_logger.py:31: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml
+[prompts] task=alpaca file=prompts_alpaca.json n=2000 token-len p5/50/95=13/20/52
+INFO 09-17 21:44:09 [__init__.py:216] Automatically detected platform cuda.
+INFO 09-17 21:44:11 [arg_utils.py:486] HF_HUB_OFFLINE is True, replace model_id [Qwen/Qwen2-72B-Instruct] to model_path [/vast/projects/leebcc/systems-architecture-int/adsampat/hf_cache/hub/models--Qwen--Qwen2-72B-Instruct/snapshots/c867f763ef53f2ea9d9b31ee8501273dedd391eb]
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+INFO 09-17 21:44:20 [__init__.py:742] Resolved architecture: Qwen2ForCausalLM
+`torch_dtype` is deprecated! Use `dtype` instead!
+WARNING 09-17 21:44:20 [__init__.py:2767] Casting torch.bfloat16 to torch.float16.
+INFO 09-17 21:44:20 [__init__.py:1815] Using max model len 4096
+INFO 09-17 21:44:20 [scheduler.py:222] Chunked prefill is enabled with max_num_batched_tokens=2048.
+INFO 09-17 21:44:20 [__init__.py:3400] Cudagraph is disabled under eager mode
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:44:21 [core.py:654] Waiting for init message from front-end.
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:44:21 [core.py:76] Initializing a V1 LLM engine (v0.10.2) with config: model='/vast/projects/leebcc/systems-architecture-int/adsampat/hf_cache/hub/models--Qwen--Qwen2-72B-Instruct/snapshots/c867f763ef53f2ea9d9b31ee8501273dedd391eb', speculative_config=None, tokenizer='/vast/projects/leebcc/systems-architecture-int/adsampat/hf_cache/hub/models--Qwen--Qwen2-72B-Instruct/snapshots/c867f763ef53f2ea9d9b31ee8501273dedd391eb', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.float16, max_seq_len=4096, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=True, kv_cache_dtype=auto, device_config=cuda, decoding_config=DecodingConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_backend=''), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=0, served_model_name=/vast/projects/leebcc/systems-architecture-int/adsampat/hf_cache/hub/models--Qwen--Qwen2-72B-Instruct/snapshots/c867f763ef53f2ea9d9b31ee8501273dedd391eb, enable_prefix_caching=True, chunked_prefill_enabled=True, use_async_output_proc=True, pooler_config=None, compilation_config={"level":0,"debug_dump_path":"","cache_dir":"","backend":"","custom_ops":[],"splitting_ops":null,"use_inductor":true,"compile_sizes":[],"inductor_compile_config":{"enable_auto_functionalized_v2":false},"inductor_passes":{},"cudagraph_mode":0,"use_cudagraph":true,"cudagraph_num_of_warmups":0,"cudagraph_capture_sizes":[],"cudagraph_copy_inputs":false,"full_cuda_graph":false,"pass_config":{},"max_capture_size":0,"local_cache_dir":null}
+[1;36m(EngineCore_DP0 pid=423861)[0;0m W0917 21:44:22.583000 423861 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=423861)[0;0m W0917 21:44:22.583000 423861 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[W917 21:44:24.950064269 ProcessGroupNCCL.cpp:981] Warning: TORCH_NCCL_AVOID_RECORD_STREAMS is the default now, this environment variable is thus deprecated. (function operator())
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:44:24 [parallel_state.py:1165] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+[1;36m(EngineCore_DP0 pid=423861)[0;0m WARNING 09-17 21:44:24 [topk_topp_sampler.py:62] FlashInfer is available, but it is not enabled. Falling back to the PyTorch-native implementation of top-p & top-k sampling. For the best performance, please set VLLM_USE_FLASHINFER_SAMPLER=1.
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:44:24 [gpu_model_runner.py:2338] Starting to load model /vast/projects/leebcc/systems-architecture-int/adsampat/hf_cache/hub/models--Qwen--Qwen2-72B-Instruct/snapshots/c867f763ef53f2ea9d9b31ee8501273dedd391eb...
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:44:25 [gpu_model_runner.py:2370] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:44:25 [cuda.py:341] Using FlashInfer backend with HND KV cache layout on V1 engine by default for Blackwell (SM 10.0) GPUs.
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:44:25 [flashinfer.py:168] VLLM_USE_TRTLLM_ATTENTION is set to 0
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/37 [00:00<?, ?it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:   3% Completed | 1/37 [00:00<00:34,  1.04it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:   5% Completed | 2/37 [00:01<00:33,  1.06it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:   8% Completed | 3/37 [00:02<00:28,  1.19it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  11% Completed | 4/37 [00:03<00:29,  1.12it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  14% Completed | 5/37 [00:04<00:26,  1.19it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  16% Completed | 6/37 [00:05<00:26,  1.16it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  19% Completed | 7/37 [00:06<00:25,  1.17it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  22% Completed | 8/37 [00:06<00:24,  1.21it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  24% Completed | 9/37 [00:07<00:24,  1.15it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  27% Completed | 10/37 [00:08<00:22,  1.21it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  30% Completed | 11/37 [00:09<00:22,  1.15it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  32% Completed | 12/37 [00:10<00:21,  1.18it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  35% Completed | 13/37 [00:11<00:20,  1.17it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  38% Completed | 14/37 [00:12<00:19,  1.15it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  41% Completed | 15/37 [00:12<00:18,  1.21it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  43% Completed | 16/37 [00:13<00:18,  1.13it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  46% Completed | 17/37 [00:14<00:17,  1.17it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  49% Completed | 18/37 [00:15<00:17,  1.12it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  51% Completed | 19/37 [00:16<00:15,  1.15it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  54% Completed | 20/37 [00:17<00:14,  1.18it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  57% Completed | 21/37 [00:18<00:13,  1.14it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  59% Completed | 22/37 [00:18<00:12,  1.21it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  62% Completed | 23/37 [00:19<00:12,  1.16it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  65% Completed | 24/37 [00:20<00:11,  1.15it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  68% Completed | 25/37 [00:21<00:10,  1.11it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  70% Completed | 26/37 [00:22<00:09,  1.12it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  73% Completed | 27/37 [00:23<00:08,  1.18it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  76% Completed | 28/37 [00:24<00:07,  1.13it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  78% Completed | 29/37 [00:24<00:06,  1.21it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  81% Completed | 30/37 [00:25<00:05,  1.18it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  84% Completed | 31/37 [00:26<00:05,  1.18it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  86% Completed | 32/37 [00:27<00:04,  1.21it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  89% Completed | 33/37 [00:28<00:03,  1.16it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  92% Completed | 34/37 [00:29<00:02,  1.23it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  95% Completed | 35/37 [00:30<00:01,  1.15it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards:  97% Completed | 36/37 [00:30<00:00,  1.15it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards: 100% Completed | 37/37 [00:31<00:00,  1.12it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m Loading safetensors checkpoint shards: 100% Completed | 37/37 [00:31<00:00,  1.16it/s]
+[1;36m(EngineCore_DP0 pid=423861)[0;0m 
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:44:57 [default_loader.py:268] Loading weights took 32.03 seconds
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:44:57 [gpu_model_runner.py:2392] Model loading took 135.4339 GiB and 32.530701 seconds
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:44:58 [gpu_worker.py:298] Available KV cache memory: 24.28 GiB
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:44:59 [kv_cache_utils.py:864] GPU KV cache size: 79,568 tokens
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:44:59 [kv_cache_utils.py:868] Maximum concurrency for 4,096 tokens per request: 19.43x
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:44:59 [utils.py:289] `_KV_CACHE_LAYOUT_OVERRIDE` variable detected. Setting KV cache layout to HND.
+[1;36m(EngineCore_DP0 pid=423861)[0;0m 2026-09-17 21:44:59,030 - INFO - autotuner.py:256 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+[1;36m(EngineCore_DP0 pid=423861)[0;0m 2026-09-17 21:44:59,197 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process ends
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:44:59 [kernel_warmup.py:52] Warming up FlashInfer attention.
+[1;36m(EngineCore_DP0 pid=423861)[0;0m [rank0]:W0917 21:44:59.668000 423861 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=423861)[0;0m [rank0]:W0917 21:44:59.668000 423861 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=423861)[0;0m [rank0]:W0917 21:44:59.698000 423861 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=423861)[0;0m [rank0]:W0917 21:44:59.698000 423861 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:44:59 [gpu_worker.py:391] Free memory on device (177.65/178.35 GiB) on startup. Desired GPU memory utilization is (0.9, 160.52 GiB). Actual usage is 135.43 GiB for weight, 0.73 GiB for peak activation, 0.07 GiB for non-torch memory, and 0.0 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=25917239910` to fit into requested memory, or `--kv-cache-memory=44312906752` to fully utilize gpu memory. Current kv cache memory in use is 26074526310 bytes.
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:44:59 [core.py:218] init engine (profile, create kv cache, warmup model) took 1.80 seconds
+[1;36m(EngineCore_DP0 pid=423861)[0;0m INFO 09-17 21:45:00 [__init__.py:3400] Cudagraph is disabled under eager mode
+INFO 09-17 21:45:00 [loggers.py:142] Engine 000: vllm cache_config_info with initialization after num_gpu_blocks is: 4973
+INFO 09-17 21:45:00 [async_llm.py:180] Torch profiler disabled. AsyncLLM CPU traces will not be collected.
+[warn] DRAM counter: dcgmi not found on PATH; DRAM counter disabled
+[1;36m(EngineCore_DP0 pid=423861)[0;0m WARNING 09-17 21:45:00 [cudagraph_dispatcher.py:102] cudagraph dispatching keys are not initialized. No cudagraph will be used.
+[saved] logs/B200_large/Qwen2-72B-Instruct/alpaca_c16 (reqs=105, tok/s=499.8805073539936, dram_filled=0)

@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/B200/Mistral-7B-v0.1/sharegpt_c64",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 233,
+  "n_iters_total": 5318,
+  "weight_bytes": 14482931712.0,
+  "kv_bytes_per_token": 131072.0,
+  "byte_source": "models.py:Mistral-7B-v0.1",
+  "idle_power_w": 237.822,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 2.2015045686664174e-10,
+  "e_bit_aggregate": 2.370537237486965e-10,
+  "p_static_w": 237.822,
+  "e_bit_joint": -4.140427453834595e-12,
+  "p_static_joint": 682.825662121885,
+  "r2_energy": -21.1820305292271,
+  "r2_power": -23.614181102610978,
+  "mean_power_w": 675.0954337089596,
+  "mean_bytes_per_bin": 368817085585.03,
+  "mean_dynamic_power_w": 437.3211129380829
+}

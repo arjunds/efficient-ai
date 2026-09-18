@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/B200/Mistral-7B-v0.1/alpaca_c64",
+  "calibration": "logs/B200/Mistral-7B-v0.1/alpaca_c64/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 234,
+    "rmse_w": 57.10129659453111,
+    "mae_w": 46.00005763726942,
+    "r2": -35.517436252746,
+    "mean_measured_w": 617.4065886493738,
+    "mean_predicted_w": 609.5368153104575,
+    "mean_abs_pct_err": 7.450529113707422
+  },
+  "plot": null
+}
