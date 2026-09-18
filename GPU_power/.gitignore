@@ -6,3 +6,4 @@ __pycache__/
 
 # generated prompt dumps (derived from public datasets; may contain third-party secrets)
 prompts_*.json
+slurm_out/
