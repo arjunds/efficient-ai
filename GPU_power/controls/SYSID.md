@@ -346,7 +346,14 @@ The run is `logs/A5000_smoke/Qwen2.5-1.5B-Instruct/{idle,alpaca_c8}`: one job,
   first-order extrapolation and **unvalidated**. The capped A100 set
   (`logs/ragged_a100`, 300 W) is the natural test once an A100 time model exists.
   Caps below about `P_static + E_dyn/t_iter` (roughly 370-500 W for H200 7B)
-  bind and trade throughput linearly for power.
+  bind and trade throughput linearly for power. The requested cap is clipped
+  to the settable range `[p_cap_min_w, p_cap]`. The floors are H200 200 W and
+  B200 300 W (**assumed**, as in plant_fp.py) and A5000 100 W (measured); you
+  can override them with `p_cap_min_w=` (alias `p_cap_min`). When throttled,
+  `y['t_iter_s']` and `y['tpot_s']` are the **stretched** per-iteration time
+  (= dt/iterations while busy), `y['t_iter_unthrottled_s']` and
+  `y['throttle_factor']` give the unthrottled time and the ratio, and
+  `y['power_cap_applied_w']` / `y['power_cap_clipped']` report the clipping.
 - `max_num_seqs`, `token_budget` (2048), prefix caching and `enforce_eager` are
   restart-time settings, not inputs. They are `gpu_params` overrides.
 
@@ -397,3 +404,61 @@ t_finish, prompt_tokens, gen_tokens, ttft_s, e2e_s`) in load mode. No other
 behavior changes. A suggested follow-up (not done) is to also log
 `scheduler_stats.prefix_cache_stats` (queries/hits) in `iter_logger.py`. That
 would replace the RNG replay of finding (a) with a direct measurement.
+
+
+## 7. Prefix-cache correction of the energy model (e_gemm)
+
+Finding 1a means `binned_table.csv:gemm_flops_bin` counts prefix-cache hits as
+computed GEMM FLOPs. `controls/prefix_cache_refit.py` (CPU-only) does three
+things:
+- It **adds** two columns, `prefill_tokens_computed` and
+  `gemm_flops_bin_computed`, to every real-prompt run's `binned_table.csv` under
+  `logs/ragged`, `logs/ragged_ladder`, `logs/B200`, `logs/B200_32B` and
+  `logs/B200_large` (130 runs). Existing columns are rewritten from their
+  original strings, i.e. byte-identical. Before any file is written, the
+  logged-prefill recomputation must reproduce `gemm_flops_bin` in at least 99%
+  of bins (actual: 99.6-100%). `logs/ragged_moe` uses the old schema without
+  channel columns and is skipped. The columns disappear if a table is
+  re-exported by `energy_model.py --two_term`; rerun the script afterwards.
+- It re-fits the 3-term model with the same estimator as `reconcile_gpus.fit3`
+  (OLS, P_static = idle, 200-sample bootstrap, held-out-by-model). The
+  "original" rows reproduce `gpu_coefficients.json` exactly.
+- It writes `controls/prefix_cache_refit.json`.
+
+GEMM FLOPs on the calibration sets fall by 6.6% (H200) and 7.6% (B200) in total,
+and by up to 13-15% on sharegpt c64 runs. The correction is concentrated in the
+prefill-heavy bins, which are exactly the bins that identify `e_gemm`.
+
+| GPU (fit set) | | e_wbyte (J/B) | e_kvbyte (J/B) | **e_gemm (pJ/flop)** | R^2 | held-out-by-model MAPE | GEMM share of dyn. energy |
+|---|---|---|---|---|---|---|---|
+| H200 (logs/ragged, 40 runs) | original | 1.0762e-10 [1.0728, 1.0796] | 3.376e-10 [3.285, 3.465] | 0.680 [0.656, 0.702] | 0.803 | 7.02% | 12.2% |
+| | **corrected** | 1.0657e-10 [1.0626, 1.0691] | 3.288e-10 [3.197, 3.374] | **0.794 [0.773, 0.822]** | **0.836** | **6.58%** | 13.4% |
+| | delta | **-0.98%** | -2.6% | **+16.7%** | +0.033 | -0.44 pp | |
+| B200 (logs/B200, 16 runs) | original | 1.2519e-10 [1.2467, 1.2568] | 3.043e-10 [2.729, 3.319] | 0.539 [0.497, 0.588] | 0.646 | 8.97% | 10.4% |
+| | **corrected** | 1.2430e-10 [1.2375, 1.2482] | 2.852e-10 [2.567, 3.143] | **0.642 [0.600, 0.694]** | **0.690** | **8.17%** | 11.4% |
+| | delta | **-0.71%** | -6.3% | **+19.1%** | +0.043 | -0.81 pp | |
+
+Held-out-by-model MAPE improves for every model:
+- H200: Llama 5.2 -> 4.8, Mistral 6.2 -> 5.8, Qwen2 5.7 -> 5.3, gemma 10.9 -> 10.5.
+- B200: Mistral 11.9 -> 10.6, Qwen2 6.1 -> 5.8.
+
+Excluding the two crashed B200 runs gives 0.641 pJ, R^2 0.722. Over all roots
+(including the ladder / 32B / 72B), e_gemm goes 0.610 -> 0.701 (H200) and
+0.445 -> 0.499 (B200), and R^2 also rises. The CIs of the original and
+corrected e_gemm do not overlap on either GPU, so the bias is real.
+
+**Does B200 < H200 in e_gemm survive?** Yes. The ratio B200/H200 is 0.792
+before and **0.808** after the correction (0.642 vs 0.794 pJ); the bootstrap
+gives P(B200 < H200) = 1.00 in both cases. Implications:
+- The recommender's "B200 about 17% cheaper per prefill FLOP" becomes about
+  19% cheaper per FLOP from the ratio, i.e. roughly the same. But absolute
+  prefill energy on *both* GPUs was under-estimated by about 17-19%.
+- The memory coefficients barely move (e_wbyte -1%), so decode-side
+  conclusions are unaffected.
+- The MPC's "route 94-97% of 7B load to B200 at large batch" depends on the
+  GEMM/weight-byte balance. The corrected coefficients keep B200's GEMM
+  advantage and slightly raise the GEMM share (12 -> 13%), so the direction
+  should hold. **The exact percentage was not re-run here.** The MPC/recommender
+  should re-run with the corrected coefficients from `prefix_cache_refit.json`
+  (`H200|B200 -> corrected.coef = [e_wbyte, e_kvbyte, e_gemm]`).
+  `gpu_coefficients.json` was not modified.

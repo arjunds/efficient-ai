@@ -43,7 +43,10 @@ per-sequence costs. Iterations carry decode tokens for every decoding request
 plus chunked prefill up to the token budget (2048). Energy per iteration is the
 validated 3-term model  E = e_wbyte*W + e_kvbyte*KV_bytes + e_gemm*F,  power =
 P_static + E_dyn/dt. If that exceeds the power cap the GPU is throttled: busy
-time stretches to E_dyn/(P_cap - P_static) (first-order; NOT validated on data).
+time stretches to E_dyn/(P_cap - P_static) (first-order; NOT validated on data);
+y['t_iter_s'] / y['tpot_s'] then report the STRETCHED per-iteration time
+(y['t_iter_unthrottled_s'], y['throttle_factor'] give the unthrottled one and
+the ratio). The requested cap is clipped to [p_cap_min_w, p_cap].
 """
 import json
 import math
@@ -60,6 +63,9 @@ _DEFAULT_HW = {
     "B200": dict(e_wbyte=1.252e-10, e_kvbyte=3.043e-10, e_gemm=0.539e-12,
                  p_static=237.8, p_cap=1000.0, bw=8.0e12, peak_flops=2.25e15),
 }
+
+
+_CAP_MIN = {"H200": 200.0, "B200": 300.0, "A5000": 100.0}   # see __init__ note
 
 
 def _load_params():
@@ -124,7 +130,14 @@ class Plant:
                  prompt_len=float(wl.get("prompt_len", 100.0)), cached_frac=0.0,
                  kv_shared_frac=0.0,
                  think_s=float((P.get("think_s", {}) or {}).get(gpu, 0.03)))
+        # settable power-limit floor. ASSUMPTIONS unless measured: H200 200 W
+        # (as H100 SXM), B200 300 W (both as in plant_fp.py); A5000 100 W
+        # (measured enforced limit on node-d1). Override with p_cap_min_w=...
+        g["p_cap_min_w"] = float(_CAP_MIN.get(gpu, 0.0))
         g.update(overrides)
+        if "p_cap_min" in overrides and "p_cap_min_w" not in overrides:
+            g["p_cap_min_w"] = float(overrides["p_cap_min"])
+        g["p_cap_min"] = g["p_cap_min_w"]          # alias used by controllers.py
         g["mbu"], g["mfu"], g["overhead"] = g["u_w"], g["u_f"], g["t_ser"]
         missing = [k for k in ("weight_bytes", "kv_bytes_per_token",
                                "gemm_flops_per_token", "bw", "peak_flops",
@@ -256,7 +269,9 @@ class Plant:
 
         cap_run = min(float(u.get("max_running", g["max_num_seqs"])), float(g["max_num_seqs"]))
         p_cap = float(u.get("power_cap_w", g["p_cap"]))
-        p_cap = min(max(p_cap, g["p_static"] + 1.0), g["p_cap"])
+        p_cap_req = p_cap
+        # settable range of the power limit: [p_cap_min_w, p_cap] (nvidia-smi -pl)
+        p_cap = min(max(p_cap, g["p_cap_min_w"], g["p_static"] + 1.0), g["p_cap"])
         arr = float(d.get("arrivals", 0.0))
         clients = d.get("clients", None)
         p_len = float(d.get("prompt_len", g["prompt_len"]))
@@ -272,7 +287,7 @@ class Plant:
         z_back = 1.0 - math.exp(-h / Z)
         z_same = 1.0 - (Z / h) * z_back            # returned within the same substep
         acc = dict(E=0.0, tok=0.0, comp=0.0, iters=0.0, busy=0.0, adm=0.0,
-                   arr=0.0, done=0.0, throttled=False, tc_max=0.0)
+                   arr=0.0, done=0.0, throttled=False, tc_max=0.0, busy_u=0.0)
 
         def kv_resident(n_run):
             return kvj.sum() + half_blk * n_run
@@ -365,6 +380,9 @@ class Plant:
             acc["E"] += s * E
             acc["iters"] += occ * tau
             acc["busy"] += busy                    # throttled: same busy time, fewer iters
+            acc["busy_u"] += s * busy              # unthrottled time of the iterations done
+            if n_c and s < 1.0:
+                acc["tc_max"] = max(acc["tc_max"], t_c / s)
             # prefill completions -> decode stage 1 (first token emitted)
             done_pf = n_pf * phi
             tok_done = S["pf_tok"] * phi
@@ -406,6 +424,7 @@ class Plant:
         # wait of a request joining now; falls back to the arrival rate.
         lam = (acc["adm"] if acc["adm"] > 1e-9 else max(acc["arr"], done)) / self.dt
         thr = done / self.dt
+        # per-iteration time actually experienced (stretched when throttled)
         t_mean = acc["busy"] / acc["iters"] if acc["iters"] > 0 else \
             self.t_iter(max(n_run, 1.0), 0.0, 1.0)
         wq = q / lam if (q > 1e-9 and lam > 0) else 0.0
@@ -425,6 +444,10 @@ class Plant:
                              (float("inf") if (q + n_run) > 0 else 0.0),
             "ttft_s": wq + max(acc["tc_max"], t_mean),
             "tpot_s": t_mean,
+            "t_iter_unthrottled_s": (acc["busy_u"] / acc["iters"]) if acc["iters"] > 0 else t_mean,
+            "throttle_factor": (acc["busy_u"] / acc["busy"]) if acc["busy"] > 0 else 1.0,
+            "power_cap_applied_w": p_cap,
+            "power_cap_clipped": bool(abs(p_cap - p_cap_req) > 1e-9),
             "throttled": bool(acc["throttled"]),
             "n_waiting": q, "n_running": n_run, "kv_tokens": xn[i["kv_res"]],
         }
