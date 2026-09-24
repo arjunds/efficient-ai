@@ -3,7 +3,8 @@
     "convention": "canonical ~/models.py: active_params excludes the input-embedding gather (reads only batch rows); lm_head counted once. All runs re-binned with it \u2014 H200 and B200 are now apples-to-apples.",
     "generated": "2026-09-24",
     "script": "reconcile_gpus.py",
-    "direct_jbyte_def": "c=1 runs: sum(dynamic energy)/sum(weight+KV bytes) over active bins; no regression. Includes the small (~1-5%) compute-energy share, so it is a slight upper bound on memory energy per byte."
+    "direct_jbyte_def": "c=1 runs: sum(dynamic energy)/sum(weight+KV bytes) over active bins; no regression. Includes the small (~1-5%) compute-energy share, so it is a slight upper bound on memory energy per byte.",
+    "flops": "gemm_flops use prefix-cache-corrected COMPUTED prefill tokens (controls/prefix_cache_refit.py) when present; *_uncorrected keys keep the logged-token fit. Logged prefill_tokens ignore prefix-cache hits (26-36% at c=64) and biased e_gemm ~17-19% low."
   },
   "H200": {
     "gpu_name": "NVIDIA H200",
@@ -28,23 +29,23 @@
       "Qwen2.5-3B-Instruct": 1.0613656490851841e-10,
       "Qwen2.5-7B-Instruct": 1.0601415579322693e-10
     },
-    "e_wbyte": 1.0762054828269707e-10,
-    "e_kvbyte": 3.37586705017507e-10,
-    "e_gemm": 6.804228119414254e-13,
+    "e_wbyte": 1.0656711634256613e-10,
+    "e_kvbyte": 3.2877941215283265e-10,
+    "e_gemm": 7.943783634929445e-13,
     "e_wbyte_ci": [
-      1.0728329090887417e-10,
-      1.0795884478984719e-10
+      1.0625956582817286e-10,
+      1.0690802922860048e-10
     ],
     "e_kvbyte_ci": [
-      3.285411244720438e-10,
-      3.465331097770675e-10
+      3.1972563019582923e-10,
+      3.373850811549611e-10
     ],
     "e_gemm_ci": [
-      6.564539537907765e-13,
-      7.02437277030463e-13
+      7.734025997708388e-13,
+      8.220829576620448e-13
     ],
-    "fit_r2": 0.8029982631328836,
-    "fit_heldout_mape": 7.017742855109709,
+    "fit_r2": 0.8359842277974688,
+    "fit_heldout_mape": 6.576433616306786,
     "fit_n_bins": 9274,
     "fit_cv_dyn": 0.21974129903763992,
     "fit_dataset": "logs/ragged",
@@ -53,7 +54,11 @@
       "Mistral-7B-v0.1",
       "Qwen2-7B-Instruct",
       "gemma-7b"
-    ]
+    ],
+    "flops_prefix_cache_corrected": "40/40 runs",
+    "e_gemm_uncorrected": 6.804228119414254e-13,
+    "e_wbyte_uncorrected": 1.0762054828269707e-10,
+    "e_kvbyte_uncorrected": 3.37586705017507e-10
   },
   "B200": {
     "gpu_name": "NVIDIA B200",
@@ -72,29 +77,43 @@
       "Qwen2.5-32B-Instruct": 1.2574071079916137e-10,
       "Qwen2-72B-Instruct": 1.2570061408393287e-10
     },
-    "e_wbyte": 1.2519446909858607e-10,
-    "e_kvbyte": 3.04331113867019e-10,
-    "e_gemm": 5.386978153348252e-13,
+    "e_wbyte": 1.2430181022220586e-10,
+    "e_kvbyte": 2.8520355521413956e-10,
+    "e_gemm": 6.416076289265256e-13,
     "e_wbyte_ci": [
-      1.2466724075175126e-10,
-      1.2568042619019547e-10
+      1.237547618500268e-10,
+      1.2481993259705018e-10
     ],
     "e_kvbyte_ci": [
-      2.7288082394598614e-10,
-      3.319016702733474e-10
+      2.5666584422490613e-10,
+      3.142580228523623e-10
     ],
     "e_gemm_ci": [
-      4.97047363408835e-13,
-      5.878746209569398e-13
+      5.998794939707895e-13,
+      6.93704706567124e-13
     ],
-    "fit_r2": 0.646403720439866,
-    "fit_heldout_mape": 8.974041151808208,
+    "fit_r2": 0.6897953733895501,
+    "fit_heldout_mape": 8.16860301474331,
     "fit_n_bins": 3255,
     "fit_cv_dyn": 0.15444321326678198,
     "fit_dataset": "logs/B200",
     "fit_models": [
       "Mistral-7B-v0.1",
       "Qwen2-7B-Instruct"
-    ]
+    ],
+    "flops_prefix_cache_corrected": "16/16 runs",
+    "e_gemm_uncorrected": 5.386978153348252e-13,
+    "e_wbyte_uncorrected": 1.2519446909858607e-10,
+    "e_kvbyte_uncorrected": 3.04331113867019e-10
+  },
+  "_excluded": {
+    "A5000": {
+      "reason": "100% of runs at >=95% of enforced power limit 100 W; fit R2=-35.4676709573514",
+      "enforced_limit_w": 100.0,
+      "direct_c1_jbyte_capped": {
+        "Qwen2-7B-Instruct": 2.7388672389581383e-10,
+        "Qwen2.5-3B-Instruct": 2.869525699778667e-10
+      }
+    }
   }
 }

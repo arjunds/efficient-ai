@@ -57,11 +57,15 @@ def run_record(rd):
     rj = os.path.join(rd, "results.json")
     if os.path.exists(rj):
         res = json.load(open(rj))
-    cols = {c: [] for c in FEAT}; dyn = []; dt = []
+    cols = {c: [] for c in FEAT}; dyn = []; dt = []; graw = []; n_corr = 0
     for r in csv.DictReader(open(tbl)):
         try:
             for c in FEAT:
-                cols[c].append(float(r[c]))
+                if c == "gemm_flops_bin" and r.get("gemm_flops_bin_computed") not in (None, ""):
+                    cols[c].append(float(r["gemm_flops_bin_computed"])); n_corr += 1
+                else:
+                    cols[c].append(float(r[c]))
+            graw.append(float(r["gemm_flops_bin"]))
             dyn.append(float(r["energy_bin_j"]) - idle*float(r["dt_s"])); dt.append(float(r["dt_s"]))
         except (KeyError, ValueError):
             pass
@@ -72,6 +76,7 @@ def run_record(rd):
     G = np.array(cols["gemm_flops_bin"]); Y = np.array(dyn); T = np.array(dt)
     return dict(run_dir=rd, model=os.path.basename(os.path.dirname(rd)), task=task,
                 conc=conc, rate=rate, idle=idle, W=W, K=K, G=G, Y=Y, T=T,
+                G_raw=np.array(graw), flops_corrected=(n_corr == len(dyn)),
                 tok_s=res.get("aggregate_tokens_per_sec"),
                 p_avg=res.get("avg_power_window_w"))
 
@@ -110,7 +115,11 @@ def main():
         "direct_jbyte_def": "c=1 runs: sum(dynamic energy)/sum(weight+KV bytes) over "
                             "active bins; no regression. Includes the small (~1-5%) "
                             "compute-energy share, so it is a slight upper bound on "
-                            "memory energy per byte."}}
+                            "memory energy per byte.",
+        "flops": "gemm_flops use prefix-cache-corrected COMPUTED prefill tokens "
+                 "(controls/prefix_cache_refit.py) when present; *_uncorrected keys "
+                 "keep the logged-token fit. Logged prefill_tokens ignore prefix-cache "
+                 "hits (26-36% at c=64) and biased e_gemm ~17-19% low."}}
     util_rows = []
     for gpu, g in GROUPS.items():
         recs = [r for root in g["roots"] for rd in sorted(glob.glob(os.path.join(root, "*", "*")))
@@ -148,6 +157,14 @@ def main():
                          e_gemm_ci=[float(lo[2]), float(hi[2])], fit_r2=f["r2"],
                          fit_heldout_mape=f["heldout"], fit_n_bins=f["n_bins"],
                          fit_cv_dyn=f["cv_dyn"], fit_dataset=g["fit_root"], fit_models=f["models"])
+            n_corr = sum(r["flops_corrected"] for r in frecs)
+            entry["flops_prefix_cache_corrected"] = f"{n_corr}/{len(frecs)} runs"
+            fu = fit3([dict(r, G=r["G_raw"]) for r in frecs], n_boot=100)
+            entry.update(e_gemm_uncorrected=float(fu["coef"][2]),
+                         e_wbyte_uncorrected=float(fu["coef"][0]),
+                         e_kvbyte_uncorrected=float(fu["coef"][1]))
+            print(f"  [prefix-cache corrected FLOPs in {n_corr}/{len(frecs)} runs; "
+                  f"uncorrected e_gemm={fu['coef'][2]*1e12:.3f} pJ]")
             print(f"  3-term fit [{g['fit_root']}]: e_wbyte={c[0]:.3e} [{lo[0]:.3e},{hi[0]:.3e}]  "
                   f"e_kvbyte={c[1]:.3e}  e_gemm={c[2]*1e12:.3f} pJ [{lo[2]*1e12:.3f},{hi[2]*1e12:.3f}]  "
                   f"R2={f['r2']:.3f} held-out={f['heldout']}  CV(dyn)={f['cv_dyn']:.3f}")
@@ -161,6 +178,30 @@ def main():
                 if sum(len(r["Y"]) for r in sub) > 50:
                     f = fit3(sub, n_boot=50)
                     print(f"  diag {root}/{m}: e_wbyte={f['coef'][0]:.3e} R2={f['r2']:.3f} CV={f['cv_dyn']:.3f}")
+        # Validity gate: a GPU pinned at its enforced power limit is in the
+        # constant-power regime (HANDOFF gotcha #1) — its coefficients are not
+        # physics. Keep it OUT of the coefficient table so downstream tools
+        # (recommend_gpu.py auto-loads entries) don't consume garbage.
+        lim = []
+        for r in recs:
+            mp = os.path.join(r["run_dir"], "run_meta.json")
+            try:
+                m = json.load(open(mp))
+                v = m.get("enforced_power_limit_w") or m.get("power_limit_w")
+                if v:
+                    lim.append(float(v))
+            except Exception:
+                pass
+        enforced = min(lim) if lim else g["p_cap"]
+        p_avgs = [r["p_avg"] for r in recs if r["p_avg"]]
+        capped_frac = (sum(p >= 0.95*enforced for p in p_avgs)/len(p_avgs)) if p_avgs else 0.0
+        if capped_frac > 0.5 or (entry.get("fit_r2") is not None and entry["fit_r2"] < 0):
+            reason = (f"{capped_frac:.0%} of runs at >=95% of enforced power limit "
+                      f"{enforced:.0f} W; fit R2={entry.get('fit_r2')}")
+            print(f"  !! {gpu} EXCLUDED from coefficient table: {reason}")
+            out.setdefault("_excluded", {})[gpu] = dict(reason=reason, enforced_limit_w=enforced,
+                                                       direct_c1_jbyte_capped=entry.get("direct_c1_jbyte"))
+            continue
         out[gpu] = entry
     json.dump(out, open("gpu_coefficients.json", "w"), indent=2)
     with open("realized_utilization.csv", "w", newline="") as fh:
