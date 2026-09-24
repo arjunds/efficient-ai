@@ -549,7 +549,7 @@ def make_figure(rows, wm, path):
                       % ("c" if phase == "decode" else "d", phase.upper()), loc="left", fontsize=8.5)
         cb = fig.colorbar(im, ax=axx, fraction=0.04, pad=0.02, ticks=[-1, -0.5, 0, 0.5, 1])
         cb.ax.set_yticklabels(["0.5", "0.71", "1", "1.41", "2"]); cb.set_label("B200 / H200", fontsize=8)
-    fig.suptitle("Recommender v2.1: measured (prefix-cache-corrected) coefficients + realized utilization (vLLM 0.10.2, fp16); win-maps at cached_frac=0",
+    fig.suptitle("Recommender v2.2: measured (prefix-cache-corrected) coefficients + realized utilization (vLLM 0.10.2, fp16); win-maps at cached_frac=0",
                  x=0.01, ha="left", fontsize=11.5, color=INK)
     fig.tight_layout(rect=(0, 0, 1, 0.97))
     fig.savefig(path, facecolor=fig.get_facecolor())

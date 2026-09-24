@@ -168,7 +168,12 @@ prompt/gen lengths, concurrency only):
 - **Prefill: B200 ~13–15% cheaper for ≥3B at batch ≥4 — probable, not confident**
   (P 0.78–0.88); its compute demand approaches its 1000 W cap.
 - **Phase reversal:** B200-prefill / H200-decode (the credible pair).
-  *[Pending: win map with memory-technology priors for L40S (GDDR6) / A100 (HBM2e).]*
+- **Unmeasured GPUs via memory-technology priors** (HBM3e 1.07–1.25, HBM2e ~1.75
+  [1.4, 2.3], GDDR6 ~3.2 [2.5, 4.1] ×10⁻¹⁰ J/B): **A100 decodes 1.56–1.76× cheaper
+  than L40S (P≈1.0)** — the decode half of v1's claim returns, but because GDDR6
+  costs ~1.8× HBM2e per byte, not because of 1/BW scaling. The prefill half ("L40S for
+  prefill") is **unsupported**: it hinges entirely on Ada `e_gemm`, which is unmeasured
+  (P(L40S wins prefill) 0.32–0.42).
 
 ---
 

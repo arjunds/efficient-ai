@@ -107,26 +107,48 @@ DATASHEET = {
                         peak_flops=3.12e14, p_cap=400.0, p_static=60.0, p_static_range=[50.0, 90.0]),
     "H100-SXM": dict(gpu_name="NVIDIA H100 SXM", mem_tech="HBM3", bw=3.35e12, peak_flops=9.9e14,
                      p_cap=700.0, p_static=110.0, p_static_range=[70.0, 130.0]),
+    # L40S idle under a loaded vLLM context is unknown; the A5000 (same memory tech,
+    # smaller die) idles at 54-86 W depending on clock state -> wide.
     "L40S": dict(gpu_name="NVIDIA L40S", mem_tech="GDDR6", bw=0.864e12, peak_flops=3.62e14,
-                 p_cap=350.0, p_static=35.0, p_static_range=[25.0, 60.0]),
-    "A5000": dict(gpu_name="NVIDIA RTX A5000", mem_tech="GDDR6", bw=0.768e12, peak_flops=1.11e14,
-                  p_cap=230.0, p_static=25.0, p_static_range=[15.0, 35.0]),
+                 p_cap=350.0, p_static=70.0, p_static_range=[35.0, 110.0]),
+    # A5000: idle MEASURED (FINDINGS_A5000.md: 54 / 60.5 / 86 W by clock state; 60.5 W
+    # with vLLM loaded at full SM clock). Its serving runs are power-limited (100 W) and
+    # excluded; only its full-clock MICROBENCHMARKS feed the priors below.
+    "A5000": dict(gpu_name="NVIDIA RTX A5000", mem_tech="GDDR6", bw=0.768e12, peak_flops=1.111e14,
+                  p_cap=230.0, p_static=60.5, p_static_range=[54.0, 86.0]),
 }
 
-# Memory-technology priors for GPUs with no measured coefficients: (center, lo, hi).
-#  HBM3/3e : spans every measured direct J/byte on H200 and B200 (models >=3B).
-#  HBM2e   : A100-PCIe direct c=1 dyn-energy/byte = 1.7-1.8e-10 while pinned at its
-#            300 W cap — the only HBM2e evidence we have; wide.
-#  GDDR6   : UNKNOWN until the A5000 measurement lands — very wide. If
-#            gpu_coefficients.json gains an entry with mem_tech GDDR6 (the A5000),
-#            the prior is replaced by that measurement (±15%).
-#  e_gemm  : between "invariant" (H200/B200 measured values) and "∝ 1/peak"
-#            scaled from H200 — the law is only weakly supported for compute.
+# Memory-technology-class priors for GPUs with no measured coefficients: (center, lo, hi).
+# Energy per byte is set by MEMORY TECHNOLOGY (FINDINGS_B200.md, FINDINGS_A5000.md):
+#  HBM3/3e : the measured H200/B200 band, 1.07-1.25e-10 J/B.
+#  HBM2e   : ~1.7-1.8e-10 from the A100-PCIe c=1 runs pinned at its 300 W cap — weak, wide.
+#  GDDR6   : A5000 microbenchmarks at full clocks: cuBLAS GEMV 2.7-3.6e-10, and serving on
+#            the same GPU costs 1.04-1.14x GEMV per analytic byte -> ~2.8-4.1e-10. It is
+#            confounded with process node (Samsung 8N) and the V/f point, so kept wide.
+#  e_kvbyte: the HBM parts show KV = weight + 1.6-2.2e-10 (additive) or 2.3-3.1x
+#            (multiplicative); the prior spans both readings.
 MEM_PRIOR = {
-    "HBM3e": dict(e_wbyte=(1.16e-10, 1.03e-10, 1.27e-10), e_kvbyte=(3.2e-10, 2.7e-10, 3.5e-10)),
-    "HBM3":  dict(e_wbyte=(1.16e-10, 1.03e-10, 1.30e-10), e_kvbyte=(3.2e-10, 2.7e-10, 3.6e-10)),
-    "HBM2e": dict(e_wbyte=(1.8e-10, 1.4e-10, 2.4e-10), e_kvbyte=(4.5e-10, 3.0e-10, 6.5e-10)),
-    "GDDR6": dict(e_wbyte=(1.8e-10, 1.0e-10, 3.5e-10), e_kvbyte=(4.5e-10, 2.5e-10, 9.0e-10)),
+    "HBM3e": dict(e_wbyte=(1.16e-10, 1.07e-10, 1.25e-10), e_kvbyte=(3.1e-10, 2.7e-10, 3.5e-10),
+                  src="HBM3/3e class prior (H200+B200 measured band)"),
+    "HBM3":  dict(e_wbyte=(1.16e-10, 1.07e-10, 1.25e-10), e_kvbyte=(3.1e-10, 2.7e-10, 3.5e-10),
+                  src="HBM3/3e class prior (H200+B200 measured band)"),
+    "HBM2e": dict(e_wbyte=(1.75e-10, 1.4e-10, 2.3e-10), e_kvbyte=(4.5e-10, 3.3e-10, 6.5e-10),
+                  src="HBM2e class prior (A100-PCIe, cap-bound; weak)"),
+    "GDDR6": dict(e_wbyte=(3.2e-10, 2.5e-10, 4.1e-10), e_kvbyte=(6.0e-10, 3.7e-10, 11.0e-10),
+                  src="GDDR6 class prior (A5000 microbench)"),
+}
+# e_gemm priors for unmeasured parts (J/flop, fp16 dense): (center, lo, hi, source).
+#  Ampere GA10x (A5000): cuBLAS measured 2-4 pJ/flop at 98-100 TFLOPS (88-90% of 111.1
+#     dense), i.e. neither H200-invariant (0.68-0.79) nor 1/peak-law (6.1).
+#  Hopper H100: same die as H200 -> the H200 measured value ±25% (filled in load_gpus).
+#  Ada L40S, Ampere GA100 (A100): no measurement — wide, between Hopper-measured and
+#     GA102-measured.
+GEMM_PRIOR = {
+    "A5000": (3.0e-12, 2.0e-12, 4.0e-12, "microbench prior (A5000 GA102 cuBLAS)"),
+    "L40S": (1.6e-12, 0.64e-12, 4.0e-12, "wide prior (Ada, unmeasured)"),
+    "A100-80-PCIe": (1.4e-12, 0.7e-12, 3.0e-12, "wide prior (GA100, unmeasured)"),
+    "A100-80-SXM": (1.4e-12, 0.7e-12, 3.0e-12, "wide prior (GA100, unmeasured)"),
+    "H100-SXM": None,   # -> H200 measured, same die
 }
 MFU_PREFILL = (0.65, 0.50, 0.75)   # prior; B200 cuBLAS 8192^3 measured 68% of dense peak
 
@@ -235,17 +257,20 @@ def load_gpus(path=COEFF_JSON, uncorrected=False):
         if name in gpus:
             continue
         pr = prior.get(spec["mem_tech"], prior["GDDR6"])
-        e_g_inv = h["e_gemm"] if h else 0.68e-12
-        e_g_law = e_g_inv * (h["peak_flops"] if h else 9.9e14) / spec["peak_flops"]
-        lo_g, hi_g = sorted([e_g_inv, e_g_law])
-        cg = math.sqrt(lo_g * hi_g)
+        gp = GEMM_PRIOR.get(name)
+        if gp is None:     # Hopper / anything unlisted: anchor on the H200 measurement
+            c = h["e_gemm"] if h else 0.79e-12
+            gp = (c, 0.72 * c, 1.25 * c, "H200-anchored prior (same architecture)")
+        if name not in GEMM_PRIOR:
+            gp = (gp[0], gp[1], 4.0e-12, "wide prior (unlisted GPU)")
+        micro = "microbench" in gp[3] or "microbench" in pr.get("src", "")
         g = dict(spec, name=name, measured=False, mem=MEM_BYTES.get(name, 80e9),
-                 e_wbyte=pr["e_wbyte"][0], e_kvbyte=pr["e_kvbyte"][0], e_gemm=cg,
-                 r_wbyte=pr["e_wbyte"], r_kvbyte=pr["e_kvbyte"],
-                 r_gemm=(cg, 0.8 * lo_g, 1.2 * hi_g),
+                 e_wbyte=pr["e_wbyte"][0], e_kvbyte=pr["e_kvbyte"][0], e_gemm=gp[0],
+                 r_wbyte=pr["e_wbyte"][:3], r_kvbyte=pr["e_kvbyte"][:3], r_gemm=gp[:3],
                  r_static=(spec["p_static"],) + tuple(spec["p_static_range"]),
-                 energy_src="PRIOR (%s band)" % spec["mem_tech"], time_key="_prior",
-                 confidence="LOW (prior)")
+                 energy_src="PRIOR: %s; e_gemm %s" % (pr.get("src", spec["mem_tech"]), gp[3]),
+                 time_key="_prior",
+                 confidence="LOW (microbench prior)" if micro else "LOW (prior)")
         gpus[name] = g
     return gpus
 

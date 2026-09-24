@@ -1,7 +1,11 @@
-# GPU recommender v2.1: measured coefficients and realized utilization
+# GPU recommender v2.2: measured coefficients and realized utilization
 
 *v2.1 (2026-09-24): prefix-cache-corrected coefficients, a `cached_frac` workload
 parameter (§1a), and the power-limited A5000 excluded. v2.0 was commit 84fea1a.*
+
+*v2.2: memory-technology-class priors for unmeasured GPUs, with GDDR6 and Ampere
+GA10x e_gemm taken from the A5000 microbenchmarks (`FINDINGS_A5000.md`). The L40S/A100
+question is re-answered in §4.*
 
 Files: `recommend_gpu.py` (the tool, CLI compatible with v1), `recommender_backtest.py`
 (fit, backtest, win-map, figure), `plots_proposal/fig8_recommender_v2.png`.
@@ -40,19 +44,29 @@ table as weight traffic, which inflated weight bytes by 7.7% for Qwen2-7B. The l
 re-binned everything under canonical `~/models.py`. v2 uses that convention
 throughout, and `e_gemm` multiplies dense GEMM FLOPs only, as the fit does.
 
-**Memory-technology priors** (center [lo, hi], J/byte, weight stream):
-- HBM3/3e: 1.16e-10 [1.03, 1.27]. This covers every direct c=1 J/byte measured on
-  H200 and B200 for models ≥3B.
-- HBM2e: 1.8e-10 [1.4, 2.4]. It comes from the A100-PCIe c=1 runs, which are pinned at
-  the 300 W cap, so it is an effective value under throttling.
-- GDDR6: 1.8e-10 [1.0, 3.5]. This is **unknown**. A valid GDDR6 entry in
-  `gpu_coefficients.json` would replace this prior (±15%) automatically, for L40S too.
-  **The current A5000 data is not valid.** All 16 runs were pinned at a 100 W enforced
-  power limit set by another user; its capped direct J/byte is 2.7-2.9e-10. It is
-  listed under `_excluded`, so both `load_gpus()` and backtest discovery skip it, and
-  GDDR6 stays a prior.
-- e_gemm for unmeasured GPUs spans the range between "invariant" (the H200 value) and
-  "∝ 1/peak".
+**Memory-technology-class priors for unmeasured GPUs.** Energy per byte is set by
+memory technology (`FINDINGS_A5000.md`). Weight stream, J/byte, center [lo, hi]:
+
+| class | e_wbyte | e_kvbyte | evidence |
+|---|---|---|---|
+| HBM3/3e (H100) | 1.16e-10 [1.07, 1.25] | 3.1e-10 [2.7, 3.5] | H200 and B200 measured band |
+| HBM2e (A100) | 1.75e-10 [1.4, 2.3] | 4.5e-10 [3.3, 6.5] | A100-PCIe c=1 runs pinned at the 300 W cap. Weak |
+| GDDR6 (L40S, A5000) | **3.2e-10 [2.5, 4.1]** | 6.0e-10 [3.7, 11] | A5000 microbenchmark at full clocks: GEMV 2.7-3.6e-10, and serving costs 1.04-1.14× GEMV per byte. Confounded with process node (Samsung 8N) and the V/f point. **"microbench prior"** |
+
+- **e_gemm priors:**
+
+  | GPU | e_gemm prior | basis |
+  |---|---|---|
+  | A5000 (Ampere GA10x) | 3.0 [2.0, 4.0] pJ | microbench prior: cuBLAS 2-4 pJ at 98-100 TFLOPS, 88-90% of the 111.1 dense peak |
+  | H100 | H200 value [×0.72, ×1.25] | same die as H200 |
+  | L40S (Ada) | 1.6 [0.64, 4.0] pJ | unmeasured, wide |
+  | A100 (GA100) | 1.4 [0.7, 3.0] pJ | unmeasured, wide |
+
+- **Idle:** A5000 idle is **measured** at 60.5 W [54, 86], depending on clock state.
+  L40S idle is widened to 70 W [35, 110], because by analogy with the A5000 a card
+  with a vLLM context loaded idles well above the 35 W v2.0 guess.
+- **The A5000's serving runs remain excluded:** they were power-limited to 100 W. Only
+  its full-clock microbenchmarks feed these priors.
 
 ## 1a. Prefix cache (v2.1)
 
@@ -225,14 +239,32 @@ token; bold = P(winner) ≥ 0.9; cached_frac = 0):
 - **Among the measured GPUs:** B200 for prefill, H200 for decode. This is a genuine
   disaggregation recommendation. The decode half is confident; the prefill half is
   about 80-88%.
-- **The v1 claim ("L40S for prefill, A100 for decode") is not supported.** Both GPUs
-  are prior-only. The joint Monte Carlo gives P(reversal) = 42-53%, a coin flip. The
-  central L40S/A100 decode ratio is 0.93-1.08, and the decision hinges on GDDR6 J/byte,
-  which nobody has measured yet. The A5000 run will decide it.
+- **The v1 claim ("L40S for prefill, A100 for decode"), re-tested with the GDDR6
+  prior:** at prompt 2048 / gen 256 / batch 32, for 7B and 14B:
+
+  | phase | E(L40S)/E(A100-SXM) | P(A100 wins) | driven by |
+  |---|---|---|---|
+  | decode | **1.72-1.76** (vs PCIe 1.56-1.58) | ≈1.00 | robust |
+  | prefill | 1.19 (central) | P(L40S wins) = 0.32-0.42 | unmeasured Ada e_gemm |
+
+  - **Decode:** A100 now wins **confidently**. In v2.1 this was a coin flip; it
+    changed because L40S's GDDR6 bytes cost about 1.8× the HBM2e prior (about 2.7×
+    HBM3e) and L40S streams 2.3× slower. The result is robust to L40S idle (35-70 W)
+    and to e_gemm: the ratio stays 1.44-1.82× across the sensitivity sweep.
+  - **Prefill:** the answer is set entirely by the unmeasured Ada e_gemm. The ratio
+    is 0.58× at 0.8 pJ, 1.06-1.19× at 1.6 pJ, and 1.95-2.2× at 3 pJ; at a
+    GA102-like 3 pJ it is ≈2×.
+  - **Joint P(reversal)** is 32-42%.
+  - **Verdict:** the decode half of the old story (A100 over L40S) now holds firmly,
+    though for the opposite reason from v1: technology-class energy per byte, not
+    1/bandwidth. The prefill half ("L40S wins prefill") is **unsupported**; it needs
+    an Ada e_gemm measurement. The only credible phase reversal is still B200 for
+    prefill, H200 for decode.
 
 **A5000:** the current `logs/A5000` sweep is power-limited to 100 W and **excluded**
 (`_excluded` in `gpu_coefficients.json`). Both tools skip `_excluded` GPUs, so it is in
-neither the backtest, the time fit nor the figures, and GDDR6 remains a prior.
+neither the backtest, the time fit nor the figures. GDDR6 remains a *prior*, now built
+from the A5000 full-clock microbenchmarks (labelled "microbench prior").
 
 Once a valid sweep lands and the entry moves out of `_excluded`, the pipeline takes it
 automatically:
@@ -258,6 +290,8 @@ automatically:
   `--cached-frac`. Prefill energy then scales about linearly, and the GPU ranking does
   not change.
 - **Unmeasured GPUs** (H100, A100-SXM, L40S, A5000 until a valid sweep) are prior-only.
+  Their time model is the pooled H200/B200 ensemble, which is untested on GDDR6 parts.
+  The GDDR6 J/byte prior is confounded with node and clock.
   Idle power for them is an estimate. Treat their rankings as hypotheses; the tool
   labels them `LOW (prior)`.
 - **Power cap:** the throttling model holds dynamic energy fixed and stretches time.
