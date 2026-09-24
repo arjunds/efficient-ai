@@ -1,0 +1,100 @@
+{
+  "_meta": {
+    "convention": "canonical ~/models.py: active_params excludes the input-embedding gather (reads only batch rows); lm_head counted once. All runs re-binned with it \u2014 H200 and B200 are now apples-to-apples.",
+    "generated": "2026-09-24",
+    "script": "reconcile_gpus.py",
+    "direct_jbyte_def": "c=1 runs: sum(dynamic energy)/sum(weight+KV bytes) over active bins; no regression. Includes the small (~1-5%) compute-energy share, so it is a slight upper bound on memory energy per byte."
+  },
+  "H200": {
+    "gpu_name": "NVIDIA H200",
+    "mem_tech": "HBM3e",
+    "bw": 4800000000000.0,
+    "peak_flops": 990000000000000.0,
+    "p_cap": 700.0,
+    "p_static": 116.3865,
+    "p_static_range": [
+      115.913,
+      118.378
+    ],
+    "direct_c1_jbyte": {
+      "Meta-Llama-3-8B": 1.0639099764604005e-10,
+      "Mistral-7B-v0.1": 1.0337530533057514e-10,
+      "Qwen2-7B-Instruct": 1.0761863495414685e-10,
+      "gemma-7b": 1.034557916311814e-10,
+      "Qwen2.5-0.5B-Instruct": 1.2649791973299444e-10,
+      "Qwen2.5-1.5B-Instruct": 1.127988045216335e-10,
+      "Qwen2.5-14B-Instruct": 1.0433119230794193e-10,
+      "Qwen2.5-32B-Instruct": 1.0468559367469939e-10,
+      "Qwen2.5-3B-Instruct": 1.0613656490851841e-10,
+      "Qwen2.5-7B-Instruct": 1.0601415579322693e-10
+    },
+    "e_wbyte": 1.0762054828269707e-10,
+    "e_kvbyte": 3.37586705017507e-10,
+    "e_gemm": 6.804228119414254e-13,
+    "e_wbyte_ci": [
+      1.0728329090887417e-10,
+      1.0795884478984719e-10
+    ],
+    "e_kvbyte_ci": [
+      3.285411244720438e-10,
+      3.465331097770675e-10
+    ],
+    "e_gemm_ci": [
+      6.564539537907765e-13,
+      7.02437277030463e-13
+    ],
+    "fit_r2": 0.8029982631328836,
+    "fit_heldout_mape": 7.017742855109709,
+    "fit_n_bins": 9274,
+    "fit_cv_dyn": 0.21974129903763992,
+    "fit_dataset": "logs/ragged",
+    "fit_models": [
+      "Meta-Llama-3-8B",
+      "Mistral-7B-v0.1",
+      "Qwen2-7B-Instruct",
+      "gemma-7b"
+    ]
+  },
+  "B200": {
+    "gpu_name": "NVIDIA B200",
+    "mem_tech": "HBM3e",
+    "bw": 8000000000000.0,
+    "peak_flops": 2250000000000000.0,
+    "p_cap": 1000.0,
+    "p_static": 237.822,
+    "p_static_range": [
+      236.322,
+      241.696
+    ],
+    "direct_c1_jbyte": {
+      "Mistral-7B-v0.1": 1.232524741137018e-10,
+      "Qwen2-7B-Instruct": 1.2521206308587493e-10,
+      "Qwen2.5-32B-Instruct": 1.2574071079916137e-10,
+      "Qwen2-72B-Instruct": 1.2570061408393287e-10
+    },
+    "e_wbyte": 1.2519446909858607e-10,
+    "e_kvbyte": 3.04331113867019e-10,
+    "e_gemm": 5.386978153348252e-13,
+    "e_wbyte_ci": [
+      1.2466724075175126e-10,
+      1.2568042619019547e-10
+    ],
+    "e_kvbyte_ci": [
+      2.7288082394598614e-10,
+      3.319016702733474e-10
+    ],
+    "e_gemm_ci": [
+      4.97047363408835e-13,
+      5.878746209569398e-13
+    ],
+    "fit_r2": 0.646403720439866,
+    "fit_heldout_mape": 8.974041151808208,
+    "fit_n_bins": 3255,
+    "fit_cv_dyn": 0.15444321326678198,
+    "fit_dataset": "logs/B200",
+    "fit_models": [
+      "Mistral-7B-v0.1",
+      "Qwen2-7B-Instruct"
+    ]
+  }
+}

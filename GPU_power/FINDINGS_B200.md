@@ -303,3 +303,33 @@ the same narrow window the coefficient fitting needs.
 * **Recommender:** `scaled_gpu()`'s `e_byte ∝ 1/bw` should go. Given B200 also
   idles at 237 W vs H200's 117 W, a datasheet-driven recommender will pick a
   B200 for memory-bound decode and lose on energy.
+
+---
+
+# RECONCILIATION (2026-09-24, H200 cluster) — one consistent convention
+
+The reconstructed `models.py` counted **both** embedding tables in `active_params`
+(= total params); the canonical file (the one the whole H200 corpus used, restored
+to the repo) counts lm_head once and **excludes the input-embedding gather**, which
+reads only the batch's rows (e.g. Qwen2-7B: 7.070B vs 7.615B, exactly one
+152064×3584 table). Its "validation anchor" `8.03e9` is the synthetic placeholder in
+`energy_profile_load.py::run_self_test`, not the real accounting. All 30 B200 runs
+were re-binned with the canonical file (`reconcile_gpus.py`,
+`gpu_coefficients.json`, `realized_utilization.csv`).
+
+| | direct c=1 J/byte, Qwen2-7B | 3-term `e_wbyte` [95% CI] | `e_gemm` | R² / held-out | MBU (7B c=1) |
+|---|---|---|---|---|---|
+| H200 | **1.076e-10** | 1.076e-10 [1.073, 1.080] | 0.680 pJ | 0.80 / 7.0% | 0.49 |
+| B200 | **1.252e-10** | 1.252e-10 [1.247, 1.257] | 0.539 pJ | 0.65 / 9.0% | 0.33 |
+| 1/BW-law prediction for B200 | 0.646e-10 | | 0.296 pJ | | |
+
+- **B200/H200 energy per byte = 1.16** (law predicted 0.60). The direct-table ratio
+  above (1.163/0.997 = 1.17) was already self-consistent; the fitted-coefficient
+  comparison (1.189 vs 1.077) mixed conventions and is superseded (1.16).
+- Within-GPU invariance holds tightly: H200 7B–32B 1.03–1.08e-10 (MBU 0.41→0.67);
+  B200 7B/32B/72B 1.24–1.26e-10 (MBU 0.31→0.62).
+- **Caveat:** at very low utilization J/byte inflates (H200 Qwen2.5-0.5B 1.26e-10 at
+  MBU 0.05; 1.5B 1.13e-10 at MBU 0.13) — per-iteration fixed energy not
+  proportional to bytes. Invariance is a statement about MBU ≳ 0.2.
+- Open: why B200 is +16% per byte on the same memory technology (dual-die NV-HBI
+  crossing? load-dependent baseline above idle?). Being tested with microbenchmarks.
