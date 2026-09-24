@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/load_sweep/Qwen2-7B-Instruct/gate_c1_in512_out128",
+  "calibration": "logs/load_sweep/Qwen2-7B-Instruct/gate_c1_in512_out128/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 229,
+    "rmse_w": 9.064227158591349,
+    "mae_w": 5.198536150488831,
+    "r2": -6.485553324832256,
+    "mean_measured_w": 368.5743379873392,
+    "mean_predicted_w": 368.34194532501857,
+    "mean_abs_pct_err": 1.4104444109908172
+  },
+  "plot": null
+}

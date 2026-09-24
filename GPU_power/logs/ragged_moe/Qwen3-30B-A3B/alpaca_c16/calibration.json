@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/ragged_moe/Qwen3-30B-A3B/alpaca_c16",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 227,
+  "n_iters_total": 2035,
+  "weight_bytes": 6083313664.0,
+  "kv_bytes_per_token": 98304.0,
+  "byte_source": "models.py:Qwen3-30B",
+  "idle_power_w": 119.86,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 5.420760888557164e-10,
+  "e_bit_aggregate": 5.442693507788149e-10,
+  "p_static_w": 119.86,
+  "e_bit_joint": 2.7528353539953236e-10,
+  "p_static_joint": 186.8517496081253,
+  "r2_energy": 0.2565641751801001,
+  "r2_power": 0.0037289379183395033,
+  "mean_power_w": 255.487645435808,
+  "mean_bytes_per_bin": 49656990968.10573,
+  "mean_dynamic_power_w": 135.57883139879885
+}

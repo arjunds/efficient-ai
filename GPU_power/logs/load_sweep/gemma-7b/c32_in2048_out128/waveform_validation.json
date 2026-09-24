@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/load_sweep/gemma-7b/c32_in2048_out128",
+  "calibration": "logs/load_sweep/gemma-7b/c32_in2048_out128/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 232,
+    "rmse_w": 24.26550152237987,
+    "mae_w": 16.45133246289666,
+    "r2": -34.03513808461387,
+    "mean_measured_w": 379.4490922575096,
+    "mean_predicted_w": 377.3239952999789,
+    "mean_abs_pct_err": 4.335583560108272
+  },
+  "plot": null
+}

@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/poisson/Qwen2-7B-Instruct/rate4",
+  "calibration": "logs/poisson/Qwen2-7B-Instruct/rate4/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 202,
+    "rmse_w": 47.61064515348991,
+    "mae_w": 22.692404109073493,
+    "r2": -2.90816224539779,
+    "mean_measured_w": 360.62666430626643,
+    "mean_predicted_w": 352.60635836012807,
+    "mean_abs_pct_err": 6.292492029874337
+  },
+  "plot": null
+}

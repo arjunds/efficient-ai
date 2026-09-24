@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/ragged_a100/gemma-7b/alpaca_c64",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 248,
+  "n_iters_total": 2158,
+  "weight_bytes": 17075798016.0,
+  "kv_bytes_per_token": 458752.0,
+  "byte_source": "models.py:gemma-7b",
+  "idle_power_w": 75.297,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 2.589235535956327e-10,
+  "e_bit_aggregate": 2.7348701756788274e-10,
+  "p_static_w": 75.297,
+  "e_bit_joint": -1.269104090696317e-11,
+  "p_static_joint": 308.4374962447094,
+  "r2_energy": -22.897225924512476,
+  "r2_power": -36.29035990284087,
+  "mean_power_w": 298.0621107330647,
+  "mean_bytes_per_bin": 162723730861.41934,
+  "mean_dynamic_power_w": 222.7888380438939
+}

@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/load_sweep/gemma-7b/c8_in512_out128",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 227,
+  "n_iters_total": 4699,
+  "weight_bytes": 17075798016.0,
+  "kv_bytes_per_token": 458752.0,
+  "byte_source": "models.py:gemma-7b",
+  "idle_power_w": 118.384,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.1396451637340844e-10,
+  "e_bit_aggregate": 1.1454878828881782e-10,
+  "p_static_w": 118.384,
+  "e_bit_joint": 3.7517103439805604e-13,
+  "p_static_joint": 321.6587536137913,
+  "r2_energy": 0.3317718541218265,
+  "r2_power": -41.26431181387681,
+  "mean_power_w": 322.3276857918583,
+  "mean_bytes_per_bin": 354780729650.7489,
+  "mean_dynamic_power_w": 203.94289697300437
+}

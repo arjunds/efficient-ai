@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/ragged_a100/Mistral-7B-v0.1/sharegpt_c1",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 237,
+  "n_iters_total": 4335,
+  "weight_bytes": 14220787712.0,
+  "kv_bytes_per_token": 131072.0,
+  "byte_source": "models.py:Mistral-7B-v0.1",
+  "idle_power_w": 73.489,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.7615266639435524e-10,
+  "e_bit_aggregate": 1.7743030636875322e-10,
+  "p_static_w": 73.489,
+  "e_bit_joint": 1.6450430499531924e-12,
+  "p_static_joint": 289.27640318982964,
+  "r2_energy": -10.445036011804843,
+  "r2_power": -16.836673038097416,
+  "mean_power_w": 291.2998951398087,
+  "mean_bytes_per_bin": 245322478345.72153,
+  "mean_dynamic_power_w": 217.80864856845133
+}

@@ -1,0 +1,16 @@
+[warn] matplotlib unavailable, skipping plot: No module named 'matplotlib'
+{
+  "run_dir": "logs/ragged_moe/Qwen3-30B-A3B/alpaca_c1",
+  "calibration": "logs/ragged_moe/Qwen3-30B-A3B/alpaca_c1/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 231,
+    "rmse_w": 7.037163899808681,
+    "mae_w": 4.1555127505932195,
+    "r2": -1.5578154651628355,
+    "mean_measured_w": 149.11679927312758,
+    "mean_predicted_w": 147.65722492239095,
+    "mean_abs_pct_err": 2.786750232602455
+  },
+  "plot": null
+}

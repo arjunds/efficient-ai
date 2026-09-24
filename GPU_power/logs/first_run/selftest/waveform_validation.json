@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/first_run/selftest",
+  "calibration": "logs/first_run/selftest/calibration.json",
+  "n_iter_windows": 400,
+  "metrics": {
+    "n_samples": 4273,
+    "rmse_w": 1.147387247521838,
+    "mae_w": 0.9953067018952434,
+    "r2": 0.9942109906420667,
+    "mean_measured_w": 182.42110297215072,
+    "mean_predicted_w": 182.40075314112846,
+    "mean_abs_pct_err": 0.5456094090425446
+  },
+  "plot": null
+}

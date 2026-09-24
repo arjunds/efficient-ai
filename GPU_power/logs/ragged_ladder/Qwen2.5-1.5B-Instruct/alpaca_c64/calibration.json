@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c64",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 232,
+  "n_iters_total": 6037,
+  "weight_bytes": 3087138816.0,
+  "kv_bytes_per_token": 28672.0,
+  "byte_source": "hf_config:Qwen/Qwen2.5-1.5B-Instruct",
+  "idle_power_w": 115.913,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 2.6577350432902516e-10,
+  "e_bit_aggregate": 2.7054537011827795e-10,
+  "p_static_w": 115.913,
+  "e_bit_joint": -1.0421569063983112e-11,
+  "p_static_joint": 232.90709201931713,
+  "r2_energy": -5.808235195074446,
+  "r2_power": -5.808235195074448,
+  "mean_power_w": 228.56757074465895,
+  "mean_bytes_per_bin": 83279634432.0,
+  "mean_dynamic_power_w": 112.65457074465894
+}

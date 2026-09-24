@@ -1,0 +1,4 @@
+======================================================================
+[2026-07-17 15:30:59] MODEL Qwen2-7B-Instruct
+======================================================================
+[2026-07-17 15:30:59] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/load_sweep_a100/Qwen2-7B-Instruct/idle --gpu_id 0 --max_model_len 4096 --gpu_memory_utilization 0.9 --duration_s 15

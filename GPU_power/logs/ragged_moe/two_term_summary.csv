@@ -1,0 +1,2 @@
+model,e_bit_j_per_byte,e_flop_pJ_per_flop,p_none,r2_dyn,identifiable,bytes_flops_r,ai_span_ratio,n_bins
+Qwen3-30B-A3B,4.819269946865146e-10,2.18303795856836,,0.3617068448020516,True,0.016257231701963085,3085.4383408868957,2409

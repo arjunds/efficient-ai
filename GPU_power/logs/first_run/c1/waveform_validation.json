@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/first_run/c1",
+  "calibration": "logs/first_run/c1/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 152,
+    "rmse_w": 9.89304497608939,
+    "mae_w": 6.042159263997161,
+    "r2": -2.850782909832318,
+    "mean_measured_w": 366.8280008986261,
+    "mean_predicted_w": 366.514864034877,
+    "mean_abs_pct_err": 1.6471368731927658
+  },
+  "plot": null
+}

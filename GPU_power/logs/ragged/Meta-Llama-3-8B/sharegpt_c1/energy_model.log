@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/ragged/Meta-Llama-3-8B/sharegpt_c1",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 227,
+  "n_iters_total": 7183,
+  "weight_bytes": 15009316864.0,
+  "kv_bytes_per_token": 131072.0,
+  "byte_source": "models.py:Llama3-8B",
+  "idle_power_w": 118.378,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.0813115631670414e-10,
+  "e_bit_aggregate": 1.0848324401990416e-10,
+  "p_static_w": 118.378,
+  "e_bit_joint": 6.271994048990839e-12,
+  "p_static_joint": 353.3289128603555,
+  "r2_energy": -0.9830194110367281,
+  "r2_power": -4.241682107746016,
+  "mean_power_w": 367.7514126003687,
+  "mean_bytes_per_bin": 459020028959.5771,
+  "mean_dynamic_power_w": 249.37019319359135
+}

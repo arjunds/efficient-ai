@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/ragged/Meta-Llama-3-8B/sharegpt_poisson8",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 234,
+  "n_iters_total": 6727,
+  "weight_bytes": 15009316864.0,
+  "kv_bytes_per_token": 131072.0,
+  "byte_source": "models.py:Llama3-8B",
+  "idle_power_w": 118.378,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.306141589283107e-10,
+  "e_bit_aggregate": 1.3221224712045672e-10,
+  "p_static_w": 118.378,
+  "e_bit_joint": 8.829079413012606e-12,
+  "p_static_joint": 381.032272515242,
+  "r2_energy": -0.3502198449406726,
+  "r2_power": -1.863062189005793,
+  "mean_power_w": 399.71065955856994,
+  "mean_bytes_per_bin": 424131551582.08545,
+  "mean_dynamic_power_w": 281.43454206863896
+}

@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/poisson/Qwen2-7B-Instruct/rate4",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 198,
+  "n_iters_total": 6244,
+  "weight_bytes": 14140571648.0,
+  "kv_bytes_per_token": 57344.0,
+  "byte_source": "models.py:Qwen2-7B-Instruct",
+  "idle_power_w": 117.191,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.0962131158456997e-10,
+  "e_bit_aggregate": 1.1138834860401534e-10,
+  "p_static_w": 117.191,
+  "e_bit_joint": 1.3013592801439708e-11,
+  "p_static_joint": 332.72195094866424,
+  "r2_energy": -1.4548477859273925,
+  "r2_power": -1.4548477859273916,
+  "mean_power_w": 361.23365609975303,
+  "mean_bytes_per_bin": 438183557513.0505,
+  "mean_dynamic_power_w": 244.04265609975306
+}

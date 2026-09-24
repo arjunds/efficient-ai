@@ -1,0 +1,16 @@
+[warn] matplotlib unavailable, skipping plot: No module named 'matplotlib'
+{
+  "run_dir": "logs/ragged/gemma-7b/sharegpt_c4",
+  "calibration": "logs/ragged/gemma-7b/sharegpt_c4/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 235,
+    "rmse_w": 18.570533620564756,
+    "mae_w": 12.406232505739418,
+    "r2": -1.9753448002163134,
+    "mean_measured_w": 338.6415022384949,
+    "mean_predicted_w": 337.4954000012444,
+    "mean_abs_pct_err": 3.6635298460854586
+  },
+  "plot": null
+}

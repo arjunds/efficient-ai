@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/ragged/Mistral-7B-v0.1/sharegpt_c16",
+  "calibration": "logs/ragged/Mistral-7B-v0.1/sharegpt_c16/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 234,
+    "rmse_w": 44.93026357250838,
+    "mae_w": 28.64522488701813,
+    "r2": -6.691526134192359,
+    "mean_measured_w": 403.6355970104268,
+    "mean_predicted_w": 397.7072859914618,
+    "mean_abs_pct_err": 7.096803428434525
+  },
+  "plot": null
+}

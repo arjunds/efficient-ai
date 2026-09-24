@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/load_sweep/Qwen2-7B-Instruct/c8_in2048_out128",
+  "calibration": "logs/load_sweep/Qwen2-7B-Instruct/c8_in2048_out128/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 228,
+    "rmse_w": 15.026729359482015,
+    "mae_w": 9.603590512325333,
+    "r2": -16.19042910829644,
+    "mean_measured_w": 382.381945534575,
+    "mean_predicted_w": 381.55640005431314,
+    "mean_abs_pct_err": 2.5115177702491644
+  },
+  "plot": null
+}

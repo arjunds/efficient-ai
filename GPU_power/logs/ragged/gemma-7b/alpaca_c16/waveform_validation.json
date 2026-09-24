@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/ragged/gemma-7b/alpaca_c16",
+  "calibration": "logs/ragged/gemma-7b/alpaca_c16/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 236,
+    "rmse_w": 19.826879776248038,
+    "mae_w": 15.805409591691767,
+    "r2": -9.026076141110265,
+    "mean_measured_w": 368.0189518863458,
+    "mean_predicted_w": 366.8031790030208,
+    "mean_abs_pct_err": 4.294727081493592
+  },
+  "plot": null
+}

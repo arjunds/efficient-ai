@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c1",
+  "calibration": "logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c1/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 233,
+    "rmse_w": 2.930709318021667,
+    "mae_w": 2.1456527135010437,
+    "r2": -2.720619026987128,
+    "mean_measured_w": 220.43221203974065,
+    "mean_predicted_w": 220.374092727511,
+    "mean_abs_pct_err": 0.9733843768324634
+  },
+  "plot": null
+}

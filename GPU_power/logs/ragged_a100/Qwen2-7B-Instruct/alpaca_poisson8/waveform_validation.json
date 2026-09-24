@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/ragged_a100/Qwen2-7B-Instruct/alpaca_poisson8",
+  "calibration": "logs/ragged_a100/Qwen2-7B-Instruct/alpaca_poisson8/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 236,
+    "rmse_w": 24.030144122623863,
+    "mae_w": 17.145105611458362,
+    "r2": -26.636116368103277,
+    "mean_measured_w": 298.04461379947014,
+    "mean_predicted_w": 295.6885615171676,
+    "mean_abs_pct_err": 5.752529929292365
+  },
+  "plot": null
+}

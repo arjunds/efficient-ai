@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/load_sweep/Mistral-7B-v0.1/c16_in2048_out128",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 229,
+  "n_iters_total": 6604,
+  "weight_bytes": 14220787712.0,
+  "kv_bytes_per_token": 131072.0,
+  "byte_source": "models.py:Mistral-7B-v0.1",
+  "idle_power_w": 117.414,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.4506961638814877e-10,
+  "e_bit_aggregate": 1.455644252123372e-10,
+  "p_static_w": 117.414,
+  "e_bit_joint": 1.5266639872625557e-13,
+  "p_static_joint": 419.93383509490894,
+  "r2_energy": 0.15778261711687402,
+  "r2_power": -60.11387291502046,
+  "mean_power_w": 420.25668968117316,
+  "mean_bytes_per_bin": 414817700439.19653,
+  "mean_dynamic_power_w": 302.8386496862956
+}

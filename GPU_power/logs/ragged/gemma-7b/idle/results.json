@@ -1,0 +1,14 @@
+{
+  "mode": "idle",
+  "idle_power_w": 118.367,
+  "nvml_summary": {
+    "gpu_name": "NVIDIA H200",
+    "power_limit_w": 700.0,
+    "n_samples": 1501,
+    "duration_s": 15.000730037689209,
+    "mean_power_w": 118.51948434377083,
+    "median_power_w": 118.367,
+    "max_power_w": 152.842,
+    "min_power_w": 118.295
+  }
+}

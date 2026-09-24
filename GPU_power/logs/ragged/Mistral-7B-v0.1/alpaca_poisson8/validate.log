@@ -1,0 +1,16 @@
+[warn] matplotlib unavailable, skipping plot: No module named 'matplotlib'
+{
+  "run_dir": "logs/ragged/Mistral-7B-v0.1/alpaca_poisson8",
+  "calibration": "logs/ragged/Mistral-7B-v0.1/alpaca_poisson8/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 233,
+    "rmse_w": 22.544914227888672,
+    "mae_w": 15.14094812639516,
+    "r2": -2.902746210967403,
+    "mean_measured_w": 385.5095022191344,
+    "mean_predicted_w": 384.0384703990987,
+    "mean_abs_pct_err": 3.9275161933073757
+  },
+  "plot": null
+}

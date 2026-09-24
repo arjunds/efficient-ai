@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/ragged_a100/Meta-Llama-3-8B/sharegpt_poisson8",
+  "calibration": "logs/ragged_a100/Meta-Llama-3-8B/sharegpt_poisson8/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 243,
+    "rmse_w": 59.94704929881412,
+    "mae_w": 40.876679139030045,
+    "r2": -11.18339337528647,
+    "mean_measured_w": 292.8929945799498,
+    "mean_predicted_w": 278.1204982686928,
+    "mean_abs_pct_err": 13.956181914713603
+  },
+  "plot": null
+}

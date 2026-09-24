@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_poisson8",
+  "calibration": "logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_poisson8/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 231,
+    "rmse_w": 3.3684750801863936,
+    "mae_w": 2.3901002436482375,
+    "r2": -0.313085760218512,
+    "mean_measured_w": 148.80099421867652,
+    "mean_predicted_w": 148.6717341730661,
+    "mean_abs_pct_err": 1.6062394315294486
+  },
+  "plot": null
+}

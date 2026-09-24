@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/ragged_moe/Qwen3-30B-A3B/alpaca_c16",
+  "calibration": "logs/ragged_moe/Qwen3-30B-A3B/alpaca_c16/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 239,
+    "rmse_w": 30.96867951303084,
+    "mae_w": 15.738053007140051,
+    "r2": -0.5975976423276979,
+    "mean_measured_w": 253.3950458516277,
+    "mean_predicted_w": 248.1069190369448,
+    "mean_abs_pct_err": 6.2108763627349175
+  },
+  "plot": null
+}

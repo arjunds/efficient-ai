@@ -1,0 +1,14 @@
+{
+  "n_runs": 10,
+  "n_bins": 2317,
+  "e_bit_j_per_byte": 1.0993362496321587e-10,
+  "e_flop_j_per_flop": 8.361890337745771e-13,
+  "e_flop_pJ_per_flop": 0.8361890337745771,
+  "r2_dynamic_energy": 0.6482830536171454,
+  "bytes_flops_pearson": -0.7561527126762039,
+  "identifiable": true,
+  "arithmetic_intensity_min": 0.8057874841102564,
+  "arithmetic_intensity_max": 1408.3987306293802,
+  "ai_span_ratio": 1747.8538180380426,
+  "glob": "logs/ragged_ladder/Qwen2.5-7B-Instruct/*"
+}

@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/ragged/Meta-Llama-3-8B/alpaca_c16",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 234,
+  "n_iters_total": 6391,
+  "weight_bytes": 15009316864.0,
+  "kv_bytes_per_token": 131072.0,
+  "byte_source": "models.py:Llama3-8B",
+  "idle_power_w": 118.378,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.3903003202428734e-10,
+  "e_bit_aggregate": 1.4034703742084703e-10,
+  "p_static_w": 118.378,
+  "e_bit_joint": 4.884629524442585e-13,
+  "p_static_joint": 399.78513125111994,
+  "r2_energy": -0.339582373990684,
+  "r2_power": -17.0364436803645,
+  "mean_power_w": 400.64283642284005,
+  "mean_bytes_per_bin": 400875345797.4701,
+  "mean_dynamic_power_w": 282.37704021195117
+}

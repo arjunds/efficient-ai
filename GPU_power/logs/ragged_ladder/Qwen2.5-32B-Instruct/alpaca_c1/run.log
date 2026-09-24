@@ -1,0 +1,67 @@
+/workspace/nvml_logger.py:31: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml
+[prompts] task=alpaca file=prompts_alpaca.json n=2000 token-len p5/50/95=13/20/52
+INFO 08-11 04:46:59 [__init__.py:216] Automatically detected platform cuda.
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+INFO 08-11 04:47:26 [__init__.py:742] Resolved architecture: Qwen2ForCausalLM
+`torch_dtype` is deprecated! Use `dtype` instead!
+WARNING 08-11 04:47:26 [__init__.py:2767] Casting torch.bfloat16 to torch.float16.
+INFO 08-11 04:47:26 [__init__.py:1815] Using max model len 8192
+INFO 08-11 04:47:30 [scheduler.py:222] Chunked prefill is enabled with max_num_batched_tokens=2048.
+INFO 08-11 04:47:30 [__init__.py:3400] Cudagraph is disabled under eager mode
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+[1;36m(EngineCore_DP0 pid=661436)[0;0m INFO 08-11 04:47:30 [core.py:654] Waiting for init message from front-end.
+[1;36m(EngineCore_DP0 pid=661436)[0;0m INFO 08-11 04:47:30 [core.py:76] Initializing a V1 LLM engine (v0.10.2) with config: model='Qwen/Qwen2.5-32B-Instruct', speculative_config=None, tokenizer='Qwen/Qwen2.5-32B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.float16, max_seq_len=8192, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=True, kv_cache_dtype=auto, device_config=cuda, decoding_config=DecodingConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_backend=''), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=0, served_model_name=Qwen/Qwen2.5-32B-Instruct, enable_prefix_caching=True, chunked_prefill_enabled=True, use_async_output_proc=True, pooler_config=None, compilation_config={"level":0,"debug_dump_path":"","cache_dir":"","backend":"","custom_ops":[],"splitting_ops":null,"use_inductor":true,"compile_sizes":[],"inductor_compile_config":{"enable_auto_functionalized_v2":false},"inductor_passes":{},"cudagraph_mode":0,"use_cudagraph":true,"cudagraph_num_of_warmups":0,"cudagraph_capture_sizes":[],"cudagraph_copy_inputs":false,"full_cuda_graph":false,"pass_config":{},"max_capture_size":0,"local_cache_dir":null}
+[1;36m(EngineCore_DP0 pid=661436)[0;0m W0811 04:47:32.683000 661436 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=661436)[0;0m W0811 04:47:32.683000 661436 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[W811 04:47:35.065285054 ProcessGroupNCCL.cpp:981] Warning: TORCH_NCCL_AVOID_RECORD_STREAMS is the default now, this environment variable is thus deprecated. (function operator())
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[1;36m(EngineCore_DP0 pid=661436)[0;0m INFO 08-11 04:47:35 [parallel_state.py:1165] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+[1;36m(EngineCore_DP0 pid=661436)[0;0m WARNING 08-11 04:47:36 [topk_topp_sampler.py:62] FlashInfer is available, but it is not enabled. Falling back to the PyTorch-native implementation of top-p & top-k sampling. For the best performance, please set VLLM_USE_FLASHINFER_SAMPLER=1.
+[1;36m(EngineCore_DP0 pid=661436)[0;0m INFO 08-11 04:47:36 [gpu_model_runner.py:2338] Starting to load model Qwen/Qwen2.5-32B-Instruct...
+[1;36m(EngineCore_DP0 pid=661436)[0;0m INFO 08-11 04:47:36 [gpu_model_runner.py:2370] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=661436)[0;0m INFO 08-11 04:47:43 [cuda.py:362] Using Flash Attention backend on V1 engine.
+[1;36m(EngineCore_DP0 pid=661436)[0;0m INFO 08-11 04:47:43 [weight_utils.py:348] Using model weights format ['*.safetensors']
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/17 [00:00<?, ?it/s]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:   6% Completed | 1/17 [00:19<05:11, 19.45s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:  12% Completed | 2/17 [00:20<02:12,  8.86s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:  18% Completed | 3/17 [00:21<01:14,  5.32s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:  24% Completed | 4/17 [00:23<00:48,  3.77s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:  29% Completed | 5/17 [00:45<02:04, 10.40s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:  35% Completed | 6/17 [00:55<01:52, 10.26s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:  41% Completed | 7/17 [02:03<04:51, 29.12s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:  47% Completed | 8/17 [04:20<09:30, 63.40s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:  53% Completed | 9/17 [05:11<07:56, 59.59s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:  59% Completed | 10/17 [05:15<04:56, 42.41s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:  65% Completed | 11/17 [05:46<03:54, 39.03s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:  71% Completed | 12/17 [08:12<05:57, 71.46s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:  76% Completed | 13/17 [09:08<04:26, 66.74s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:  82% Completed | 14/17 [10:56<03:57, 79.25s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:  88% Completed | 15/17 [11:27<02:09, 64.68s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards:  94% Completed | 16/17 [12:09<00:57, 57.86s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards: 100% Completed | 17/17 [12:26<00:00, 45.71s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m Loading safetensors checkpoint shards: 100% Completed | 17/17 [12:26<00:00, 43.93s/it]
+[1;36m(EngineCore_DP0 pid=661436)[0;0m 
+[1;36m(EngineCore_DP0 pid=661436)[0;0m INFO 08-11 05:00:10 [default_loader.py:268] Loading weights took 746.97 seconds
+[1;36m(EngineCore_DP0 pid=661436)[0;0m INFO 08-11 05:00:11 [gpu_model_runner.py:2392] Model loading took 61.0375 GiB and 754.593569 seconds
+[1;36m(EngineCore_DP0 pid=661436)[0;0m INFO 08-11 05:00:14 [gpu_worker.py:298] Available KV cache memory: 63.97 GiB
+[1;36m(EngineCore_DP0 pid=661436)[0;0m INFO 08-11 05:00:14 [kv_cache_utils.py:864] GPU KV cache size: 262,032 tokens
+[1;36m(EngineCore_DP0 pid=661436)[0;0m INFO 08-11 05:00:14 [kv_cache_utils.py:868] Maximum concurrency for 8,192 tokens per request: 31.99x
+[1;36m(EngineCore_DP0 pid=661436)[0;0m 2026-08-11 05:00:14,964 - INFO - autotuner.py:256 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+[1;36m(EngineCore_DP0 pid=661436)[0;0m 2026-08-11 05:00:15,143 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process ends
+[1;36m(EngineCore_DP0 pid=661436)[0;0m INFO 08-11 05:00:15 [gpu_worker.py:391] Free memory on device (139.2/139.8 GiB) on startup. Desired GPU memory utilization is (0.9, 125.82 GiB). Actual usage is 61.04 GiB for weight, 0.74 GiB for peak activation, 0.07 GiB for non-torch memory, and 0.0 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=68535043072` to fit into requested memory, or `--kv-cache-memory=82897159168` to fully utilize gpu memory. Current kv cache memory in use is 68692329472 bytes.
+[1;36m(EngineCore_DP0 pid=661436)[0;0m INFO 08-11 05:00:15 [core.py:218] init engine (profile, create kv cache, warmup model) took 4.08 seconds
+[1;36m(EngineCore_DP0 pid=661436)[0;0m INFO 08-11 05:00:15 [__init__.py:3400] Cudagraph is disabled under eager mode
+INFO 08-11 05:00:15 [loggers.py:142] Engine 000: vllm cache_config_info with initialization after num_gpu_blocks is: 16377
+INFO 08-11 05:00:15 [async_llm.py:180] Torch profiler disabled. AsyncLLM CPU traces will not be collected.
+[warn] DRAM counter: dcgmi not found on PATH; DRAM counter disabled
+[1;36m(EngineCore_DP0 pid=661436)[0;0m WARNING 08-11 05:00:16 [cudagraph_dispatcher.py:102] cudagraph dispatching keys are not initialized. No cudagraph will be used.
+[saved] logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c1 (reqs=13, tok/s=49.9743847217797, dram_filled=0)

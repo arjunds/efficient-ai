@@ -1,0 +1,14 @@
+{
+  "n_runs": 10,
+  "n_bins": 2409,
+  "e_bit_j_per_byte": 4.819269946865146e-10,
+  "e_flop_j_per_flop": 2.18303795856836e-12,
+  "e_flop_pJ_per_flop": 2.18303795856836,
+  "r2_dynamic_energy": 0.3617068448020516,
+  "bytes_flops_pearson": 0.016257231701963085,
+  "identifiable": true,
+  "arithmetic_intensity_min": 0.6786551078429066,
+  "arithmetic_intensity_max": 2093.948489977235,
+  "ai_span_ratio": 3085.4383408868957,
+  "glob": "logs/ragged_moe/Qwen3-30B-A3B/*"
+}

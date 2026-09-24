@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/wave",
+  "calibration": "logs/wave/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 406,
+    "rmse_w": 52.52773649529737,
+    "mae_w": 25.693812073780673,
+    "r2": 0.8261944764320237,
+    "mean_measured_w": 280.46784252838023,
+    "mean_predicted_w": 272.0528919140405,
+    "mean_abs_pct_err": 9.161054558752397
+  },
+  "plot": "logs/wave/waveform_validation.png"
+}

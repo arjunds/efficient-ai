@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/ragged_a100/Mistral-7B-v0.1/alpaca_c4",
+  "calibration": "logs/ragged_a100/Mistral-7B-v0.1/alpaca_c4/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 238,
+    "rmse_w": 11.66332955770793,
+    "mae_w": 6.506354841564566,
+    "r2": -5.418532290692748,
+    "mean_measured_w": 288.2946065786413,
+    "mean_predicted_w": 287.79357770395075,
+    "mean_abs_pct_err": 2.256842373424615
+  },
+  "plot": null
+}

@@ -1,0 +1,4 @@
+{
+  "error": "no dram_bytes in decode rows \u2014 DRAM counter produced nothing (dcgmi missing or field unavailable?)",
+  "model_key": "Qwen2-7B-Instruct"
+}

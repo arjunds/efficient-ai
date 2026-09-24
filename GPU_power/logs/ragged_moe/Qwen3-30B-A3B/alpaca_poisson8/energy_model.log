@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/ragged_moe/Qwen3-30B-A3B/alpaca_poisson8",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 257,
+  "n_iters_total": 1843,
+  "weight_bytes": 6083313664.0,
+  "kv_bytes_per_token": 98304.0,
+  "byte_source": "models.py:Qwen3-30B",
+  "idle_power_w": 119.86,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 8.750167758192644e-10,
+  "e_bit_aggregate": 9.130454712285993e-10,
+  "p_static_w": 119.86,
+  "e_bit_joint": 1.5736287705189006e-10,
+  "p_static_joint": 278.5445120895914,
+  "r2_energy": -0.727003548418609,
+  "r2_power": -0.7294663004957247,
+  "mean_power_w": 311.57954643403605,
+  "mean_bytes_per_bin": 41995264796.88716,
+  "mean_dynamic_power_w": 191.72369315750169
+}

@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c64",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 227,
+  "n_iters_total": 3287,
+  "weight_bytes": 27981250560.0,
+  "kv_bytes_per_token": 196608.0,
+  "byte_source": "hf_config:Qwen/Qwen2.5-14B-Instruct",
+  "idle_power_w": 116.366,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 2.0401061384810356e-10,
+  "e_bit_aggregate": 2.1750400686416634e-10,
+  "p_static_w": 116.366,
+  "e_bit_joint": -1.5067215046205673e-11,
+  "p_static_joint": 614.4635667652177,
+  "r2_energy": -12.669634386340938,
+  "r2_power": -21.157496243327323,
+  "mean_power_w": 581.957503607425,
+  "mean_bytes_per_bin": 427365644675.94714,
+  "mean_dynamic_power_w": 465.75132688245515
+}

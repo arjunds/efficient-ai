@@ -1,0 +1,16 @@
+[warn] matplotlib unavailable, skipping plot: No module named 'matplotlib'
+{
+  "run_dir": "logs/ragged_a100/Mistral-7B-v0.1/sharegpt_poisson8",
+  "calibration": "logs/ragged_a100/Mistral-7B-v0.1/sharegpt_poisson8/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 247,
+    "rmse_w": 70.61170920843706,
+    "mae_w": 50.02889900167241,
+    "r2": -32.276032854273666,
+    "mean_measured_w": 294.12324953318534,
+    "mean_predicted_w": 273.12847280939104,
+    "mean_abs_pct_err": 17.009501656559028
+  },
+  "plot": null
+}

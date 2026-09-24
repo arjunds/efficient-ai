@@ -1,0 +1,14 @@
+{
+  "n_runs": 10,
+  "n_bins": 2320,
+  "e_bit_j_per_byte": 1.1100158048713254e-10,
+  "e_flop_j_per_flop": 8.647978349001248e-13,
+  "e_flop_pJ_per_flop": 0.8647978349001247,
+  "r2_dynamic_energy": 0.6916313977636129,
+  "bytes_flops_pearson": -0.6657995163105264,
+  "identifiable": true,
+  "arithmetic_intensity_min": 0.753968471820394,
+  "arithmetic_intensity_max": 1636.7723191457294,
+  "ai_span_ratio": 2170.876343401839,
+  "glob": "logs/ragged/Meta-Llama-3-8B/*"
+}

@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/ragged_moe/Qwen3-30B-A3B/sharegpt_c64",
+  "calibration": "logs/ragged_moe/Qwen3-30B-A3B/sharegpt_c64/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 244,
+    "rmse_w": 70.13745221766268,
+    "mae_w": 41.494890251392476,
+    "r2": -9.424494095223777,
+    "mean_measured_w": 375.901394890246,
+    "mean_predicted_w": 359.6284498316182,
+    "mean_abs_pct_err": 11.038769958145
+  },
+  "plot": null
+}

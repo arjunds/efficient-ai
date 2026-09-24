@@ -1,0 +1,14 @@
+{
+  "mode": "prefill_ceiling",
+  "prefill_ceiling_power_w": 384.83500000000004,
+  "nvml_summary": {
+    "gpu_name": "NVIDIA H200",
+    "power_limit_w": 700.0,
+    "n_samples": 1487,
+    "duration_s": 15.016946077346802,
+    "mean_power_w": 375.9997242770679,
+    "median_power_w": 384.83500000000004,
+    "max_power_w": 414.485,
+    "min_power_w": 159.12
+  }
+}

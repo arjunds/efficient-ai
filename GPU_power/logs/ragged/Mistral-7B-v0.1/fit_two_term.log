@@ -1,0 +1,14 @@
+{
+  "n_runs": 10,
+  "n_bins": 2331,
+  "e_bit_j_per_byte": 1.097458105316703e-10,
+  "e_flop_j_per_flop": 8.473588582471812e-13,
+  "e_flop_pJ_per_flop": 0.8473588582471813,
+  "r2_dynamic_energy": 0.6223269388474502,
+  "bytes_flops_pearson": -0.6912934064245265,
+  "identifiable": true,
+  "arithmetic_intensity_min": 0.9360759173217361,
+  "arithmetic_intensity_max": 1635.8236393481025,
+  "ai_span_ratio": 1747.5330890131831,
+  "glob": "logs/ragged/Mistral-7B-v0.1/*"
+}

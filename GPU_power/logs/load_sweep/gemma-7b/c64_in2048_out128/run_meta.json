@@ -1,0 +1,30 @@
+{
+  "gpu_name": "NVIDIA H200",
+  "power_limit_w": 700.0,
+  "dtype": "float16",
+  "model": "google/gemma-7b",
+  "model_key": "gemma-7b",
+  "tp_degree": 1,
+  "vllm_version": "0.10.2",
+  "engine_api": "v1",
+  "max_num_seqs": null,
+  "block_size": null,
+  "gpu_mem_util": 0.9,
+  "input_len": 2048,
+  "output_len": 128,
+  "concurrency_or_rate": 64,
+  "arrival_rate": 0.0,
+  "concurrency_schedule": null,
+  "segments": [
+    {
+      "concurrency": 64,
+      "t0": 1784264765.2280948,
+      "t1": 1784264810.8122833
+    }
+  ],
+  "idle_power_w": 118.384,
+  "prefill_ceiling_power_w": 392.43600000000004,
+  "kv_cache_dtype": "auto",
+  "window_wall_t0": 1784264765.2280939,
+  "window_wall_t1": 1784264810.8122883
+}

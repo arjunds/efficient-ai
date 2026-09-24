@@ -1,0 +1,16 @@
+[warn] matplotlib unavailable, skipping plot: No module named 'matplotlib'
+{
+  "run_dir": "logs/load_sweep/Mistral-7B-v0.1/c4_in2048_out128",
+  "calibration": "logs/load_sweep/Mistral-7B-v0.1/c4_in2048_out128/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 226,
+    "rmse_w": 9.875668560295988,
+    "mae_w": 8.072102119838993,
+    "r2": -19.405771379436015,
+    "mean_measured_w": 371.0382849191592,
+    "mean_predicted_w": 370.6890198822318,
+    "mean_abs_pct_err": 2.1755442626621995
+  },
+  "plot": null
+}

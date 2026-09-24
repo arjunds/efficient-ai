@@ -1,0 +1,16 @@
+[warn] matplotlib unavailable, skipping plot: No module named 'matplotlib'
+{
+  "run_dir": "logs/ragged_moe/Qwen3-30B-A3B/sharegpt_poisson8",
+  "calibration": "logs/ragged_moe/Qwen3-30B-A3B/sharegpt_poisson8/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 258,
+    "rmse_w": 63.70649239456306,
+    "mae_w": 52.21144930706716,
+    "r2": -1.0286484416739925,
+    "mean_measured_w": 349.1401701204609,
+    "mean_predicted_w": 338.4708576972303,
+    "mean_abs_pct_err": 14.954294514164063
+  },
+  "plot": null
+}

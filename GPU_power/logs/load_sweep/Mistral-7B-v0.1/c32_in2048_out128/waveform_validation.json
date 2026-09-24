@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/load_sweep/Mistral-7B-v0.1/c32_in2048_out128",
+  "calibration": "logs/load_sweep/Mistral-7B-v0.1/c32_in2048_out128/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 226,
+    "rmse_w": 38.28117577568619,
+    "mae_w": 20.95303558342025,
+    "r2": -40.91181264429659,
+    "mean_measured_w": 464.26538633467896,
+    "mean_predicted_w": 460.89066156872,
+    "mean_abs_pct_err": 4.513159111180357
+  },
+  "plot": null
+}

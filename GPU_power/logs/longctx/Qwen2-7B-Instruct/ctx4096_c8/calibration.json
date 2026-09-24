@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/longctx/Qwen2-7B-Instruct/ctx4096_c8",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 277,
+  "n_iters_total": 8509,
+  "weight_bytes": 14140571648.0,
+  "kv_bytes_per_token": 57344.0,
+  "byte_source": "models.py:Qwen2-7B-Instruct",
+  "idle_power_w": 117.191,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.2713386938460934e-10,
+  "e_bit_aggregate": 1.2749495465009832e-10,
+  "p_static_w": 117.191,
+  "e_bit_joint": 1.5528004086125068e-13,
+  "p_static_joint": 395.08611298680347,
+  "r2_energy": -4.156086333549285,
+  "r2_power": -28.631937124578247,
+  "mean_power_w": 395.4242920933539,
+  "mean_bytes_per_bin": 436064901778.02167,
+  "mean_dynamic_power_w": 278.23369032394373
+}

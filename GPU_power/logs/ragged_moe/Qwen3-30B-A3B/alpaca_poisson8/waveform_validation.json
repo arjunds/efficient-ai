@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/ragged_moe/Qwen3-30B-A3B/alpaca_poisson8",
+  "calibration": "logs/ragged_moe/Qwen3-30B-A3B/alpaca_poisson8/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 261,
+    "rmse_w": 53.98033017439956,
+    "mae_w": 41.1021094009265,
+    "r2": -0.5212890603404359,
+    "mean_measured_w": 309.5957654885767,
+    "mean_predicted_w": 300.7833838559531,
+    "mean_abs_pct_err": 13.276056710938143
+  },
+  "plot": null
+}

@@ -1,0 +1,30 @@
+{
+  "gpu_name": "NVIDIA H200",
+  "power_limit_w": 700.0,
+  "dtype": "float16",
+  "model": "meta-llama/Meta-Llama-3-8B",
+  "model_key": "Llama3-8B",
+  "tp_degree": 1,
+  "vllm_version": "0.10.2",
+  "engine_api": "v1",
+  "max_num_seqs": null,
+  "block_size": null,
+  "gpu_mem_util": 0.9,
+  "input_len": 2048,
+  "output_len": 128,
+  "concurrency_or_rate": 32,
+  "arrival_rate": 0.0,
+  "concurrency_schedule": null,
+  "segments": [
+    {
+      "concurrency": 32,
+      "t0": 1784262922.1824589,
+      "t1": 1784262967.4644895
+    }
+  ],
+  "idle_power_w": 118.44500000000001,
+  "prefill_ceiling_power_w": 394.88800000000003,
+  "kv_cache_dtype": "auto",
+  "window_wall_t0": 1784262922.1824584,
+  "window_wall_t1": 1784262967.464493
+}
