@@ -1,0 +1,53 @@
+cpu-bind=MASK - node-d1, task  0  0 [1638275]: mask 0x3000003000 set
+==== microbench start Thu Sep 24 16:53:58 EDT 2026 on node-d1.cl.upenn.edu ====
+name, pci.bus_id, power.limit [W], power.default_limit [W], temperature.gpu
+NVIDIA RTX A5000, 00000000:B1:00.0, 100.00 W, 230.00 W, 26
+GPU: {"name": "NVIDIA RTX A5000", "driver": "565.57.01", "power_limit_enforced_w": 100.0, "power_limit_default_w": 230.0, "power_limit_range_w": [100.0, 230.0], "max_sm_mhz": 2100.0, "max_mem_mhz": 8001.0, "mem_bus_width_bits": 384.0, "sm_count": 64, "l2_bytes": 6291456, "total_mem_bytes": 25310986240, "cc": "8.6", "have_power_instant_field": true, "have_energy_counter": true, "torch": "2.8.0+cu128", "triton": "3.4.0"}
+idle_deep(pre): {"n_samples": 482, "p_energy_w": 1.9972373737155016, "energy_counter_updates": 50, "energy_counter_period_s": 0.0999952676344891, "p_inst_w": 54.6187510373444, "p_avg_w": 53.08373821989529, "sm_mhz": 938.9315352697096, "mem_mhz": 3444.682572614108, "temp_c": 31.607883817427386, "frac_sw_power_cap": 0.9585062240663901, "frac_thermal": 0.0, "frac_hw_slowdown": 0.0, "p_w": 54.6187510373444, "energy_counter_over_inst": 0.03656688107624309, "duration_s": 5.00007438659668, "waited_s": 32.004032135009766}
+idle_p0(pre): {"n_samples": 476, "p_energy_w": 18.130491307434866, "energy_counter_updates": 49, "energy_counter_period_s": 0.09976517657438914, "p_inst_w": 76.94671008403361, "p_avg_w": 77.18737859007832, "sm_mhz": 1889.1176470588234, "mem_mhz": 7601.0, "temp_c": 33.71848739495798, "frac_sw_power_cap": 0.0, "frac_thermal": 0.0, "frac_hw_slowdown": 0.0, "p_w": 76.94671008403361, "energy_counter_over_inst": 0.23562399597896427, "duration_s": 5.004400730133057}
+=== duty10 ===
+  [duty10 dram_stream_64MB r0 d=0.045] burst=0.45 ms  floor=77.77 (sm 1886)  P=85.20 (sm 1891)  dyn=7.43 W  rate=2.669e+10  burst_rate=5.908e+11  e=2.784e-10 J/byte  cap=0.00
+  [duty10 dram_stream_64MB r0 d=0.015] burst=0.15 ms  floor=78.52 (sm 1885)  P=80.53 (sm 1894)  dyn=2.01 W  rate=6.672e+09  burst_rate=4.562e+11  e=3.011e-10 J/byte  cap=0.00
+  [duty10 dram_stream_64MB r0 d=0.030] burst=0.35 ms  floor=79.35 (sm 1876)  P=84.88 (sm 1879)  dyn=5.53 W  rate=2.002e+10  burst_rate=5.758e+11  e=2.765e-10 J/byte  cap=0.00
+  [duty10 dram_stream_64MB r1 d=0.045] burst=0.44 ms  floor=79.98 (sm 1872)  P=86.50 (sm 1880)  dyn=6.52 W  rate=2.669e+10  burst_rate=6.043e+11  e=2.442e-10 J/byte  cap=0.00
+  [duty10 dram_stream_64MB r1 d=0.015] burst=0.14 ms  floor=80.02 (sm 1872)  P=82.04 (sm 1877)  dyn=2.02 W  rate=6.672e+09  burst_rate=4.717e+11  e=3.020e-10 J/byte  cap=0.00
+  [duty10 dram_stream_64MB r1 d=0.030] burst=0.35 ms  floor=79.88 (sm 1875)  P=85.47 (sm 1879)  dyn=5.59 W  rate=2.002e+10  burst_rate=5.811e+11  e=2.795e-10 J/byte  cap=0.00
+  [duty10 dram_stream_64MB r2 d=0.030] burst=0.35 ms  floor=80.24 (sm 1875)  P=85.65 (sm 1880)  dyn=5.41 W  rate=2.001e+10  burst_rate=5.743e+11  e=2.705e-10 J/byte  cap=0.00
+  [duty10 dram_stream_64MB r2 d=0.045] burst=0.46 ms  floor=80.35 (sm 1872)  P=87.49 (sm 1879)  dyn=7.15 W  rate=2.668e+10  burst_rate=5.869e+11  e=2.678e-10 J/byte  cap=0.00
+  [duty10 dram_stream_64MB r2 d=0.015] burst=0.14 ms  floor=81.02 (sm 1871)  P=82.60 (sm 1878)  dyn=1.57 W  rate=6.672e+09  burst_rate=4.747e+11  e=2.355e-10 J/byte  cap=0.00
+  ==> dram_stream_64MB: e(origin)=2.6825e-10  e(OLS)=2.6031e-10 ± 1.2e-11 (intercept 0.17 W)  per-point mean 2.7283e-10 ± 2.1e-11 J/byte
+  [duty10 l2_stream_half r0 d=0.045] burst=0.46 ms  floor=80.38 (sm 1875)  P=82.88 (sm 1878)  dyn=2.49 W  rate=8.444e+09  burst_rate=1.854e+11  e=2.953e-10 J/byte  cap=0.00
+  [duty10 l2_stream_half r0 d=0.015] burst=0.21 ms  floor=80.67 (sm 1872)  P=81.99 (sm 1878)  dyn=1.33 W  rate=2.815e+09  burst_rate=1.346e+11  e=4.711e-10 J/byte  cap=0.00
+  [duty10 l2_stream_half r0 d=0.030] burst=0.34 ms  floor=80.52 (sm 1878)  P=82.12 (sm 1878)  dyn=1.60 W  rate=5.316e+09  burst_rate=1.575e+11  e=3.007e-10 J/byte  cap=0.00
+  [duty10 l2_stream_half r1 d=0.030] burst=0.37 ms  floor=81.91 (sm 1878)  P=82.37 (sm 1879)  dyn=0.46 W  rate=5.628e+09  burst_rate=1.550e+11  e=8.191e-11 J/byte  cap=0.00
+  [duty10 l2_stream_half r1 d=0.015] burst=0.21 ms  floor=81.33 (sm 1879)  P=81.78 (sm 1876)  dyn=0.45 W  rate=2.502e+09  burst_rate=1.213e+11  e=1.815e-10 J/byte  cap=0.00
+  [duty10 l2_stream_half r1 d=0.045] burst=0.58 ms  floor=80.73 (sm 1879)  P=83.11 (sm 1877)  dyn=2.37 W  rate=8.441e+09  burst_rate=1.454e+11  e=2.808e-10 J/byte  cap=0.00
+  [duty10 l2_stream_half r2 d=0.030] burst=0.39 ms  floor=81.42 (sm 1879)  P=82.29 (sm 1879)  dyn=0.87 W  rate=5.315e+09  burst_rate=1.369e+11  e=1.637e-10 J/byte  cap=0.00
+  [duty10 l2_stream_half r2 d=0.045] burst=0.34 ms  floor=81.06 (sm 1879)  P=82.35 (sm 1879)  dyn=1.30 W  rate=5.629e+09  burst_rate=1.647e+11  e=2.303e-10 J/byte  cap=0.00
+  [duty10 l2_stream_half r2 d=0.015] burst=0.20 ms  floor=81.51 (sm 1879)  P=81.71 (sm 1879)  dyn=0.20 W  rate=2.500e+09  burst_rate=1.233e+11  e=8.053e-11 J/byte  cap=0.00
+  ==> l2_stream_half: e(origin)=2.4554e-10  e(OLS)=2.9127e-10 ± 8.1e-11 (intercept -0.28 W)  per-point mean 2.3176e-10 ± 1.2e-10 J/byte
+  [duty10 gemv_b1_64MB r0 d=0.015] burst=0.21 ms  floor=81.30 (sm 1883)  P=82.74 (sm 1879)  dyn=1.44 W  rate=6.669e+09  burst_rate=3.192e+11  e=2.162e-10 J/byte  cap=0.00
+  [duty10 gemv_b1_64MB r0 d=0.045] burst=0.45 ms  floor=81.16 (sm 1879)  P=89.18 (sm 1880)  dyn=8.02 W  rate=2.668e+10  burst_rate=5.925e+11  e=3.007e-10 J/byte  cap=0.00
+  [duty10 gemv_b1_64MB r0 d=0.030] burst=0.39 ms  floor=81.84 (sm 1883)  P=86.99 (sm 1878)  dyn=5.15 W  rate=2.001e+10  burst_rate=5.194e+11  e=2.575e-10 J/byte  cap=0.00
+  [duty10 gemv_b1_64MB r1 d=0.030] burst=0.39 ms  floor=81.00 (sm 1883)  P=87.27 (sm 1878)  dyn=6.27 W  rate=2.000e+10  burst_rate=5.157e+11  e=3.134e-10 J/byte  cap=0.00
+  [duty10 gemv_b1_64MB r1 d=0.045] burst=0.51 ms  floor=81.89 (sm 1879)  P=89.43 (sm 1880)  dyn=7.55 W  rate=2.666e+10  burst_rate=5.257e+11  e=2.831e-10 J/byte  cap=0.00
+  [duty10 gemv_b1_64MB r1 d=0.015] burst=0.23 ms  floor=81.86 (sm 1881)  P=83.08 (sm 1879)  dyn=1.22 W  rate=6.663e+09  burst_rate=2.875e+11  e=1.832e-10 J/byte  cap=0.00
+  [duty10 gemv_b1_64MB r2 d=0.045] burst=0.53 ms  floor=81.99 (sm 1880)  P=89.43 (sm 1879)  dyn=7.44 W  rate=2.665e+10  burst_rate=5.063e+11  e=2.793e-10 J/byte  cap=0.00
+  [duty10 gemv_b1_64MB r2 d=0.030] burst=0.36 ms  floor=81.14 (sm 1876)  P=87.51 (sm 1878)  dyn=6.37 W  rate=2.001e+10  burst_rate=5.602e+11  e=3.181e-10 J/byte  cap=0.00
+  [duty10 gemv_b1_64MB r2 d=0.015] burst=0.23 ms  floor=81.78 (sm 1875)  P=83.57 (sm 1878)  dyn=1.79 W  rate=6.664e+09  burst_rate=2.887e+11  e=2.682e-10 J/byte  cap=0.00
+  ==> gemv_b1_64MB: e(origin)=2.8818e-10  e(OLS)=3.1284e-10 ± 1.8e-11 (intercept -0.53 W)  per-point mean 2.6885e-10 ± 4.2e-11 J/byte
+  [duty10 gemm_fp16_2048 r0 d=0.030] burst=0.26 ms  floor=81.21 (sm 1876)  P=87.45 (sm 1877)  dyn=6.24 W  rate=1.706e+12  burst_rate=6.720e+13  e=3.656e-12 J/flop  cap=0.00
+  [duty10 gemm_fp16_2048 r0 d=0.045] burst=0.44 ms  floor=80.76 (sm 1876)  P=93.27 (sm 1876)  dyn=12.51 W  rate=3.413e+12  burst_rate=7.786e+13  e=3.666e-12 J/flop  cap=0.25
+  [duty10 gemm_fp16_2048 r0 d=0.015] burst=0.28 ms  floor=81.44 (sm 1875)  P=87.82 (sm 1875)  dyn=6.39 W  rate=1.705e+12  burst_rate=6.198e+13  e=3.744e-12 J/flop  cap=0.00
+  [duty10 gemm_fp16_2048 r1 d=0.030] burst=0.26 ms  floor=80.74 (sm 1876)  P=87.96 (sm 1877)  dyn=7.22 W  rate=1.706e+12  burst_rate=6.668e+13  e=4.230e-12 J/flop  cap=0.00
+  [duty10 gemm_fp16_2048 r1 d=0.045] burst=0.46 ms  floor=80.68 (sm 1874)  P=92.92 (sm 1877)  dyn=12.24 W  rate=3.412e+12  burst_rate=7.548e+13  e=3.587e-12 J/flop  cap=0.28
+  [duty10 gemm_fp16_2048 r1 d=0.015] burst=0.23 ms  floor=80.95 (sm 1876)  P=88.18 (sm 1877)  dyn=7.23 W  rate=1.707e+12  burst_rate=7.494e+13  e=4.237e-12 J/flop  cap=0.00
+  [duty10 gemm_fp16_2048 r2 d=0.015] burst=0.23 ms  floor=80.55 (sm 1875)  P=87.68 (sm 1878)  dyn=7.13 W  rate=1.707e+12  burst_rate=7.339e+13  e=4.175e-12 J/flop  cap=0.00
+  [duty10 gemm_fp16_2048 r2 d=0.030] burst=0.22 ms  floor=81.01 (sm 1876)  P=87.65 (sm 1878)  dyn=6.64 W  rate=1.707e+12  burst_rate=7.704e+13  e=3.887e-12 J/flop  cap=0.00
+  [duty10 gemm_fp16_2048 r2 d=0.045] burst=0.43 ms  floor=80.80 (sm 1875)  P=93.02 (sm 1878)  dyn=12.22 W  rate=3.415e+12  burst_rate=7.909e+13  e=3.579e-12 J/flop  cap=0.51
+  ==> gemm_fp16_2048: e(origin)=3.7367e-12  e(OLS)=3.2338e-12 ± 1.6e-13 (intercept 1.29 W)  per-point mean 3.8624e-12 ± 2.6e-13 J/flop
+idle_post: {"n_samples": 474, "p_energy_w": 4.565148064723181, "energy_counter_updates": 50, "energy_counter_period_s": 0.10002581440672582, "p_inst_w": 65.63840084388185, "p_avg_w": 64.44267885117495, "sm_mhz": 1774.8101265822784, "mem_mhz": 7586.672995780591, "temp_c": 40.234177215189874, "frac_sw_power_cap": 0.9261603375527426, "frac_thermal": 0.0, "frac_hw_slowdown": 0.0, "p_w": 65.63840084388185, "energy_counter_over_inst": 0.06954995865272817, "duration_s": 5.000108480453491, "waited_s": 28.06525492668152}
+
+point                        BW GB/s   TFLOPS      P W   dyn W  SMMHz   cap   J/byte dyn    pJ/flop
+wrote microbench/results_A5000_duty10.json
+==== microbench end Thu Sep 24 17:05:08 EDT 2026 ====

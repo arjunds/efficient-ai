@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/A5000/Qwen2-7B-Instruct/alpaca_c16",
+  "calibration": "logs/A5000/Qwen2-7B-Instruct/alpaca_c16/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 316,
+    "rmse_w": 11.075710283345863,
+    "mae_w": 9.430277152719334,
+    "r2": -5200.317853015001,
+    "mean_measured_w": 99.40467467382734,
+    "mean_predicted_w": 96.20984136447323,
+    "mean_abs_pct_err": 9.48675420312227
+  },
+  "plot": null
+}

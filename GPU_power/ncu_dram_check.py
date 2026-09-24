@@ -37,7 +37,21 @@ def do_generate(args):
     prompt_ids = list(range(10, 10 + args.prompt_len))  # tiny fixed prompt
     sp = SamplingParams(max_tokens=args.gen_tokens, min_tokens=args.gen_tokens,
                         ignore_eos=True, temperature=0.0)
-    out = llm.generate({"prompt_token_ids": prompt_ids}, sp)
+    if getattr(args, "profile_range", False):
+        # Additive (A5000 agent, 2026-09-24): restrict ncu to the measured
+        # generate() only (run ncu with --profile-from-start off). Without this,
+        # engine init (weight load, vLLM's max-batch profiling forward, KV-cache
+        # memsets) is counted too and swamps the per-token bytes.
+        import torch
+        llm.generate({"prompt_token_ids": prompt_ids},
+                     SamplingParams(max_tokens=2, min_tokens=2, ignore_eos=True, temperature=0.0))
+        torch.cuda.synchronize()
+        torch.cuda.profiler.start()
+        out = llm.generate({"prompt_token_ids": prompt_ids}, sp)
+        torch.cuda.synchronize()
+        torch.cuda.profiler.stop()
+    else:
+        out = llm.generate({"prompt_token_ids": prompt_ids}, sp)
     n = len(out[0].outputs[0].token_ids)
     with open(os.path.join(args.run_dir, "n_tokens.txt"), "w") as f:
         f.write(str(n))
@@ -127,6 +141,8 @@ def main():
     ap.add_argument("--gen_tokens", type=int, default=24)
     ap.add_argument("--max_model_len", type=int, default=2048)
     ap.add_argument("--gpu_memory_utilization", type=float, default=0.6)
+    ap.add_argument("--profile_range", action="store_true",
+                    help="wrap only the measured generate() in cudaProfilerStart/Stop")
     args = ap.parse_args()
     os.makedirs(args.run_dir, exist_ok=True)
     if args.mode == "generate":

@@ -1,0 +1,29 @@
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+{
+  "run_dir": "logs/A5000/Qwen2.5-3B-Instruct/sharegpt_c16",
+  "model": "two_term",
+  "bin_s": 0.2,
+  "n_bins": 262,
+  "n_iters_total": 1881,
+  "weight_bytes": 6171394048.0,
+  "kv_bytes_per_token": 36864.0,
+  "matmul_flops_per_token": 6171394048.0,
+  "attn_flops_per_resident_token": 294912.0,
+  "active_params": 3085697024.0,
+  "idle_power_w": 61.401,
+  "task": "sharegpt",
+  "concurrency_or_rate": 16,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.7545213520411338e-10,
+  "e_flop_j_per_flop": 5.984079277335226e-13,
+  "p_static_w": 61.401,
+  "r2_energy": -6.22878095620019,
+  "r2_power": -7292.911703137664,
+  "bytes_flops_pearson": -0.5656705059715696,
+  "identifiable": true,
+  "arithmetic_intensity_min": 1.0288711690179573,
+  "arithmetic_intensity_max": 2204.94068885481,
+  "binned_table": "logs/A5000/Qwen2.5-3B-Instruct/sharegpt_c16/binned_table.csv",
+  "e_flop_pJ_per_flop": 0.5984079277335226
+}

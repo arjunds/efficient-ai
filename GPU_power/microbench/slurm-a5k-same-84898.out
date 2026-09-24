@@ -1,0 +1,96 @@
+cpu-bind=MASK - node-d1, task  0  0 [1636331]: mask 0x980000980000 set
+NVIDIA RTX A5000, 00000000:CA:00.0, 100.00 W
+GPU: {"name": "NVIDIA RTX A5000", "driver": "565.57.01", "power_limit_enforced_w": 100.0, "power_limit_default_w": 230.0, "power_limit_range_w": [100.0, 230.0], "max_sm_mhz": 2100.0, "max_mem_mhz": 8001.0, "mem_bus_width_bits": 384.0, "sm_count": 64, "l2_bytes": 6291456, "total_mem_bytes": 25310986240, "cc": "8.6", "have_power_instant_field": true, "have_energy_counter": true, "torch": "2.8.0+cu128", "triton": "3.4.0"}
+idle_deep(pre): {"n_samples": 960, "p_energy_w": 3.1111795229337016, "energy_counter_updates": 100, "energy_counter_period_s": 0.10010169491623387, "p_inst_w": 54.48764166666667, "p_avg_w": 54.08455180442375, "sm_mhz": 961.828125, "mem_mhz": 4049.8729166666667, "temp_c": 32.592708333333334, "frac_sw_power_cap": 0.9510416666666667, "frac_thermal": 0.0, "frac_hw_slowdown": 0.0, "p_w": 54.48764166666667, "energy_counter_over_inst": 0.05709881044157936, "duration_s": 10.000105619430542, "waited_s": 32.00623154640198}
+idle_p0(pre): {"n_samples": 955, "p_energy_w": 33.852718243474655, "energy_counter_updates": 99, "energy_counter_period_s": 0.09990485833615673, "p_inst_w": 85.9138722513089, "p_avg_w": 85.69528538283062, "sm_mhz": 1946.6230366492146, "mem_mhz": 7601.0, "temp_c": 35.294240837696336, "frac_sw_power_cap": 0.0, "frac_thermal": 0.0, "frac_hw_slowdown": 0.0, "p_w": 85.9138722513089, "energy_counter_over_inst": 0.39403087483300936, "duration_s": 10.001638650894165}
+=== lowgrid ===
+  [lowgrid_1prog r0] P=99.2 W (inst 99.2, avg 99.0)  dyn=44.7 W  BW=23.1 GB/s  TF=0.00  sm=1903 mem=7601 MHz  T=38C  cap=1.00  J/B=1.932e-09
+  [lowgrid_2prog r0] P=98.5 W (inst 98.5, avg 98.5)  dyn=44.0 W  BW=44.6 GB/s  TF=0.00  sm=1813 mem=7601 MHz  T=39C  cap=1.00  J/B=9.870e-10
+  [lowgrid_3prog r0] P=98.6 W (inst 98.6, avg 98.6)  dyn=44.1 W  BW=64.8 GB/s  TF=0.00  sm=1726 mem=7601 MHz  T=40C  cap=1.00  J/B=6.803e-10
+  [lowgrid_4prog r0] P=98.7 W (inst 98.7, avg 98.7)  dyn=44.2 W  BW=84.0 GB/s  TF=0.00  sm=1649 mem=7601 MHz  T=40C  cap=1.00  J/B=5.265e-10
+  [lowgrid_6prog r0] P=98.8 W (inst 98.8, avg 98.8)  dyn=44.4 W  BW=118.6 GB/s  TF=0.00  sm=1513 mem=7601 MHz  T=40C  cap=1.00  J/B=3.742e-10
+  lowgrid fit (incl. keepalive floor): e=5.816e-11±3.6e-11 J/B a=93.90 W R2=0.3987; active-only: e=-1.215e-12±4.2e-12 a=98.83 W
+=== aliasing ===
+  [alias dram_stream 0.4 ms jitter=False] period=13.0 ms  floor=87.62 P=93.04 dyn=5.42 W  e=2.642e-10 J/byte  burst_rate=5.127e+11 cap=0.24
+  [alias dram_stream 0.4 ms jitter=True] period=13.0 ms  floor=87.30 P=92.87 dyn=5.57 W  e=2.662e-10 J/byte  burst_rate=5.390e+11 cap=0.89
+  [alias dram_stream 1.5 ms jitter=False] period=50.7 ms  floor=87.37 P=92.75 dyn=5.38 W  e=2.547e-10 J/byte  burst_rate=6.398e+11 cap=0.94
+  [alias dram_stream 1.5 ms jitter=True] period=50.7 ms  floor=87.87 P=92.21 dyn=4.34 W  e=1.939e-10 J/byte  burst_rate=6.424e+11 cap=0.94
+  [alias dram_stream 6.0 ms jitter=False] period=404.2 ms  floor=87.43 P=88.02 dyn=0.59 W  e=5.952e-11 J/byte  burst_rate=6.899e+11 cap=0.87
+  [alias dram_stream 6.0 ms jitter=True] period=503.1 ms  floor=87.97 P=88.08 dyn=0.11 W  e=1.744e-11 J/byte  burst_rate=6.903e+11 cap=0.48
+  [alias gemm_fp16_4096 0.4 ms jitter=False] period=59.8 ms  floor=88.31 P=91.91 dyn=3.61 W  e=1.572e-12 J/flop  burst_rate=9.339e+13 cap=0.94
+  [alias gemm_fp16_4096 0.4 ms jitter=True] period=45.0 ms  floor=88.33 P=91.97 dyn=3.64 W  e=1.137e-12 J/flop  burst_rate=9.538e+13 cap=0.94
+  [alias gemm_fp16_4096 1.5 ms jitter=False] period=149.0 ms  floor=88.16 P=89.72 dyn=1.56 W  e=1.691e-12 J/flop  burst_rate=9.702e+13 cap=0.94
+  [alias gemm_fp16_4096 1.5 ms jitter=True] period=53.7 ms  floor=88.19 P=91.40 dyn=3.21 W  e=1.266e-12 J/flop  burst_rate=9.474e+13 cap=0.94
+  [alias gemm_fp16_4096 6.0 ms jitter=False] period=705.2 ms  floor=88.12 P=89.01 dyn=0.89 W  e=1.147e-12 J/flop  burst_rate=9.993e+13 cap=0.54
+  [alias gemm_fp16_4096 6.0 ms jitter=True] period=705.5 ms  floor=89.23 P=87.78 dyn=-1.45 W  e=-2.276e-12 J/flop  burst_rate=9.998e+13 cap=0.42
+=== stream ===
+  [stream_L1ca_4.0MB r0] P=99.0 W (inst 99.0, avg 99.0)  dyn=44.5 W  BW=6046.1 GB/s  TF=0.00  sm=854 mem=7601 MHz  T=42C  cap=1.00  J/B=7.358e-12
+  [stream_L1ca_4.0MB r1] P=98.9 W (inst 98.9, avg 98.9)  dyn=44.4 W  BW=6037.5 GB/s  TF=0.00  sm=847 mem=7601 MHz  T=43C  cap=1.00  J/B=7.353e-12
+  [stream_L1ca_8.0MB r0] P=98.9 W (inst 98.9, avg 98.9)  dyn=44.4 W  BW=6061.0 GB/s  TF=0.00  sm=907 mem=7601 MHz  T=43C  cap=1.00  J/B=7.321e-12
+  [stream_L1ca_8.0MB r1] P=98.9 W (inst 98.9, avg 98.8)  dyn=44.4 W  BW=6041.6 GB/s  TF=0.00  sm=904 mem=7601 MHz  T=43C  cap=1.00  J/B=7.344e-12
+  [stream_cg_0.25MB r0] P=99.7 W (inst 99.7, avg 99.7)  dyn=45.2 W  BW=998.7 GB/s  TF=0.00  sm=1468 mem=7601 MHz  T=43C  cap=1.00  J/B=4.526e-11
+  [stream_cg_0.25MB r1] P=99.8 W (inst 99.8, avg 99.7)  dyn=45.3 W  BW=998.5 GB/s  TF=0.00  sm=1469 mem=7601 MHz  T=43C  cap=1.00  J/B=4.534e-11
+  [stream_cg_1.00MB r0] P=99.8 W (inst 99.8, avg 99.8)  dyn=45.4 W  BW=1430.3 GB/s  TF=0.00  sm=1133 mem=7601 MHz  T=43C  cap=1.00  J/B=3.171e-11
+  [stream_cg_1.00MB r1] P=99.8 W (inst 99.8, avg 99.8)  dyn=45.3 W  BW=1429.0 GB/s  TF=0.00  sm=1128 mem=7601 MHz  T=43C  cap=1.00  J/B=3.171e-11
+  [stream_cg_2.00MB r0] P=99.9 W (inst 99.9, avg 99.9)  dyn=45.4 W  BW=1423.8 GB/s  TF=0.00  sm=1108 mem=7601 MHz  T=44C  cap=1.00  J/B=3.189e-11
+  [stream_cg_2.00MB r1] P=99.9 W (inst 99.9, avg 99.9)  dyn=45.4 W  BW=1414.0 GB/s  TF=0.00  sm=1107 mem=7601 MHz  T=44C  cap=1.00  J/B=3.210e-11
+  [stream_cg_3.00MB r0] P=99.9 W (inst 99.9, avg 99.9)  dyn=45.4 W  BW=1422.7 GB/s  TF=0.00  sm=1066 mem=7601 MHz  T=44C  cap=1.00  J/B=3.192e-11
+  [stream_cg_3.00MB r1] P=99.9 W (inst 99.9, avg 99.9)  dyn=45.4 W  BW=1425.6 GB/s  TF=0.00  sm=1065 mem=7601 MHz  T=44C  cap=1.00  J/B=3.185e-11
+  [stream_cg_4.50MB r0] P=99.9 W (inst 99.9, avg 99.9)  dyn=45.4 W  BW=1405.4 GB/s  TF=0.00  sm=1104 mem=7601 MHz  T=44C  cap=1.00  J/B=3.232e-11
+  [stream_cg_4.50MB r1] P=99.9 W (inst 99.9, avg 99.9)  dyn=45.4 W  BW=1407.2 GB/s  TF=0.00  sm=1103 mem=7601 MHz  T=44C  cap=1.00  J/B=3.227e-11
+  [stream_cg_6.00MB r0] P=99.9 W (inst 99.9, avg 99.9)  dyn=45.4 W  BW=1427.0 GB/s  TF=0.00  sm=1074 mem=7601 MHz  T=44C  cap=1.00  J/B=3.182e-11
+  [stream_cg_6.00MB r1] P=99.9 W (inst 99.9, avg 99.9)  dyn=45.4 W  BW=1427.1 GB/s  TF=0.00  sm=1075 mem=7601 MHz  T=44C  cap=1.00  J/B=3.182e-11
+  [stream_cg_12.00MB r0] P=101.8 W (inst 101.8, avg 101.8)  dyn=47.3 W  BW=345.1 GB/s  TF=0.00  sm=302 mem=7601 MHz  T=43C  cap=1.00  J/B=1.370e-10
+  [stream_cg_12.00MB r1] P=100.0 W (inst 100.0, avg 100.0)  dyn=45.5 W  BW=282.0 GB/s  TF=0.00  sm=225 mem=7601 MHz  T=43C  cap=1.00  J/B=1.614e-10
+  [stream_cg_24.00MB r0] P=103.5 W (inst 103.5, avg 103.3)  dyn=49.0 W  BW=271.3 GB/s  TF=0.00  sm=226 mem=7601 MHz  T=43C  cap=1.00  J/B=1.807e-10
+  [stream_cg_24.00MB r1] P=102.6 W (inst 102.6, avg 102.6)  dyn=48.1 W  BW=260.0 GB/s  TF=0.00  sm=226 mem=7601 MHz  T=43C  cap=1.00  J/B=1.851e-10
+  [stream_cg_64.00MB r0] P=112.1 W (inst 112.1, avg 112.1)  dyn=57.6 W  BW=256.8 GB/s  TF=0.00  sm=210 mem=7601 MHz  T=44C  cap=1.00  J/B=2.244e-10
+  [stream_cg_64.00MB r1] P=112.4 W (inst 112.4, avg 112.4)  dyn=57.9 W  BW=257.4 GB/s  TF=0.00  sm=210 mem=7601 MHz  T=44C  cap=1.00  J/B=2.250e-10
+  [stream_cg_256.00MB r0] P=112.4 W (inst 112.4, avg 112.4)  dyn=57.9 W  BW=252.7 GB/s  TF=0.00  sm=210 mem=7601 MHz  T=44C  cap=1.00  J/B=2.291e-10
+  [stream_cg_256.00MB r1] P=113.9 W (inst 113.9, avg 114.1)  dyn=59.4 W  BW=276.3 GB/s  TF=0.00  sm=236 mem=7601 MHz  T=45C  cap=1.00  J/B=2.150e-10
+  [stream_cg_1024.00MB r0] P=116.0 W (inst 116.0, avg 116.0)  dyn=61.5 W  BW=326.4 GB/s  TF=0.00  sm=427 mem=7601 MHz  T=45C  cap=1.00  J/B=1.886e-10
+  [stream_cg_1024.00MB r1] P=116.0 W (inst 116.0, avg 115.9)  dyn=61.6 W  BW=294.3 GB/s  TF=0.00  sm=242 mem=7601 MHz  T=45C  cap=1.00  J/B=2.092e-10
+  [stream_cg_4096.00MB r0] P=111.4 W (inst 111.4, avg 111.4)  dyn=56.9 W  BW=249.2 GB/s  TF=0.00  sm=219 mem=7601 MHz  T=45C  cap=1.00  J/B=2.283e-10
+  [stream_cg_4096.00MB r1] P=111.1 W (inst 111.1, avg 111.1)  dyn=56.6 W  BW=246.8 GB/s  TF=0.00  sm=210 mem=7601 MHz  T=45C  cap=1.00  J/B=2.293e-10
+=== vendor ===
+  [torch_sum_1GB r0] P=116.6 W (inst 116.6, avg 116.6)  dyn=62.1 W  BW=290.8 GB/s  TF=0.00  sm=210 mem=7601 MHz  T=46C  cap=1.00  J/B=2.137e-10
+  [torch_sum_1GB r1] P=116.8 W (inst 116.8, avg 116.8)  dyn=62.3 W  BW=290.7 GB/s  TF=0.00  sm=210 mem=7601 MHz  T=46C  cap=1.00  J/B=2.145e-10
+  [torch_copy_512MB r0] P=122.7 W (inst 122.7, avg 122.7)  dyn=68.2 W  BW=344.8 GB/s  TF=0.00  sm=210 mem=7601 MHz  T=46C  cap=1.00  J/B=1.979e-10
+  [torch_copy_512MB r1] P=122.8 W (inst 122.8, avg 122.8)  dyn=68.3 W  BW=344.7 GB/s  TF=0.00  sm=210 mem=7601 MHz  T=47C  cap=1.00  J/B=1.981e-10
+=== gemv ===
+  [gemv_b1_512MB r0] P=111.7 W (inst 111.7, avg 111.7)  dyn=57.2 W  BW=190.5 GB/s  TF=0.19  sm=210 mem=7601 MHz  T=46C  cap=1.00  J/B=3.001e-10  pJ/flop=300.090
+  [gemv_b1_512MB r1] P=111.3 W (inst 111.3, avg 111.3)  dyn=56.9 W  BW=190.4 GB/s  TF=0.19  sm=210 mem=7601 MHz  T=46C  cap=1.00  J/B=2.986e-10  pJ/flop=298.638
+  [gemv_b16_512MB r0] P=112.6 W (inst 112.6, avg 112.6)  dyn=58.1 W  BW=171.6 GB/s  TF=2.74  sm=210 mem=7601 MHz  T=46C  cap=1.00  J/B=3.385e-10  pJ/flop=21.199
+  [gemv_b16_512MB r1] P=112.5 W (inst 112.5, avg 112.5)  dyn=58.0 W  BW=171.5 GB/s  TF=2.74  sm=210 mem=7601 MHz  T=46C  cap=1.00  J/B=3.384e-10  pJ/flop=21.192
+idle_post: {"n_samples": 933, "p_energy_w": 3.175873153743446, "energy_counter_updates": 100, "energy_counter_period_s": 0.09996137474522446, "p_inst_w": 71.92049732047161, "p_avg_w": 71.21342216981132, "sm_mhz": 1799.1157556270095, "mem_mhz": 7601.0, "temp_c": 41.41264737406217, "frac_sw_power_cap": 0.887459807073955, "frac_thermal": 0.0, "frac_hw_slowdown": 0.0, "p_w": 71.92049732047161, "energy_counter_over_inst": 0.04415810891284616, "duration_s": 10.000183582305908, "waited_s": 32.09591102600098}
+
+point                        BW GB/s   TFLOPS      P W   dyn W  SMMHz   cap   J/byte dyn    pJ/flop
+stream_L1ca_4.0MB             6041.8     0.00     98.9    44.4    851  1.00 7.355e-12±2.6e-15          -
+stream_L1ca_8.0MB             6051.3     0.00     98.9    44.4    905  1.00 7.332e-12±1.1e-14          -
+stream_cg_0.25MB               998.6     0.00     99.7    45.2   1468  1.00 4.530e-11±4.1e-14          -
+stream_cg_1.00MB              1429.6     0.00     99.8    45.3   1131  1.00 3.171e-11±1.8e-15          -
+stream_cg_2.00MB              1418.9     0.00     99.9    45.4   1107  1.00 3.200e-11±1.1e-13          -
+stream_cg_3.00MB              1424.2     0.00     99.9    45.4   1065  1.00 3.189e-11±3.5e-14          -
+stream_cg_4.50MB              1406.3     0.00     99.9    45.4   1104  1.00 3.230e-11±2.6e-14          -
+stream_cg_6.00MB              1427.0     0.00     99.9    45.4   1075  1.00 3.182e-11±1.1e-15          -
+stream_cg_12.00MB              313.5     0.00    100.9    46.4    263  1.00 1.492e-10±1.2e-11          -
+stream_cg_24.00MB              265.6     0.00    103.1    48.6    226  1.00 1.829e-10±2.2e-12          -
+stream_cg_64.00MB              257.1     0.00    112.3    57.8    210  1.00 2.247e-10±3.2e-13          -
+stream_cg_256.00MB             264.5     0.00    113.1    58.7    223  1.00 2.220e-10±7.0e-12          -
+stream_cg_1024.00MB            310.4     0.00    116.0    61.6    334  1.00 1.989e-10±1.0e-11          -
+stream_cg_4096.00MB            248.0     0.00    111.2    56.8    214  1.00 2.288e-10±4.9e-13          -
+torch_sum_1GB                  290.7     0.00    116.7    62.2    210  1.00 2.141e-10±3.8e-13          -
+torch_copy_512MB               344.7     0.00    122.7    68.3    210  1.00 1.980e-10±1.2e-13          -
+gemv_b1_512MB                  190.5     0.19    111.5    57.0    210  1.00 2.993e-10±7.3e-13    299.364
+gemv_b16_512MB                 171.6     2.74    112.6    58.1    210  1.00 3.385e-10±5.4e-14     21.195
+wrote logs/A5000_samegpu/gpu_CA-00/microbench.json
+INFO 09-24 17:02:21 [async_llm.py:180] Torch profiler disabled. AsyncLLM CPU traces will not be collected.
+[idle] idle_power_w=60.453
+[1;36m(EngineCore_DP0 pid=1642389)[0;0m WARNING 09-24 17:03:19 [cudagraph_dispatcher.py:102] cudagraph dispatching keys are not initialized. No cudagraph will be used.
+[saved] logs/A5000_samegpu/gpu_CA-00/Qwen2-7B-Instruct/alpaca_c1 (reqs=4, tok/s=10.47879560012321, dram_filled=0)
+}
+INFO 09-24 17:04:53 [async_llm.py:180] Torch profiler disabled. AsyncLLM CPU traces will not be collected.
+[idle] idle_power_w=61.073
+[1;36m(EngineCore_DP0 pid=1643098)[0;0m WARNING 09-24 17:05:45 [cudagraph_dispatcher.py:102] cudagraph dispatching keys are not initialized. No cudagraph will be used.
+[saved] logs/A5000_samegpu/gpu_CA-00/Qwen2.5-3B-Instruct/alpaca_c1 (reqs=5, tok/s=20.592429341754702, dram_filled=0)
+}

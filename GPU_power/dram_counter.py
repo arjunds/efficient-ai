@@ -51,6 +51,7 @@ PEAK_HBM_BW = {
     "L40S": 864e9,
     "L40": 864e9,
     "A5000": 768e9,
+    "B200": 8000e9,
 }
 
 DRAM_ACTIVE_FIELD = 1005  # DCGM_FI_PROF_DRAM_ACTIVE
@@ -93,7 +94,7 @@ class DramCounter:
         self._writer = csv.writer(self._file)
         self._writer.writerow(["t_wall", "dram_active_frac", "inst_bytes_per_s"])
 
-        if shutil.which("dcgmi"):
+        if shutil.which(os.environ.get("DCGMI_BIN", "dcgmi")):
             self.backend = "dcgmi"
             self._start_dcgmi()
         else:
@@ -101,8 +102,13 @@ class DramCounter:
         return self
 
     def _start_dcgmi(self):
-        cmd = ["dcgmi", "dmon", "-e", str(DRAM_ACTIVE_FIELD),
-               "-d", str(self.interval_ms), "-i", str(self.gpu_id)]
+        # Additive (A5000 agent, 2026-09-24): DCGM enumerates HOST GPUs, so under
+        # SLURM/containers the CUDA index (0) is usually NOT the DCGM id. Set
+        # DCGM_GPU_ID (map via `dcgmi discovery -l` vs nvidia-smi pci.bus_id);
+        # DCGMI_BIN overrides the binary path. Defaults preserve old behaviour.
+        gid = os.environ.get("DCGM_GPU_ID", str(self.gpu_id))
+        cmd = [os.environ.get("DCGMI_BIN", "dcgmi"), "dmon", "-e", str(DRAM_ACTIVE_FIELD),
+               "-d", str(self.interval_ms), "-i", gid]
         try:
             self._proc = subprocess.Popen(
                 cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
