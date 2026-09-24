@@ -156,8 +156,10 @@ config inconsistency you should know about.
 
 ## Counter availability (gotcha #5)
 
-`ncu` is **not installed** on the Penn compute nodes, so the analytic-vs-hardware
-byte validation still has not been done. `dcgmi` *is* present on the host but not
+`ncu` IS available inside the vLLM container (`/usr/local/cuda/bin/ncu`) -- an
+earlier note in this file wrongly said otherwise after probing only the host
+PATH. The analytic-vs-hardware byte validation has still not been RUN, but it is
+not blocked by tooling; only counter permission is unverified. `dcgmi` *is* present on the host but not
 inside the container, which is why every run shows `dram_backend: None`; a bind
 mount would enable DCGM field 1005. If NCU is available on the H200 box, that
 validation is still the highest-value unrun experiment — a colleague's B200 GEMM

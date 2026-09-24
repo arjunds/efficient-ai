@@ -199,9 +199,15 @@ does not saturate it, a B200 loses on total energy before doing any work.
 
 ## Counter availability (gotcha #5) — partial
 
-Probed on the compute node: **`ncu` is NOT installed** (nor `nsys`), so
-`ncu_dram_check.py` cannot run and the analytic-vs-hardware byte validation is
-still out of reach by that route. **`dcgmi` IS present at `/usr/bin/dcgmi`.**
+**CORRECTION (2026-09-24): `ncu` IS available.** The probe in the 72B job ran
+`command -v ncu` on the HOST PATH and wrongly concluded it was missing. It ships
+**inside the vLLM container at `/usr/local/cuda/bin/ncu`** (the image env
+advertises `NV_CUDA_NSIGHT_COMPUTE_VERSION=12.8.1`), and a second copy exists on
+the host at `/vast/parcc/sw/26.1.b200/.../cuda-13.1.1/bin/ncu`. `dcgmi` is also
+present at `/usr/bin/dcgmi`. So `ncu_dram_check.py` IS runnable here; what
+remains unverified is whether counter *permission* is granted
+(`ERR_NVGPUCTRPERM`) -- though a colleague collected `dram__bytes.sum` on this
+cluster in July 2026, which suggests it is.
 
 Our runs recorded `dram_backend: None` because `dram_counter.py` looks for
 `dcgmi` *inside the container*, where it is absent. Binding `/usr/bin/dcgmi`
