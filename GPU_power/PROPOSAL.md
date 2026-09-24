@@ -209,9 +209,20 @@ admission, PI on power cap, and a tuned static setting.
 - Robust to ±20% coefficient error (<2% energy); online adaptation is essential.
 - Heterogeneous routing depends on unmeasured parameters (B200 minimum power limit,
   parked power, wake time) — flagged, with sensitivity sweeps.
-- *[Pending: disaggregated prefill/decode pools under a shared budget — the setting
-  of the closest prior work; live closed-loop validation on an A5000 with admission
-  control as the actuator (power limits are not settable without root).]*
+- **Disaggregated prefill/decode pools** (first steady-state pass, corrected
+  coefficients, 2×H200+2×B200): prefill belongs on B200 (9.3 vs 11.4 mJ/token, 7B);
+  the reversed split costs 5–8%. But **the best split exactly ties colocated serving
+  on energy** in all four model/workload cases — structurally, colocation with
+  optimal routing can replicate any split in a linear energy model. Under a budget,
+  colocation serves more for 7B (69.7 vs 59.2 req/s); a split is slightly better for
+  32B (12.8 vs 11.1). ⇒ in this model **disaggregation's value is SLO isolation, not
+  energy**. *[Dynamic budget-split study and e_gemm/cap-floor sensitivity: pending.]*
+- **Regime-dependent control:** on a power-capped GPU (A5000 at 100 W) power is ~flat
+  whenever anything runs, so the only energy lever is **batch-synchronous gating**
+  (hold arrivals → release one big batch → drain → idle): predicted −21% J/token vs
+  work-conserving at a 30 s TTFT SLO — a lever that is worthless on uncapped GPUs,
+  where the lever is SLO-aware power capping. *[Live closed-loop validation built and
+  dry-run; not yet executed — awaiting approval to submit the GPU job.]*
 
 ---
 

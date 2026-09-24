@@ -195,9 +195,14 @@ class Plant:
             kv_room = max(g["kv_max_tokens"] * 0.95 - kv, 0.0)
             adm = min(q, max(max_run - n_run, 0.0), kv_room / (lp + gl))
             q -= adm
-            n_pf += adm
-            pf += adm * lp
             adm_tot += adm
+            if d.get("prefilled", False):
+                # disaggregated decode pool: prompt KV arrives from a prefill GPU,
+                # the request starts decoding at once (KV of lp is resident)
+                hist = hist + adm * self.p_bins
+            else:
+                n_pf += adm
+                pf += adm * lp
             n_dec = hist.sum()
             n_eff = n_dec + n_pf
             if n_eff < 1e-9:

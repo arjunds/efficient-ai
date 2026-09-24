@@ -257,3 +257,116 @@ Note: `plantcal` was run with `--reps 3`; the calibrated-plant numbers above use
 
 Static tuning is cached in `results/static_tuned.json`. The full run takes about 40 min
 on 16 cores.
+
+---
+
+# Round 2 (2026-09-24): live A5000 experiment built; disaggregated pools partially run
+
+**Status:** the live experiment is ready to run but **not run**. Submitting the GPU job
+(`sbatch controls/live_a5000.sbatch`) was denied by the session's permission system, and
+later CPU-only `srun` jobs were denied too. So part B's dynamic study and the re-runs with
+the corrected e_gemm are still pending. Everything below comes from CPU runs completed
+before the denials.
+
+## A. Live closed-loop admission control on a 100-W-capped A5000 (ready to run)
+
+**Files (new; the shared harness is untouched):**
+- `controls/live_controllers.py`: admission-only controllers (static, PI on power,
+  POLCA-style, policy-search AdmissionMPC) and a request-level CPU simulator of the
+  capped GPU.
+- `controls/live_load.py`: MMPP open-loop arrivals, an asyncio admission gate, and a
+  1 Hz controller reading NVML *instant* power (field 186). It persists per-request
+  arrival / admit / first-token / finish times and every controller tick, plus
+  `gpu_query.csv` (index, pci.bus_id, power.limit, enforced.power.limit). It has a
+  `--mock` engine for CPU dry runs and `--analyze` for summaries (energy integrated
+  from the power trace; the NVML energy counter is wrong on this part).
+- `controls/a5000_sysid.py`: builds the staircase command (via the harness's
+  `--concurrency_schedule`) and fits the n→tok/s / power table. It also runs
+  `controls/sysid.py`'s fit with monkeypatched globs and output path, so no shared
+  file is written.
+- `controls/live_a5000.sbatch`: gpu query → idle → staircase → table + fit → 4
+  controllers × 3 reps (shuffled order, one engine load) → analysis. About 1.5 h. Output
+  goes to `logs/A5000_live/`.
+
+**Dry runs completed:**
+- Mock-engine end-to-end run of all 4 controllers.
+- Table and sysid fit on the physics agent's `logs/A5000` sweep. The fit runs, but the
+  time model is only 13–24% MAPE in the capped regime; the table is the primary MPC
+  model.
+
+**Why admission can work on this plant.** At the enforced 100 W limit the GPU draws about
+100 W whenever ≥1 request runs, and idles at about 61 W with a model loaded.
+Per-request speed is roughly batch-independent (~20–35 tok/s). So:
+- energy ≈ P_busy × busy time;
+- the only lever is **batch-synchronous gating**: hold arrivals while idle, release them
+  as one large batch, let it drain, and idle.
+
+That is the non-work-conserving batching that gives nothing on uncapped H200/B200.
+
+**CPU predictions for the live run** (request-level sim; Qwen2.5-3B table from
+`logs/A5000`; MMPP 0.6/2.0 req/s; 300 s; 3 seeds):
+
+| policy | energy kJ | J/token | TTFT p50 / p99 (s) | budget viol (20 s window) |
+|---|---|---|---|---|
+| static64 (work-conserving) | 29.8 | 0.488 | 0.03 / 0.03 | 40% (always busy) |
+| fixed batch-sync gate, θ=16 | 23.9 | 0.404 | 7.4 / 28.9 | — |
+| fixed batch-sync gate, θ=32 | 22.0 | 0.374 | 14.1 / 48.9 | — |
+| MPC, flat budget, TTFT SLO 15 s | 25.3 | 0.422 | 6.0 / 14.2 | 0% |
+| MPC, flat budget, TTFT SLO 30 s | 23.2 | 0.384 | 10.1 / 25.6 | 0% |
+| MPC, budget 100→88→78→100 W, SLO 30 s | 23.3 | 0.401 | 14.2 / 40.5 | 14% |
+| PI on power, same budget | 28.5 | 0.541 | 61 / 121 | 39% |
+
+- Predicted: MPC saves about 20% energy per token against a work-conserving server if the
+  user accepts roughly 10–30 s TTFT.
+- The 78 W budget segment is only partly feasible at this load (MPC still violates 14% of
+  windows).
+- The live run tests this prediction, the throughput table at small n, and whether
+  plant_fp and plant.py predict the real queue/latency dynamics under gating. No logged
+  run has ever exercised gating.
+
+## B. Disaggregated prefill/decode pools, heterogeneous fleet (partially run)
+
+**Code:** `controls/disagg.py`.
+- Per-GPU prefill model: `e_p = e_gemm·2P + e_kvbyte·1.5·kvb + e_wbyte·W/C`; roofline
+  rate at MFU 0.5; work-proportional power.
+- Decode model: the fleet-study envelope with the prefill FLOPs removed. Colocated GPUs
+  time-share.
+- Steady-state MILP over every pool assignment (min power at a given load, and max load
+  under a Σcaps budget).
+- Dynamic fluid sim: prefill token FIFOs, plus `plant_fp` decode GPUs in the new
+  `prefilled` mode.
+- Controllers: static TDP-proportional split, per-pool PI, a pool-MPC LP that splits the
+  budget between pools with preview, and a blind MPC.
+- Coefficients are read from `gpu_coefficients.json` at run time, so the study re-runs
+  as-is with the corrected e_gemm. `--egemm_scale` and `--b200_floor` drive the
+  sensitivity sweep (`exp_sens`: e_gemm ×0.7–1.3 × B200 floor 300/400/500 W).
+
+**Preliminary steady-state result.** One deterministic LP pass on 2×H200 + 2×B200, 30%
+of capacity, **with the corrected coefficients** (H200 e_gemm 0.794 pJ, B200 0.642 pJ).
+The sensitivity sweep has not been run. Columns: J/request at the given load, and max
+req/s under a Σcaps budget of 45% ΣTDP.
+
+| workload | best disaggregated split | colocated | worst split (P on 2×H200, D on 2×B200) | max req/s @45% budget: colocated / best split |
+|---|---|---|---|---|
+| 7B chat (512 in / 256 out) | P on B200 (≥1) + D on H200s: 22.7 J/req | 22.7 | 23.8 (+5%) | 69.7 / 59.2 |
+| 7B RAG (3000 / 150) | same: 82.4 | 82.4 | 88.8 (+8%) | 17.4 / 15.7 |
+| 32B chat | same: 101.9 | 101.9 | 106.9 (+5%) | 11.1 / 12.8 (P:1B+2H, D:1B) |
+| 32B RAG | same: 394.8 | 394.8 | 423.8 (+7%) | 3.0 / 3.1 |
+
+- Under our linear additive energy model, a well-chosen disaggregation **ties**
+  colocation on energy; it cannot beat it, because colocation with optimal routing is a
+  superset.
+- **Prefill belongs on the B200** (e_p 9.3 vs 11.4 mJ/token for 7B, from lower e_gemm).
+  Decode is split by the floor and idle terms.
+- Putting prefill on the H200s instead costs 5–8%.
+- Under a budget, colocation gives the most throughput for 7B (69.7 vs 59.2 req/s);
+  for 32B a split is slightly better.
+- The honest reading: in our model disaggregation's value is SLO isolation (not
+  modelled) rather than energy. The pool-MPC budget-splitting dynamic study is written
+  but not run.
+
+**Pending (needs compute):**
+- `python3 -m controls.disagg --exp steady,sens,dynamic`
+- rerun of `experiments.py --exp hetero,sens` with the corrected e_gemm, plus a +26–30%
+  e_gemm robustness case
+- the live A5000 job

@@ -208,13 +208,8 @@ def run_episode(scn, ctrl, seed=0, plant="fp", mismatch=0.0, keep_trace=False):
                           power_cap_w=float(u["caps"][i]))
                 xn, y = p.step(xs[i], um, dict(arrivals=a_i, prompt_len=scn["lp"],
                                                gen_len=scn["gl"]))
-                if getattr(p, "_is_cal", False):
-                    # plant.py reports the *unthrottled* t_iter under a power cap (it
-                    # throttles by doing fewer iterations); per-request TPOT is then
-                    # dt / iterations while the GPU is continuously busy.
-                    y = dict(y)
-                    if y.get("throttled") and y.get("iterations", 0) > 0:
-                        y["t_iter_s"] = max(y["t_iter_s"], dt / y["iterations"])
+                # (plant.py now reports throttled t_iter_s itself; the earlier
+                #  max(t_iter_s, dt/iterations) adapter was removed 2026-09-24)
             if a_i > 0:
                 fifo[i].append([k, a_i])
             adm = y.get("admitted", xs[i][0] + a_i - xn[0])
