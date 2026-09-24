@@ -46,8 +46,13 @@ UNCERTAINTY: every prediction is a Monte-Carlo over (a) coefficient ranges,
 (b) an ensemble of time-model fits (3 functional forms × leave-one-model-out
 refits), (c) the prefill-MFU prior. Rankings are reported with P(win).
 
+PREFIX CACHE: `--cached-frac f` = fraction of prompt tokens served from vLLM's
+prefix cache (not computed): prefill FLOPs/tokens scale by (1-f); KV stays
+resident. Default 0 (deployment without shared prefixes). The coefficients in
+gpu_coefficients.json are fit on COMPUTED FLOPs (prefix-cache-corrected).
+
 CLI (compatible with v1):
-  python3 recommend_gpu.py <hf_model_id> [--prompt 2048 --gen 256 --batch 32]
+  python3 recommend_gpu.py <hf_model_id> [--prompt 2048 --gen 256 --batch 32] [--cached-frac 0]
          [--gpus H200,B200,...] [--draws 300] [--winmap]
 Needs ~/models.py importable (run in the container, or any python>=3.7 with it
 on sys.path). No numpy needed.
@@ -77,14 +82,16 @@ COEFF_JSON = os.path.join(HERE, "gpu_coefficients.json")
 BUILTIN_MEASURED = {
     "H200": dict(gpu_name="NVIDIA H200", mem_tech="HBM3e", bw=4.8e12, peak_flops=9.9e14,
                  p_cap=700.0, p_static=116.4, p_static_range=[115.9, 118.4],
-                 e_wbyte=1.076e-10, e_kvbyte=3.376e-10, e_gemm=0.680e-12,
-                 e_wbyte_ci=[1.073e-10, 1.080e-10], e_kvbyte_ci=[3.285e-10, 3.465e-10],
-                 e_gemm_ci=[0.656e-12, 0.702e-12], source="builtin: logs/ragged 3-term fit"),
+                 e_wbyte=1.066e-10, e_kvbyte=3.288e-10, e_gemm=0.794e-12,
+                 e_wbyte_ci=[1.063e-10, 1.069e-10], e_kvbyte_ci=[3.197e-10, 3.374e-10],
+                 e_gemm_ci=[0.773e-12, 0.822e-12],
+                 source="builtin: logs/ragged 3-term fit, prefix-cache-corrected FLOPs"),
     "B200": dict(gpu_name="NVIDIA B200", mem_tech="HBM3e", bw=8.0e12, peak_flops=2.25e15,
                  p_cap=1000.0, p_static=237.8, p_static_range=[236.3, 241.7],
-                 e_wbyte=1.252e-10, e_kvbyte=3.043e-10, e_gemm=0.539e-12,
-                 e_wbyte_ci=[1.247e-10, 1.257e-10], e_kvbyte_ci=[2.729e-10, 3.319e-10],
-                 e_gemm_ci=[0.497e-12, 0.588e-12], source="builtin: logs/B200 3-term fit"),
+                 e_wbyte=1.243e-10, e_kvbyte=2.852e-10, e_gemm=0.642e-12,
+                 e_wbyte_ci=[1.238e-10, 1.248e-10], e_kvbyte_ci=[2.567e-10, 3.143e-10],
+                 e_gemm_ci=[0.600e-12, 0.694e-12],
+                 source="builtin: logs/B200 3-term fit, prefix-cache-corrected FLOPs"),
 }
 # Memory capacity (bytes) — not in the coefficient json.
 MEM_BYTES = {"H200": 141e9, "B200": 180e9, "A100-80-PCIe": 80e9, "A100-80-SXM": 80e9,
@@ -134,7 +141,7 @@ MFU_PREFILL = (0.65, 0.50, 0.75)   # prior; B200 cuBLAS 8192^3 measured 68% of d
 # ---------------------------------------------------------------------------
 TIME_CENTRAL = {}    # filled below from TIME_FIT
 TIME_ENSEMBLE = {}
-TIME_FIT = {"B200": {"central": {"eta": 0.867301796, "eta_kv": 0.369685427, "form": "additive(k=1)", "held_out": None, "k": 1.0, "lomo_mape_t": 2.4806937, "mu": 0.685375689, "t0": 0.001376957, "tau": 8.0076e-05, "tau_moe": 0.000353202, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, "ensemble": [{"eta": 0.867301796, "eta_kv": 0.369685427, "form": "additive(k=1)", "held_out": None, "k": 1.0, "lomo_mape_t": 2.4806937, "mu": 0.685375689, "t0": 0.001376957, "tau": 8.0076e-05, "tau_moe": 0.000353202, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.857113606, "eta_kv": 0.404651846, "form": "additive(k=1)", "held_out": "Qwen/Qwen2-72B-Instruct", "k": 1.0, "mu": 0.645180473, "t0": 0.001432324, "tau": 7.7245e-05, "tau_moe": 0.000340716, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.879263044, "eta_kv": 0.267912716, "form": "additive(k=1)", "held_out": "Qwen/Qwen2-7B-Instruct", "k": 1.0, "mu": 0.899660075, "t0": 0.001123418, "tau": 8.8101e-05, "tau_moe": 0.000388601, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.8866134, "eta_kv": 0.557865605, "form": "additive(k=1)", "held_out": "Qwen/Qwen2.5-32B-Instruct", "k": 1.0, "mu": 0.55224043, "t0": 0.001253641, "tau": 8.5084e-05, "tau_moe": 0.000375295, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.865383167, "eta_kv": 0.206980593, "form": "additive(k=1)", "held_out": "mistralai/Mistral-7B-v0.1", "k": 1.0, "mu": 0.924080658, "t0": 0.001393021, "tau": 8.012e-05, "tau_moe": 0.0003534, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.657122552, "eta_kv": 1.0, "form": "soft(k=3)", "held_out": None, "k": 3.0, "mu": 0.521580346, "t0": 0.0, "tau": 0.000188217, "tau_moe": 0.000830196, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.606144973, "eta_kv": 0.404651786, "form": "soft(k=3)", "held_out": "Qwen/Qwen2-72B-Instruct", "k": 3.0, "mu": 0.645180512, "t0": 0.001868065, "tau": 0.000110496, "tau_moe": 0.000487382, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.648154031, "eta_kv": 0.461718732, "form": "soft(k=3)", "held_out": "Qwen/Qwen2-7B-Instruct", "k": 3.0, "mu": 0.620458277, "t0": 0.0, "tau": 0.000183903, "tau_moe": 0.00081117, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.691457156, "eta_kv": 0.557865375, "form": "soft(k=3)", "held_out": "Qwen/Qwen2.5-32B-Instruct", "k": 3.0, "mu": 0.552240495, "t0": 0.002028938, "tau": 0.000110946, "tau_moe": 0.000489365, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.662507433, "eta_kv": 0.177381837, "form": "soft(k=3)", "held_out": "mistralai/Mistral-7B-v0.1", "k": 3.0, "mu": 1.012636405, "t0": 0.0, "tau": 0.000197003, "tau_moe": 0.000868953, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.679179225, "eta_kv": 0.360284087, "form": "max(k=50)", "held_out": None, "k": 50.0, "mu": 0.625088766, "t0": 0.003116846, "tau": 8.8279e-05, "tau_moe": 0.000389384, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.618884531, "eta_kv": 0.404651807, "form": "max(k=50)", "held_out": "Qwen/Qwen2-72B-Instruct", "k": 50.0, "mu": 0.645180489, "t0": 0.002784949, "tau": 9.9776e-05, "tau_moe": 0.000440097, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.692125214, "eta_kv": 0.415381968, "form": "max(k=50)", "held_out": "Qwen/Qwen2-7B-Instruct", "k": 50.0, "mu": 0.62179391, "t0": 0.003469729, "tau": 3e-05, "tau_moe": 0.000132326, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.710493804, "eta_kv": 0.557865553, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-32B-Instruct", "k": 50.0, "mu": 0.552240445, "t0": 0.003065723, "tau": 9.111e-05, "tau_moe": 0.000401873, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.67587757, "eta_kv": 0.120308006, "form": "max(k=50)", "held_out": "mistralai/Mistral-7B-v0.1", "k": 50.0, "mu": 1.446572148, "t0": 0.003115816, "tau": 6.4331e-05, "tau_moe": 0.000283753, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}], "lomo": {"Qwen/Qwen2-72B-Instruct": {"eta": 0.857113606, "eta_kv": 0.404651846, "form": "additive(k=1)", "held_out": "Qwen/Qwen2-72B-Instruct", "k": 1.0, "mu": 0.645180473, "t0": 0.001432324, "tau": 7.7245e-05, "tau_moe": 0.000340716, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, "Qwen/Qwen2-7B-Instruct": {"eta": 0.879263044, "eta_kv": 0.267912716, "form": "additive(k=1)", "held_out": "Qwen/Qwen2-7B-Instruct", "k": 1.0, "mu": 0.899660075, "t0": 0.001123418, "tau": 8.8101e-05, "tau_moe": 0.000388601, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, "Qwen/Qwen2.5-32B-Instruct": {"eta": 0.8866134, "eta_kv": 0.557865605, "form": "additive(k=1)", "held_out": "Qwen/Qwen2.5-32B-Instruct", "k": 1.0, "mu": 0.55224043, "t0": 0.001253641, "tau": 8.5084e-05, "tau_moe": 0.000375295, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, "mistralai/Mistral-7B-v0.1": {"eta": 0.865383167, "eta_kv": 0.206980593, "form": "additive(k=1)", "held_out": "mistralai/Mistral-7B-v0.1", "k": 1.0, "mu": 0.924080658, "t0": 0.001393021, "tau": 8.012e-05, "tau_moe": 0.0003534, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}}}, "H200": {"central": {"eta": 0.724375312, "eta_kv": 0.222481722, "form": "max(k=50)", "held_out": None, "k": 50.0, "lomo_mape_t": 5.32153283, "mu": 3.210777598, "t0": 0.002148718, "tau": 0.00010979, "tau_moe": 0.000484267}, "ensemble": [{"eta": 0.95, "eta_kv": 0.269553948, "form": "additive(k=1)", "held_out": None, "k": 1.0, "mu": 5.0, "t0": 0.003241441, "tau": 2.4697e-05, "tau_moe": 0.000295277}, {"eta": 0.95, "eta_kv": 0.281693566, "form": "additive(k=1)", "held_out": "Qwen/Qwen2-7B-Instruct", "k": 1.0, "mu": 5.0, "t0": 0.003500406, "tau": 1.9906e-05, "tau_moe": 0.000290262}, {"eta": 0.95, "eta_kv": 0.255567609, "form": "additive(k=1)", "held_out": "Qwen/Qwen2.5-0.5B-Instruct", "k": 1.0, "mu": 5.0, "t0": 0.002068835, "tau": 5.6579e-05, "tau_moe": 0.000319224}, {"eta": 0.95, "eta_kv": 0.259870642, "form": "additive(k=1)", "held_out": "Qwen/Qwen2.5-1.5B-Instruct", "k": 1.0, "mu": 5.0, "t0": 0.002949937, "tau": 3.0205e-05, "tau_moe": 0.000301022}, {"eta": 0.95, "eta_kv": 0.274218838, "form": "additive(k=1)", "held_out": "Qwen/Qwen2.5-14B-Instruct", "k": 1.0, "mu": 5.0, "t0": 0.003072837, "tau": 3.0854e-05, "tau_moe": 0.00029894}, {"eta": 0.95, "eta_kv": 0.276222949, "form": "additive(k=1)", "held_out": "Qwen/Qwen2.5-32B-Instruct", "k": 1.0, "mu": 5.0, "t0": 0.003773105, "tau": 6.401e-06, "tau_moe": 0.000284414}, {"eta": 0.95, "eta_kv": 0.25700819, "form": "additive(k=1)", "held_out": "Qwen/Qwen2.5-3B-Instruct", "k": 1.0, "mu": 3.646666694, "t0": 0.003790196, "tau": 1.214e-06, "tau_moe": 0.000283085}, {"eta": 0.95, "eta_kv": 0.28303588, "form": "additive(k=1)", "held_out": "Qwen/Qwen2.5-7B-Instruct", "k": 1.0, "mu": 4.844761718, "t0": 0.003547173, "tau": 1.8907e-05, "tau_moe": 0.000289299}, {"eta": 0.95, "eta_kv": 0.310244035, "form": "additive(k=1)", "held_out": "google/gemma-7b", "k": 1.0, "mu": 4.255474481, "t0": 0.003113535, "tau": 2.8081e-05, "tau_moe": 0.000298942}, {"eta": 0.95, "eta_kv": 0.274079253, "form": "additive(k=1)", "held_out": "meta-llama/Meta-Llama-3-8B", "k": 1.0, "mu": 5.0, "t0": 0.003184443, "tau": 2.9383e-05, "tau_moe": 0.00029661}, {"eta": 0.95, "eta_kv": 0.258473697, "form": "additive(k=1)", "held_out": "mistralai/Mistral-7B-v0.1", "k": 1.0, "mu": 5.0, "t0": 0.003188256, "tau": 2.9492e-05, "tau_moe": 0.000296007}, {"eta": 0.758854645, "eta_kv": 0.220153436, "form": "soft(k=3)", "held_out": None, "k": 3.0, "mu": 3.550015206, "t0": 0.001582495, "tau": 0.000125538, "tau_moe": 0.000472383}, {"eta": 0.75429443, "eta_kv": 0.216944935, "form": "soft(k=3)", "held_out": "Qwen/Qwen2-7B-Instruct", "k": 3.0, "mu": 4.980991678, "t0": 0.001647608, "tau": 0.000123515, "tau_moe": 0.000470718}, {"eta": 0.754523641, "eta_kv": 0.220965136, "form": "soft(k=3)", "held_out": "Qwen/Qwen2.5-0.5B-Instruct", "k": 3.0, "mu": 3.582995395, "t0": 0.001548359, "tau": 0.000126198, "tau_moe": 0.000472833}, {"eta": 0.755423022, "eta_kv": 0.220669761, "form": "soft(k=3)", "held_out": "Qwen/Qwen2.5-1.5B-Instruct", "k": 3.0, "mu": 3.69087307, "t0": 0.001588476, "tau": 0.000124341, "tau_moe": 0.000472026}, {"eta": 0.750917635, "eta_kv": 0.218386494, "form": "soft(k=3)", "held_out": "Qwen/Qwen2.5-14B-Instruct", "k": 3.0, "mu": 3.510123795, "t0": 0.001516031, "tau": 0.000127934, "tau_moe": 0.000473099}, {"eta": 0.77917241, "eta_kv": 0.217203028, "form": "soft(k=3)", "held_out": "Qwen/Qwen2.5-32B-Instruct", "k": 3.0, "mu": 3.723801814, "t0": 0.001706596, "tau": 0.000121701, "tau_moe": 0.000471156}, {"eta": 0.768182617, "eta_kv": 0.221893472, "form": "soft(k=3)", "held_out": "Qwen/Qwen2.5-3B-Instruct", "k": 3.0, "mu": 3.573532515, "t0": 0.001832387, "tau": 0.000113591, "tau_moe": 0.000467617}, {"eta": 0.756960475, "eta_kv": 0.222657173, "form": "soft(k=3)", "held_out": "Qwen/Qwen2.5-7B-Instruct", "k": 3.0, "mu": 4.351150599, "t0": 0.001743838, "tau": 0.000120222, "tau_moe": 0.000468923}, {"eta": 0.779378679, "eta_kv": 0.519091518, "form": "soft(k=3)", "held_out": "google/gemma-7b", "k": 3.0, "mu": 1.133673909, "t0": 0.001046281, "tau": 0.000145849, "tau_moe": 0.000489584}, {"eta": 0.756121131, "eta_kv": 0.220686527, "form": "soft(k=3)", "held_out": "meta-llama/Meta-Llama-3-8B", "k": 3.0, "mu": 3.593760045, "t0": 0.001620341, "tau": 0.000124677, "tau_moe": 0.000471335}, {"eta": 0.756875254, "eta_kv": 0.211663899, "form": "soft(k=3)", "held_out": "mistralai/Mistral-7B-v0.1", "k": 3.0, "mu": 3.625334374, "t0": 0.001627422, "tau": 0.000124976, "tau_moe": 0.000470799}, {"eta": 0.724375312, "eta_kv": 0.222481722, "form": "max(k=50)", "held_out": None, "k": 50.0, "lomo_mape_t": 5.32153283, "mu": 3.210777598, "t0": 0.002148718, "tau": 0.00010979, "tau_moe": 0.000484267}, {"eta": 0.720797555, "eta_kv": 0.218179842, "form": "max(k=50)", "held_out": "Qwen/Qwen2-7B-Instruct", "k": 50.0, "mu": 4.403819474, "t0": 0.002169355, "tau": 0.000109238, "tau_moe": 0.000484002}, {"eta": 0.734349458, "eta_kv": 0.225233565, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-0.5B-Instruct", "k": 50.0, "mu": 3.231184721, "t0": 0.002233156, "tau": 0.000110046, "tau_moe": 0.000482647}, {"eta": 0.723745594, "eta_kv": 0.222878581, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-1.5B-Instruct", "k": 50.0, "mu": 3.338398396, "t0": 0.002150155, "tau": 0.000110478, "tau_moe": 0.000484309}, {"eta": 0.724527812, "eta_kv": 0.221869886, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-14B-Instruct", "k": 50.0, "mu": 3.067894021, "t0": 0.002145612, "tau": 0.000109852, "tau_moe": 0.000484238}, {"eta": 0.650752804, "eta_kv": 0.237893012, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-32B-Instruct", "k": 50.0, "mu": 2.493802837, "t0": 0.001659385, "tau": 0.00012672, "tau_moe": 0.000494755}, {"eta": 0.737735972, "eta_kv": 0.223131485, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-3B-Instruct", "k": 50.0, "mu": 3.364155512, "t0": 0.002260655, "tau": 0.000101667, "tau_moe": 0.00048203}, {"eta": 0.72418673, "eta_kv": 0.22365946, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-7B-Instruct", "k": 50.0, "mu": 3.94639194, "t0": 0.002223607, "tau": 0.000107357, "tau_moe": 0.000483022}, {"eta": 0.739245346, "eta_kv": 0.243220079, "form": "max(k=50)", "held_out": "google/gemma-7b", "k": 50.0, "mu": 1.994984986, "t0": 0.002085278, "tau": 0.000111739, "tau_moe": 0.000485656}, {"eta": 0.723414756, "eta_kv": 0.221084418, "form": "max(k=50)", "held_out": "meta-llama/Meta-Llama-3-8B", "k": 50.0, "mu": 3.36096876, "t0": 0.002140147, "tau": 0.000110106, "tau_moe": 0.00048444}, {"eta": 0.727338767, "eta_kv": 0.219300386, "form": "max(k=50)", "held_out": "mistralai/Mistral-7B-v0.1", "k": 50.0, "mu": 3.074032473, "t0": 0.002172441, "tau": 0.00010889, "tau_moe": 0.000483557}], "lomo": {"Qwen/Qwen2-7B-Instruct": {"eta": 0.720797555, "eta_kv": 0.218179842, "form": "max(k=50)", "held_out": "Qwen/Qwen2-7B-Instruct", "k": 50.0, "mu": 4.403819474, "t0": 0.002169355, "tau": 0.000109238, "tau_moe": 0.000484002}, "Qwen/Qwen2.5-0.5B-Instruct": {"eta": 0.734349458, "eta_kv": 0.225233565, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-0.5B-Instruct", "k": 50.0, "mu": 3.231184721, "t0": 0.002233156, "tau": 0.000110046, "tau_moe": 0.000482647}, "Qwen/Qwen2.5-1.5B-Instruct": {"eta": 0.723745594, "eta_kv": 0.222878581, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-1.5B-Instruct", "k": 50.0, "mu": 3.338398396, "t0": 0.002150155, "tau": 0.000110478, "tau_moe": 0.000484309}, "Qwen/Qwen2.5-14B-Instruct": {"eta": 0.724527812, "eta_kv": 0.221869886, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-14B-Instruct", "k": 50.0, "mu": 3.067894021, "t0": 0.002145612, "tau": 0.000109852, "tau_moe": 0.000484238}, "Qwen/Qwen2.5-32B-Instruct": {"eta": 0.650752804, "eta_kv": 0.237893012, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-32B-Instruct", "k": 50.0, "mu": 2.493802837, "t0": 0.001659385, "tau": 0.00012672, "tau_moe": 0.000494755}, "Qwen/Qwen2.5-3B-Instruct": {"eta": 0.737735972, "eta_kv": 0.223131485, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-3B-Instruct", "k": 50.0, "mu": 3.364155512, "t0": 0.002260655, "tau": 0.000101667, "tau_moe": 0.00048203}, "Qwen/Qwen2.5-7B-Instruct": {"eta": 0.72418673, "eta_kv": 0.22365946, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-7B-Instruct", "k": 50.0, "mu": 3.94639194, "t0": 0.002223607, "tau": 0.000107357, "tau_moe": 0.000483022}, "google/gemma-7b": {"eta": 0.739245346, "eta_kv": 0.243220079, "form": "max(k=50)", "held_out": "google/gemma-7b", "k": 50.0, "mu": 1.994984986, "t0": 0.002085278, "tau": 0.000111739, "tau_moe": 0.000485656}, "meta-llama/Meta-Llama-3-8B": {"eta": 0.723414756, "eta_kv": 0.221084418, "form": "max(k=50)", "held_out": "meta-llama/Meta-Llama-3-8B", "k": 50.0, "mu": 3.36096876, "t0": 0.002140147, "tau": 0.000110106, "tau_moe": 0.00048444}, "mistralai/Mistral-7B-v0.1": {"eta": 0.727338767, "eta_kv": 0.219300386, "form": "max(k=50)", "held_out": "mistralai/Mistral-7B-v0.1", "k": 50.0, "mu": 3.074032473, "t0": 0.002172441, "tau": 0.00010889, "tau_moe": 0.000483557}}}}  # generated by recommender_backtest.py --fit
+TIME_FIT = {"B200": {"central": {"eta": 0.864160569, "eta_kv": 0.330317884, "form": "additive(k=1)", "held_out": None, "k": 1.0, "lomo_mape_t": 2.651033365, "mu": 0.662729102, "t0": 0.001419045, "tau": 7.8283e-05, "tau_moe": 0.000345665, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, "ensemble": [{"eta": 0.864160569, "eta_kv": 0.330317884, "form": "additive(k=1)", "held_out": None, "k": 1.0, "lomo_mape_t": 2.651033365, "mu": 0.662729102, "t0": 0.001419045, "tau": 7.8283e-05, "tau_moe": 0.000345665, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.842749987, "eta_kv": 0.353814315, "form": "additive(k=1)", "held_out": "Qwen/Qwen2-72B-Instruct", "k": 1.0, "mu": 0.623734634, "t0": 0.001526809, "tau": 7.2736e-05, "tau_moe": 0.00032117, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.879398997, "eta_kv": 0.250296443, "form": "additive(k=1)", "held_out": "Qwen/Qwen2-7B-Instruct", "k": 1.0, "mu": 0.881919894, "t0": 0.001121936, "tau": 8.7894e-05, "tau_moe": 0.0003881, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.883486672, "eta_kv": 0.502179316, "form": "additive(k=1)", "held_out": "Qwen/Qwen2.5-32B-Instruct", "k": 1.0, "mu": 0.509498331, "t0": 0.001319564, "tau": 8.2305e-05, "tau_moe": 0.000363423, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.861884731, "eta_kv": 0.171423027, "form": "additive(k=1)", "held_out": "mistralai/Mistral-7B-v0.1", "k": 1.0, "mu": 1.018755824, "t0": 0.00143056, "tau": 7.8676e-05, "tau_moe": 0.0003474, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.659830226, "eta_kv": 1.0, "form": "soft(k=3)", "held_out": None, "k": 3.0, "mu": 0.482816549, "t0": 0.0, "tau": 0.00018823, "tau_moe": 0.00083114, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.608896374, "eta_kv": 0.353814334, "form": "soft(k=3)", "held_out": "Qwen/Qwen2-72B-Instruct", "k": 3.0, "mu": 0.623734624, "t0": 0.001948729, "tau": 0.000106728, "tau_moe": 0.000471266, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.648470383, "eta_kv": 0.384691766, "form": "soft(k=3)", "held_out": "Qwen/Qwen2-7B-Instruct", "k": 3.0, "mu": 0.614715566, "t0": 0.0, "tau": 0.00018348, "tau_moe": 0.000810169, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.694609023, "eta_kv": 0.502179145, "form": "soft(k=3)", "held_out": "Qwen/Qwen2.5-32B-Instruct", "k": 3.0, "mu": 0.509498386, "t0": 0.002079829, "tau": 0.00010854, "tau_moe": 0.000479266, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.663118646, "eta_kv": 0.15873208, "form": "soft(k=3)", "held_out": "mistralai/Mistral-7B-v0.1", "k": 3.0, "mu": 1.062428082, "t0": 0.0, "tau": 0.000197061, "tau_moe": 0.000870134, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.681114146, "eta_kv": 0.323882628, "form": "max(k=50)", "held_out": None, "k": 50.0, "mu": 0.600035081, "t0": 0.00312552, "tau": 8.7628e-05, "tau_moe": 0.000386928, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.621518797, "eta_kv": 0.353814294, "form": "max(k=50)", "held_out": "Qwen/Qwen2-72B-Instruct", "k": 50.0, "mu": 0.623734654, "t0": 0.002804618, "tau": 9.8706e-05, "tau_moe": 0.000435842, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.692521986, "eta_kv": 0.35334201, "form": "max(k=50)", "held_out": "Qwen/Qwen2-7B-Instruct", "k": 50.0, "mu": 0.614923827, "t0": 0.003458215, "tau": 3e-05, "tau_moe": 0.000132467, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.7135839, "eta_kv": 0.502179244, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-32B-Instruct", "k": 50.0, "mu": 0.509498356, "t0": 0.0030895, "tau": 8.9869e-05, "tau_moe": 0.000396823, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, {"eta": 0.677031297, "eta_kv": 0.121340898, "form": "max(k=50)", "held_out": "mistralai/Mistral-7B-v0.1", "k": 50.0, "mu": 1.307551145, "t0": 0.00311903, "tau": 5.7921e-05, "tau_moe": 0.000255755, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}], "lomo": {"Qwen/Qwen2-72B-Instruct": {"eta": 0.842749987, "eta_kv": 0.353814315, "form": "additive(k=1)", "held_out": "Qwen/Qwen2-72B-Instruct", "k": 1.0, "mu": 0.623734634, "t0": 0.001526809, "tau": 7.2736e-05, "tau_moe": 0.00032117, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, "Qwen/Qwen2-7B-Instruct": {"eta": 0.879398997, "eta_kv": 0.250296443, "form": "additive(k=1)", "held_out": "Qwen/Qwen2-7B-Instruct", "k": 1.0, "mu": 0.881919894, "t0": 0.001121936, "tau": 8.7894e-05, "tau_moe": 0.0003881, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, "Qwen/Qwen2.5-32B-Instruct": {"eta": 0.883486672, "eta_kv": 0.502179316, "form": "additive(k=1)", "held_out": "Qwen/Qwen2.5-32B-Instruct", "k": 1.0, "mu": 0.509498331, "t0": 0.001319564, "tau": 8.2305e-05, "tau_moe": 0.000363423, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}, "mistralai/Mistral-7B-v0.1": {"eta": 0.861884731, "eta_kv": 0.171423027, "form": "additive(k=1)", "held_out": "mistralai/Mistral-7B-v0.1", "k": 1.0, "mu": 1.018755824, "t0": 0.00143056, "tau": 7.8676e-05, "tau_moe": 0.0003474, "tau_moe_note": "scaled from H200 (no MoE run on this GPU)"}}}, "H200": {"central": {"eta": 0.725632976, "eta_kv": 0.221570365, "form": "max(k=50)", "held_out": None, "k": 50.0, "lomo_mape_t": 5.312194601, "mu": 2.98570262, "t0": 0.002153184, "tau": 0.000109618, "tau_moe": 0.000484026}, "ensemble": [{"eta": 0.95, "eta_kv": 0.266509409, "form": "additive(k=1)", "held_out": None, "k": 1.0, "mu": 5.0, "t0": 0.003241021, "tau": 2.4718e-05, "tau_moe": 0.000295185}, {"eta": 0.95, "eta_kv": 0.278533984, "form": "additive(k=1)", "held_out": "Qwen/Qwen2-7B-Instruct", "k": 1.0, "mu": 5.0, "t0": 0.00349928, "tau": 1.9948e-05, "tau_moe": 0.00029019}, {"eta": 0.95, "eta_kv": 0.252835117, "form": "additive(k=1)", "held_out": "Qwen/Qwen2.5-0.5B-Instruct", "k": 1.0, "mu": 5.0, "t0": 0.002068678, "tau": 5.6593e-05, "tau_moe": 0.000319127}, {"eta": 0.95, "eta_kv": 0.257059, "form": "additive(k=1)", "held_out": "Qwen/Qwen2.5-1.5B-Instruct", "k": 1.0, "mu": 5.0, "t0": 0.002949504, "tau": 3.0227e-05, "tau_moe": 0.000300931}, {"eta": 0.95, "eta_kv": 0.2711848, "form": "additive(k=1)", "held_out": "Qwen/Qwen2.5-14B-Instruct", "k": 1.0, "mu": 5.0, "t0": 0.003070861, "tau": 3.0934e-05, "tau_moe": 0.000298884}, {"eta": 0.95, "eta_kv": 0.273185929, "form": "additive(k=1)", "held_out": "Qwen/Qwen2.5-32B-Instruct", "k": 1.0, "mu": 5.0, "t0": 0.003773063, "tau": 6.413e-06, "tau_moe": 0.000284319}, {"eta": 0.95, "eta_kv": 0.257004627, "form": "additive(k=1)", "held_out": "Qwen/Qwen2.5-3B-Instruct", "k": 1.0, "mu": 3.314488473, "t0": 0.003803956, "tau": 6.54e-07, "tau_moe": 0.000282676}, {"eta": 0.95, "eta_kv": 0.282103186, "form": "additive(k=1)", "held_out": "Qwen/Qwen2.5-7B-Instruct", "k": 1.0, "mu": 4.528616383, "t0": 0.003553271, "tau": 1.8668e-05, "tau_moe": 0.00028908}, {"eta": 0.95, "eta_kv": 0.288233565, "form": "additive(k=1)", "held_out": "google/gemma-7b", "k": 1.0, "mu": 5.0, "t0": 0.003113106, "tau": 2.8088e-05, "tau_moe": 0.000298522}, {"eta": 0.95, "eta_kv": 0.271297235, "form": "additive(k=1)", "held_out": "meta-llama/Meta-Llama-3-8B", "k": 1.0, "mu": 5.0, "t0": 0.003183809, "tau": 2.9412e-05, "tau_moe": 0.000296534}, {"eta": 0.95, "eta_kv": 0.255890947, "form": "additive(k=1)", "held_out": "mistralai/Mistral-7B-v0.1", "k": 1.0, "mu": 5.0, "t0": 0.003187556, "tau": 2.9531e-05, "tau_moe": 0.000295929}, {"eta": 0.760388173, "eta_kv": 0.220001364, "form": "soft(k=3)", "held_out": None, "k": 3.0, "mu": 3.22974631, "t0": 0.001587392, "tau": 0.000125356, "tau_moe": 0.000472272}, {"eta": 0.755584369, "eta_kv": 0.217229109, "form": "soft(k=3)", "held_out": "Qwen/Qwen2-7B-Instruct", "k": 3.0, "mu": 4.454414858, "t0": 0.001652337, "tau": 0.000123338, "tau_moe": 0.000470633}, {"eta": 0.756093149, "eta_kv": 0.220819104, "form": "soft(k=3)", "held_out": "Qwen/Qwen2.5-0.5B-Instruct", "k": 3.0, "mu": 3.260357125, "t0": 0.001553846, "tau": 0.000126006, "tau_moe": 0.000472716}, {"eta": 0.756888767, "eta_kv": 0.220536017, "form": "soft(k=3)", "held_out": "Qwen/Qwen2.5-1.5B-Instruct", "k": 3.0, "mu": 3.357687409, "t0": 0.001593193, "tau": 0.000124169, "tau_moe": 0.000471921}, {"eta": 0.75256793, "eta_kv": 0.218305097, "form": "soft(k=3)", "held_out": "Qwen/Qwen2.5-14B-Instruct", "k": 3.0, "mu": 3.173968263, "t0": 0.001521201, "tau": 0.000127738, "tau_moe": 0.00047299}, {"eta": 0.780986082, "eta_kv": 0.217677071, "form": "soft(k=3)", "held_out": "Qwen/Qwen2.5-32B-Instruct", "k": 3.0, "mu": 3.292889189, "t0": 0.001711141, "tau": 0.000121513, "tau_moe": 0.000471064}, {"eta": 0.769804478, "eta_kv": 0.221824138, "form": "soft(k=3)", "held_out": "Qwen/Qwen2.5-3B-Instruct", "k": 3.0, "mu": 3.243637169, "t0": 0.001838231, "tau": 0.000113366, "tau_moe": 0.000467491}, {"eta": 0.75851774, "eta_kv": 0.223092665, "form": "soft(k=3)", "held_out": "Qwen/Qwen2.5-7B-Instruct", "k": 3.0, "mu": 3.87431865, "t0": 0.001749659, "tau": 0.000120004, "tau_moe": 0.000468823}, {"eta": 0.781587843, "eta_kv": 0.426948962, "form": "soft(k=3)", "held_out": "google/gemma-7b", "k": 3.0, "mu": 1.145202534, "t0": 0.001063619, "tau": 0.000145106, "tau_moe": 0.000488421}, {"eta": 0.757258249, "eta_kv": 0.220154013, "form": "soft(k=3)", "held_out": "meta-llama/Meta-Llama-3-8B", "k": 3.0, "mu": 3.335120674, "t0": 0.001623572, "tau": 0.000124558, "tau_moe": 0.00047124}, {"eta": 0.758241788, "eta_kv": 0.211490591, "form": "soft(k=3)", "held_out": "mistralai/Mistral-7B-v0.1", "k": 3.0, "mu": 3.316542101, "t0": 0.001631837, "tau": 0.000124814, "tau_moe": 0.000470694}, {"eta": 0.725632976, "eta_kv": 0.221570365, "form": "max(k=50)", "held_out": None, "k": 50.0, "lomo_mape_t": 5.312194601, "mu": 2.98570262, "t0": 0.002153184, "tau": 0.000109618, "tau_moe": 0.000484026}, {"eta": 0.72172971, "eta_kv": 0.217664358, "form": "max(k=50)", "held_out": "Qwen/Qwen2-7B-Instruct", "k": 50.0, "mu": 4.082077608, "t0": 0.002172691, "tau": 0.00010911, "tau_moe": 0.000483827}, {"eta": 0.735729452, "eta_kv": 0.224439673, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-0.5B-Instruct", "k": 50.0, "mu": 2.993604219, "t0": 0.002238045, "tau": 0.000109868, "tau_moe": 0.000482399}, {"eta": 0.724947448, "eta_kv": 0.222009106, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-1.5B-Instruct", "k": 50.0, "mu": 3.104830833, "t0": 0.002154449, "tau": 0.000110314, "tau_moe": 0.000484078}, {"eta": 0.725916266, "eta_kv": 0.221002763, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-14B-Instruct", "k": 50.0, "mu": 2.840533354, "t0": 0.002150411, "tau": 0.000109665, "tau_moe": 0.00048398}, {"eta": 0.652407381, "eta_kv": 0.237418272, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-32B-Instruct", "k": 50.0, "mu": 2.267981467, "t0": 0.001665951, "tau": 0.000126456, "tau_moe": 0.000494421}, {"eta": 0.739080157, "eta_kv": 0.222406833, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-3B-Instruct", "k": 50.0, "mu": 3.115773465, "t0": 0.002265403, "tau": 0.000101475, "tau_moe": 0.000481791}, {"eta": 0.725388966, "eta_kv": 0.223309186, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-7B-Instruct", "k": 50.0, "mu": 3.621932567, "t0": 0.002227924, "tau": 0.00010719, "tau_moe": 0.000482814}, {"eta": 0.740375918, "eta_kv": 0.230829428, "form": "max(k=50)", "held_out": "google/gemma-7b", "k": 50.0, "mu": 2.000348346, "t0": 0.002088059, "tau": 0.000111591, "tau_moe": 0.000485079}, {"eta": 0.724355751, "eta_kv": 0.220130434, "form": "max(k=50)", "held_out": "meta-llama/Meta-Llama-3-8B", "k": 50.0, "mu": 3.159796695, "t0": 0.002143235, "tau": 0.00010999, "tau_moe": 0.000484245}, {"eta": 0.728551927, "eta_kv": 0.218405344, "form": "max(k=50)", "held_out": "mistralai/Mistral-7B-v0.1", "k": 50.0, "mu": 2.870906074, "t0": 0.002177038, "tau": 0.000108717, "tau_moe": 0.000483314}], "lomo": {"Qwen/Qwen2-7B-Instruct": {"eta": 0.72172971, "eta_kv": 0.217664358, "form": "max(k=50)", "held_out": "Qwen/Qwen2-7B-Instruct", "k": 50.0, "mu": 4.082077608, "t0": 0.002172691, "tau": 0.00010911, "tau_moe": 0.000483827}, "Qwen/Qwen2.5-0.5B-Instruct": {"eta": 0.735729452, "eta_kv": 0.224439673, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-0.5B-Instruct", "k": 50.0, "mu": 2.993604219, "t0": 0.002238045, "tau": 0.000109868, "tau_moe": 0.000482399}, "Qwen/Qwen2.5-1.5B-Instruct": {"eta": 0.724947448, "eta_kv": 0.222009106, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-1.5B-Instruct", "k": 50.0, "mu": 3.104830833, "t0": 0.002154449, "tau": 0.000110314, "tau_moe": 0.000484078}, "Qwen/Qwen2.5-14B-Instruct": {"eta": 0.725916266, "eta_kv": 0.221002763, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-14B-Instruct", "k": 50.0, "mu": 2.840533354, "t0": 0.002150411, "tau": 0.000109665, "tau_moe": 0.00048398}, "Qwen/Qwen2.5-32B-Instruct": {"eta": 0.652407381, "eta_kv": 0.237418272, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-32B-Instruct", "k": 50.0, "mu": 2.267981467, "t0": 0.001665951, "tau": 0.000126456, "tau_moe": 0.000494421}, "Qwen/Qwen2.5-3B-Instruct": {"eta": 0.739080157, "eta_kv": 0.222406833, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-3B-Instruct", "k": 50.0, "mu": 3.115773465, "t0": 0.002265403, "tau": 0.000101475, "tau_moe": 0.000481791}, "Qwen/Qwen2.5-7B-Instruct": {"eta": 0.725388966, "eta_kv": 0.223309186, "form": "max(k=50)", "held_out": "Qwen/Qwen2.5-7B-Instruct", "k": 50.0, "mu": 3.621932567, "t0": 0.002227924, "tau": 0.00010719, "tau_moe": 0.000482814}, "google/gemma-7b": {"eta": 0.740375918, "eta_kv": 0.230829428, "form": "max(k=50)", "held_out": "google/gemma-7b", "k": 50.0, "mu": 2.000348346, "t0": 0.002088059, "tau": 0.000111591, "tau_moe": 0.000485079}, "meta-llama/Meta-Llama-3-8B": {"eta": 0.724355751, "eta_kv": 0.220130434, "form": "max(k=50)", "held_out": "meta-llama/Meta-Llama-3-8B", "k": 50.0, "mu": 3.159796695, "t0": 0.002143235, "tau": 0.00010999, "tau_moe": 0.000484245}, "mistralai/Mistral-7B-v0.1": {"eta": 0.728551927, "eta_kv": 0.218405344, "form": "max(k=50)", "held_out": "mistralai/Mistral-7B-v0.1", "k": 50.0, "mu": 2.870906074, "t0": 0.002177038, "tau": 0.000108717, "tau_moe": 0.000483314}}}}  # generated by recommender_backtest.py --fit
 
 
 def _load_time_fit():
@@ -160,25 +167,37 @@ def _rng(v, ci, lo_rel=None):
     return (v, min(lo, v), max(hi, v))
 
 
-def load_gpus(path=COEFF_JSON):
+def load_gpus(path=COEFF_JSON, uncorrected=False):
     """Return {name: gpu dict}. Measured entries come from gpu_coefficients.json
-    (else built-ins); every other GPU gets datasheet specs + memory-tech prior."""
-    measured = {}
+    (else built-ins); every other GPU gets datasheet specs + memory-tech prior.
+    GPUs listed under `_excluded` (e.g. the power-limited A5000) are ignored, so
+    their technology keeps its prior. uncorrected=True uses the *_uncorrected
+    (logged-prefill, pre prefix-cache fix) coefficients — for the backtest only."""
+    measured, excluded = {}, set()
     src = "builtin"
     if os.path.exists(path):
         try:
             js = json.load(open(path))
-            measured = {k: v for k, v in js.items() if not k.startswith("_") and isinstance(v, dict)}
+            excluded = set((js.get("_excluded") or {}).keys())
+            measured = {k: v for k, v in js.items() if not k.startswith("_") and isinstance(v, dict)
+                        and k not in excluded}
             src = os.path.basename(path)
         except Exception as e:  # malformed json -> builtins
             print("[warn] could not read %s (%r); using built-ins" % (path, e), file=sys.stderr)
     for k, v in BUILTIN_MEASURED.items():
-        measured.setdefault(k, v)
+        if k not in excluded:
+            measured.setdefault(k, v)
 
     gpus = {}
     for name, e in measured.items():
         if e.get("e_wbyte") is None:
             continue
+        if uncorrected:
+            e = dict(e)
+            for k in ("e_wbyte", "e_kvbyte", "e_gemm"):
+                if e.get(k + "_uncorrected") is not None:
+                    e[k] = e[k + "_uncorrected"]
+                    e.pop(k + "_ci", None)
         spec = dict(DATASHEET.get(name, {}))
         spec.update({k: v for k, v in e.items() if v is not None})
         if not spec.get("peak_flops") or not spec.get("bw"):
@@ -264,11 +283,13 @@ def is_moe(m):
     return getattr(m, "ffn", "mlp") == "moe"
 
 
-def serving_iter_work(m, n, P, G):
+def serving_iter_work(m, n, P, G, cached_frac=0.0):
     """Mean per-iteration work in steady-state continuous batching: n running
     sequences each generating 1 token, plus prefill chunks for arriving requests
-    (n·P/G tokens on average); mean resident context P + G/2."""
-    T = n * (1.0 + P / max(G, 1.0))
+    (n·P/G tokens on average, of which a fraction `cached_frac` is served from the
+    prefix cache and never computed); mean resident context P + G/2 (the cached
+    prefix is still resident KV and is still read by attention)."""
+    T = n * (1.0 + (1.0 - cached_frac) * P / max(G, 1.0))
     ctx = P + G / 2.0
     Wb = weight_params(m, T) * DTYPE_B
     KVb = n * ctx * m.kv_bytes_per_token(DTYPE_B)
@@ -352,14 +373,14 @@ def n_gpus_needed(g, m, kv_bytes_total):
 # ---------------------------------------------------------------------------
 # 6. Serving-run prediction (used by the backtest)
 # ---------------------------------------------------------------------------
-def predict_serving(g, m, P, G, conc=None, rate=None, draw=None):
+def predict_serving(g, m, P, G, conc=None, rate=None, draw=None, cached_frac=0.0):
     """Predict tok/s, avg power, J/token for a closed-loop (conc) or Poisson (rate)
     serving run, given only model, GPU, mean prompt P and gen G lengths."""
     d = draw or central_draw(g)
     L, moe = m.L, is_moe(m)
 
     def at(n):
-        w = serving_iter_work(m, n, P, G)
+        w = serving_iter_work(m, n, P, G, cached_frac)
         return w, iter_predict(g, d["coef"], d["tp"], w, L, moe, d["mfu"])
 
     if conc is not None:
@@ -387,7 +408,7 @@ def predict_serving(g, m, P, G, conc=None, rate=None, draw=None):
 # ---------------------------------------------------------------------------
 # 7. Phase prediction for the recommender
 # ---------------------------------------------------------------------------
-def phase_predict(g, m, phase, prompt, gen, batch, draw):
+def phase_predict(g, m, phase, prompt, gen, batch, draw, cached_frac=0.0):
     """Energy/time for one phase of a batch of `batch` requests.
     prefill: batch·prompt tokens in PREFILL_CHUNK-token passes (weights re-read
              every pass; causal attention).
@@ -401,7 +422,9 @@ def phase_predict(g, m, phase, prompt, gen, batch, draw):
         return None
     tau_ar = draw["tau_ar"] if n > 1 else 0.0
     if phase == "prefill":
-        tokens = batch * prompt
+        # prefix-cache hits are not computed (cached_frac of the prompt tokens);
+        # energy/token is still reported per *prompt* token ingested
+        tokens = max(1.0, batch * prompt * (1.0 - cached_frac))
         n_pass = max(1, int(math.ceil(tokens / float(PREFILL_CHUNK))))
         chunk = tokens / n_pass
         w = dict(Wb=weight_params(m, chunk) * DTYPE_B,
@@ -410,7 +433,7 @@ def phase_predict(g, m, phase, prompt, gen, batch, draw):
                  T=chunk)
         # causal self-attention: sum_i i ≈ prompt/2 context per token
         w["F"] = w["Fg"] + m.attn_flops_per_token(1) * chunk * prompt / 2.0
-        reps, out_tokens = n_pass, tokens
+        reps, out_tokens = n_pass, batch * prompt
     else:
         w = dict(Wb=weight_params(m, batch) * DTYPE_B,
                  KVb=batch * (prompt + gen / 2.0) * kvpt,
@@ -431,11 +454,11 @@ def _pct(xs, q):
     return xs[i]
 
 
-def compare(gpus, m, phase, prompt, gen, batch, draws=300, seed=0):
+def compare(gpus, m, phase, prompt, gen, batch, draws=300, seed=0, cached_frac=0.0):
     """Monte-Carlo comparison. Returns {gpu: dict(central, p10, p90, p_best, ...)}."""
     rnd = random.Random(seed)
     names = [n for n in gpus]
-    cen = {n: phase_predict(gpus[n], m, phase, prompt, gen, batch, central_draw(gpus[n]))
+    cen = {n: phase_predict(gpus[n], m, phase, prompt, gen, batch, central_draw(gpus[n]), cached_frac)
            for n in names}
     names = [n for n in names if cen[n] is not None]
     samples = {n: [] for n in names}
@@ -443,7 +466,8 @@ def compare(gpus, m, phase, prompt, gen, batch, draws=300, seed=0):
     for _ in range(draws):
         es = {}
         for n in names:
-            r = phase_predict(gpus[n], m, phase, prompt, gen, batch, random_draw(gpus[n], rnd))
+            r = phase_predict(gpus[n], m, phase, prompt, gen, batch, random_draw(gpus[n], rnd),
+                              cached_frac)
             es[n] = r["j_tok"]
             samples[n].append(r["j_tok"])
         wins[min(es, key=es.get)] += 1
@@ -480,16 +504,18 @@ def winmap(gpu_names=("H200", "B200"), phase="decode", prompt=1024, gen=256,
 # ---------------------------------------------------------------------------
 # 9. CLI
 # ---------------------------------------------------------------------------
-def recommend(model_id, prompt_len=2048, gen_len=256, batch=32, gpu_names=None, draws=300):
+def recommend(model_id, prompt_len=2048, gen_len=256, batch=32, gpu_names=None, draws=300,
+              cached_frac=0.0):
     gpus = load_gpus()
     if gpu_names:
         gpus = {k: v for k, v in gpus.items() if k in gpu_names}
     m = resolve_model(model_id)
-    print("\n### Workload: %s  prompt=%d gen=%d batch=%d" % (model_id, prompt_len, gen_len, batch))
+    print("\n### Workload: %s  prompt=%d gen=%d batch=%d cached_frac=%.2f" % (
+        model_id, prompt_len, gen_len, batch, cached_frac))
     print("    active_params=%.2fB  total=%.2fB  layers=%d  %s" % (
         m.active_params() / 1e9, m.total_params() / 1e9, m.L, "MoE" if is_moe(m) else "dense"))
     for phase, label in (("prefill", "PREFILL (prompt ingest)"), ("decode", "DECODE  (token gen)")):
-        res = compare(gpus, m, phase, prompt_len, gen_len, batch, draws=draws)
+        res = compare(gpus, m, phase, prompt_len, gen_len, batch, draws=draws, cached_frac=cached_frac)
         if not res:
             print("\n  %s: model does not fit on any candidate" % label)
             continue
@@ -517,6 +543,8 @@ def main():
     ap.add_argument("--prompt", type=int, default=2048)
     ap.add_argument("--gen", type=int, default=256)
     ap.add_argument("--batch", type=int, default=32)
+    ap.add_argument("--cached-frac", type=float, default=0.0,
+                    help="fraction of prompt tokens served from the prefix cache (not computed)")
     ap.add_argument("--gpus", default=None, help="comma list, default all")
     ap.add_argument("--draws", type=int, default=300)
     ap.add_argument("--winmap", action="store_true", help="print H200-vs-B200 win-map")
@@ -549,7 +577,7 @@ def main():
                 print(line)
         return
     gl = a.gpus.split(",") if a.gpus else None
-    recommend(a.model, a.prompt, a.gen, a.batch, gl, a.draws)
+    recommend(a.model, a.prompt, a.gen, a.batch, gl, a.draws, a.cached_frac)
 
 
 _load_time_fit()

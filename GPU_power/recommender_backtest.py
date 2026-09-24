@@ -79,9 +79,17 @@ def load_run(rd):
         dec += float(r.get("decode_tokens") or 0)
         busy += b - a
         nr += float(r.get("n_running") or 0) * (b - a)
-    dt = nit = 0.0
+    dt = nit = p_log = p_comp = 0.0
+    has_comp = False
     for r in csv.DictReader(open(os.path.join(rd, "binned_table.csv"))):
         dt += float(r["dt_s"]); nit += float(r.get("n_iters") or 0)
+        if r.get("prefill_tokens_computed") not in (None, ""):
+            has_comp = True
+            p_log += float(r.get("prefill_tokens") or 0)
+            p_comp += float(r["prefill_tokens_computed"])
+    # measured prefix-cache hit fraction of prompt tokens (controls/prefix_cache_refit.py
+    # columns); runs without those columns (MoE, A100) -> 0 and flagged
+    cf = (1.0 - p_comp / p_log) if (has_comp and p_log > 0) else 0.0
     win = res.get("window_duration_s") or (t1 - t0)
     comp = res.get("completed_requests") or 0
     gen = res.get("generated_tokens_window") or 0
@@ -104,15 +112,25 @@ def load_run(rd):
                 conc=None if rate else int(conc), rate=float(rate) if rate else None,
                 rate_nominal=rate_nominal,
                 P=P, G=G, n_meas=nr / busy if busy else None, t_iter=dt / nit,
+                cf=max(0.0, cf), cf_known=has_comp,
                 cover=dt / win if win else 0, idle=meta.get("idle_power_w"),
                 tok_s=res["aggregate_tokens_per_sec"], power=res["avg_power_window_w"],
                 j_tok=res["avg_power_window_w"] / res["aggregate_tokens_per_sec"])
 
 
+def excluded_gpus():
+    try:
+        return set((json.load(open(rg.COEFF_JSON)).get("_excluded") or {}).keys())
+    except Exception:
+        return set()
+
+
 def discover(roots=None):
     roots = list(roots or ROOTS)
-    roots += sorted(d for d in glob.glob(os.path.join(HERE, "logs", "*"))
-                    if re.search("a5000", d, re.I) and os.path.isdir(d))
+    excl = excluded_gpus()
+    if "A5000" not in excl:      # auto-discover A5000 runs unless flagged invalid
+        roots += sorted(d for d in glob.glob(os.path.join(HERE, "logs", "*"))
+                        if re.search("a5000", d, re.I) and os.path.isdir(d))
     runs, dropped = [], []
     for root in roots:
         base = root if os.path.isabs(root) else os.path.join(HERE, root)
@@ -120,7 +138,7 @@ def discover(roots=None):
             if not os.path.isdir(rd) or os.path.basename(rd) == "idle":
                 continue
             r = load_run(rd)
-            if r is None:
+            if r is None or r["gpu"] in excl:
                 continue
             (runs if r["cover"] >= 0.95 else dropped).append(r)
     models = {}
@@ -140,7 +158,7 @@ def _tp(p, k, tau_moe=None):
 
 
 def _pred_t(g, tp, r, n=None):
-    w = rg.serving_iter_work(r["m"], n if n is not None else r["n_meas"], r["P"], r["G"])
+    w = rg.serving_iter_work(r["m"], n if n is not None else r["n_meas"], r["P"], r["G"], r["cf"])
     # time model only (no cap, no compute ceiling -> the fitted domain)
     t, _ = rg.iter_time(g, tp, w, r["m"].L, rg.is_moe(r["m"]), mfu_pf=1e9)
     return t
@@ -298,31 +316,40 @@ def v1_predict(gk, r, g):
 
 
 # ---------------------------------------------------------------------------
+OLD_FIT = None   # v2.0 TIME_FIT (pre prefix-cache fix), loaded with --old-fit
+
+
 def backtest(runs):
     gpus = rg.load_gpus()
+    gpus_old = rg.load_gpus(uncorrected=True)
     rows = []
     for r in runs:
         g = gpus.get(r["gpu"])
         if g is None:
             continue
+        cf = r["cf"]
+        sp = lambda gg, d: rg.predict_serving(gg, r["m"], r["P"], r["G"], r["conc"], r["rate"], d,
+                                              cached_frac=cf)
         d_in = rg.central_draw(g)
-        preds = dict(v2=rg.predict_serving(g, r["m"], r["P"], r["G"], r["conc"], r["rate"], d_in))
+        preds = dict(v2=sp(g, d_in))
         # LOMO: time model refit without this model (energy coefficients unchanged)
         fitd = (rg.TIME_FIT or {}).get(g["time_key"], {})
         lomo_tp = fitd.get("lomo", {}).get(r["model"])
-        if lomo_tp is not None:
-            d = dict(d_in, tp=lomo_tp)
-            preds["v2_lomo"] = rg.predict_serving(g, r["m"], r["P"], r["G"], r["conc"], r["rate"], d)
-        else:
-            preds["v2_lomo"] = preds["v2"]
+        preds["v2_lomo"] = sp(g, dict(d_in, tp=lomo_tp)) if lomo_tp is not None else preds["v2"]
         if rg.is_moe(r["m"]):   # zero-shot MoE: dense layer floor, no MoE calibration
-            d = dict(d_in, tp=dict(d_in["tp"], tau_moe=None))
-            preds["v2_lomo"] = rg.predict_serving(g, r["m"], r["P"], r["G"], r["conc"], r["rate"], d)
+            preds["v2_lomo"] = sp(g, dict(d_in, tp=dict(d_in["tp"], tau_moe=None)))
+        # v2.0 (committed 84fea1a): logged-prefill (uncorrected) coefficients, no cache term,
+        # and its own time fit if --old-fit is given
+        go = gpus_old[r["gpu"]]
+        d_old = rg.central_draw(go)
+        if OLD_FIT and go["time_key"] in OLD_FIT:
+            d_old = dict(d_old, tp=OLD_FIT[go["time_key"]]["central"])
+        preds["v2_0"] = rg.predict_serving(go, r["m"], r["P"], r["G"], r["conc"], r["rate"], d_old)
         preds["v1"] = v1_predict(r["gpu"], r, g)
         if not g["measured"]:   # truly zero-shot variant: pretend we only had the HBM3e band
             pr = rg.MEM_PRIOR["HBM3e"]
             d = dict(d_in, coef=(pr["e_wbyte"][0], pr["e_kvbyte"][0], d_in["coef"][2], d_in["coef"][3]))
-            preds["v2_hbm3e"] = rg.predict_serving(g, r["m"], r["P"], r["G"], r["conc"], r["rate"], d)
+            preds["v2_hbm3e"] = sp(g, d)
         rows.append(dict(r, preds=preds, conf=g["confidence"]))
     return rows
 
@@ -374,6 +401,19 @@ def summarize(rows, dropped):
             print("H200+B200 %-8s n=%3d  v2 MAPE tok/s %.1f%%  power %.1f%%  J/tok %.1f%%" % (
                 kind, len(sel), *[mape([abs(r["preds"]["v2"][k] / r[k] - 1) for r in sel])
                                   for k in ("tok_s", "power", "j_tok")]))
+    print("\nOld vs new (prefix-cache fix): J/tok and power MAPE, v2.0 (uncorrected coeffs, "
+          "logged prefill FLOPs%s) -> v2.1 (corrected coeffs + measured cached_frac)" % (
+              ", v2.0 time fit" if OLD_FIT else ", CURRENT time fit"))
+    for grp in groups + ["ALL H200", "ALL B200"]:
+        sel = [r for r in rows if (r["gpu"] == grp.split()[1] if grp.startswith("ALL") else r["group"] == grp)]
+        if not sel:
+            continue
+        f = lambda v, k: mape([abs(r["preds"][v][k] / r[k] - 1) for r in sel])
+        cfs = [r["cf"] for r in sel if r["cf_known"]]
+        print("  %-16s n=%3d  cached_frac %s  J/tok %5.1f -> %5.1f   power %5.1f -> %5.1f   tok/s %5.1f -> %5.1f" % (
+            grp, len(sel), ("%.2f-%.2f" % (min(cfs), max(cfs))) if cfs else "  n/a   ",
+            f("v2_0", "j_tok"), f("v2", "j_tok"), f("v2_0", "power"), f("v2", "power"),
+            f("v2_0", "tok_s"), f("v2", "tok_s")))
     if dropped:
         print("excluded (crash-truncated, <95% window coverage): " +
               ", ".join(r["rd"].replace("logs/", "") for r in dropped))
@@ -509,7 +549,7 @@ def make_figure(rows, wm, path):
                       % ("c" if phase == "decode" else "d", phase.upper()), loc="left", fontsize=8.5)
         cb = fig.colorbar(im, ax=axx, fraction=0.04, pad=0.02, ticks=[-1, -0.5, 0, 0.5, 1])
         cb.ax.set_yticklabels(["0.5", "0.71", "1", "1.41", "2"]); cb.set_label("B200 / H200", fontsize=8)
-    fig.suptitle("Recommender v2: measured coefficients + realized utilization (vLLM 0.10.2, fp16)",
+    fig.suptitle("Recommender v2.1: measured (prefix-cache-corrected) coefficients + realized utilization (vLLM 0.10.2, fp16); win-maps at cached_frac=0",
                  x=0.01, ha="left", fontsize=11.5, color=INK)
     fig.tight_layout(rect=(0, 0, 1, 0.97))
     fig.savefig(path, facecolor=fig.get_facecolor())
@@ -599,8 +639,15 @@ def main():
     ap.add_argument("--winmap", action="store_true")
     ap.add_argument("--draws", type=int, default=200)
     ap.add_argument("--dump", default=None, help="write per-run predictions CSV here")
+    ap.add_argument("--old-fit", default=None, help="python-literal file with the v2.0 TIME_FIT")
     a = ap.parse_args()
+    if a.old_fit:
+        import ast
+        global OLD_FIT
+        OLD_FIT = ast.literal_eval(open(a.old_fit).read())
     runs, dropped = discover()
+    if excluded_gpus():
+        print("GPUs excluded via gpu_coefficients.json _excluded: %s" % sorted(excluded_gpus()))
     print("runs: %d usable, %d excluded; groups: %s" % (
         len(runs), len(dropped), sorted(set(r["group"] for r in runs))))
     if a.fit:
@@ -621,12 +668,12 @@ def main():
     if a.dump:
         with open(a.dump, "w", newline="") as f:
             w = csv.writer(f)
-            w.writerow(["run", "gpu", "group", "P", "G", "conc", "rate", "tok_s", "power", "j_tok",
+            w.writerow(["run", "gpu", "group", "P", "G", "cached_frac", "conc", "rate", "tok_s", "power", "j_tok",
                         "v2_tok_s", "v2_power", "v2_j_tok", "lomo_tok_s", "lomo_j_tok",
                         "v1_tok_s", "v1_power", "v1_j_tok"])
             for r in rows:
                 p = r["preds"]
-                w.writerow([r["rd"], r["gpu"], r["group"], "%.1f" % r["P"], "%.1f" % r["G"], r["conc"],
+                w.writerow([r["rd"], r["gpu"], r["group"], "%.1f" % r["P"], "%.1f" % r["G"], "%.3f" % r["cf"], r["conc"],
                             r["rate"], "%.2f" % r["tok_s"], "%.1f" % r["power"], "%.5f" % r["j_tok"],
                             "%.2f" % p["v2"]["tok_s"], "%.1f" % p["v2"]["power"], "%.5f" % p["v2"]["j_tok"],
                             "%.2f" % p["v2_lomo"]["tok_s"], "%.5f" % p["v2_lomo"]["j_tok"],

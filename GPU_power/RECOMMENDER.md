@@ -1,4 +1,7 @@
-# GPU recommender v2: measured coefficients and realized utilization
+# GPU recommender v2.1: measured coefficients and realized utilization
+
+*v2.1 (2026-09-24): prefix-cache-corrected coefficients, a `cached_frac` workload
+parameter (§1a), and the power-limited A5000 excluded. v2.0 was commit 84fea1a.*
 
 Files: `recommend_gpu.py` (the tool, CLI compatible with v1), `recommender_backtest.py`
 (fit, backtest, win-map, figure), `plots_proposal/fig8_recommender_v2.png`.
@@ -8,12 +11,13 @@ Three crash-truncated B200 sharegpt runs are excluded because their bins cover l
 than 95% of the window.
 
 ```
-python3 recommend_gpu.py Qwen/Qwen2.5-7B-Instruct --prompt 2048 --gen 256 --batch 32
+python3 recommend_gpu.py Qwen/Qwen2.5-7B-Instruct --prompt 2048 --gen 256 --batch 32 [--cached-frac 0.3]
 python3 recommend_gpu.py --list            # GPU table and where each number comes from
 python3 recommend_gpu.py --winmap          # H200-vs-B200 map as text
 # in the container:
 python3 recommender_backtest.py --fit      # refit the time model and patch TIME_FIT in recommend_gpu.py
 python3 recommender_backtest.py --figure   # backtest, win-maps, phase-reversal test, fig8
+#   [--old-fit <file>]  to also score v2.0 with its own time fit (old-vs-new table)
 ```
 
 ## 1. What changed and why
@@ -25,8 +29,8 @@ python3 recommender_backtest.py --figure   # backtest, win-maps, phase-reversal 
 | uncertainty | none | Monte Carlo over coefficient ranges, a 3-form × leave-one-model-out time-model ensemble, the prefill-MFU prior, and TP overheads. Every ranking comes with a P(best) |
 | capacity | ignored | TP degree = smallest n ∈ {1,2,4,8} that fits the weights and the requested KV. **TP>1 is extrapolated** (all-reduce latency and a ×1.0-1.35 time penalty are drawn in the Monte Carlo) |
 
-Why: on B200, energy per byte is **not** lower. It is 1.25e-10 J/B against H200's
-1.08e-10, about 16% *higher*, where the 1/BW law predicted 40% lower. The B200 also
+Why: on B200, energy per byte is **not** lower. It is 1.24e-10 J/B against H200's
+1.07e-10, about 16% *higher*, where the 1/BW law predicted 40% lower. The B200 also
 idles at 238 W against 116 W. And realized bandwidth sits far below peak and depends on
 model size (B200 7B: 31% of peak; 72B: 62%). v1 therefore predicted that B200 wins
 memory-bound decode. It loses.
@@ -41,10 +45,36 @@ throughout, and `e_gemm` multiplies dense GEMM FLOPs only, as the fit does.
   H200 and B200 for models ≥3B.
 - HBM2e: 1.8e-10 [1.4, 2.4]. It comes from the A100-PCIe c=1 runs, which are pinned at
   the 300 W cap, so it is an effective value under throttling.
-- GDDR6: 1.8e-10 [1.0, 3.5]. This is **unknown**. When `gpu_coefficients.json` gains a
-  GDDR6 entry (the A5000), it replaces this prior (±15%) automatically, for L40S too.
+- GDDR6: 1.8e-10 [1.0, 3.5]. This is **unknown**. A valid GDDR6 entry in
+  `gpu_coefficients.json` would replace this prior (±15%) automatically, for L40S too.
+  **The current A5000 data is not valid.** All 16 runs were pinned at a 100 W enforced
+  power limit set by another user; its capped direct J/byte is 2.7-2.9e-10. It is
+  listed under `_excluded`, so both `load_gpus()` and backtest discovery skip it, and
+  GDDR6 stays a prior.
 - e_gemm for unmeasured GPUs spans the range between "invariant" (the H200 value) and
   "∝ 1/peak".
+
+## 1a. Prefix cache (v2.1)
+
+The sysid agent found that logged `prefill_tokens` include prefix-cache hits that
+vLLM never computes. In c=64 sharegpt runs, 26-36% of prompt tokens were hits. The
+coefficients are therefore now fit on **computed** GEMM FLOPs (`controls/SYSID.md` §7):
+
+| | e_wbyte | e_kvbyte | e_gemm |
+|---|---|---|---|
+| H200 | 1.076 → **1.066**e-10 | 3.376 → **3.288**e-10 | 0.680 → **0.794 pJ** [0.773, 0.822] |
+| B200 | 1.252 → **1.243**e-10 | 3.043 → **2.852**e-10 | 0.539 → **0.642 pJ** [0.600, 0.694] |
+
+To stay self-consistent, the recommender takes a workload parameter
+`cached_frac` (`--cached-frac`, default **0** for deployment). The effect:
+- Prefill tokens and FLOPs are scaled by (1 − cached_frac).
+- Cached prefixes still count as resident KV and are still read by attention.
+- Prefill energy is still reported per *ingested* prompt token.
+
+The backtest uses each run's **measured** cached fraction, 1 − Σ`prefill_tokens_computed`
+/ Σ`prefill_tokens` from `binned_table.csv`. It is 0 to 0.37 across runs. MoE and A100
+runs have no such columns, so they use 0. The time model was refit on computed tokens;
+its parameters barely moved.
 
 ## 2. The utilization model
 
@@ -72,8 +102,8 @@ error on iteration time:
 
 | GPU | central form | t0 | τ /layer | η (asympt. MBU) | η_kv | LOMO t_iter MAPE | ensemble ranges |
 |---|---|---|---|---|---|---|---|
-| H200 | hard max (k=50) | 2.15 ms | 110 µs | 0.72 | 0.22 | 5.3% | η 0.65-0.95, τ 1-146 µs, t0 1.0-3.8 ms |
-| B200 | additive (k=1) | 1.38 ms | 80 µs | 0.87 | 0.37 | 2.5% | η 0.61-0.89, τ 30-197 µs, t0 0-3.5 ms |
+| H200 | hard max (k=50) | 2.15 ms | 110 µs | 0.73 | 0.22 | 5.3% | η 0.65-0.95, τ 1-146 µs, t0 1.0-3.8 ms |
+| B200 | additive (k=1) | 1.42 ms | 78 µs | 0.86 | 0.33 | 2.7% | η 0.61-0.89, τ 30-197 µs, t0 0-3.5 ms |
 
 - **MoE layer floor:** τ_moe = 484 µs on H200. It is fitted on the single MoE model, so
   it is in-sample. The fused-MoE layer is about 4× slower than a dense layer. For B200
@@ -83,7 +113,7 @@ error on iteration time:
   forms). Their *predictions* inside the measured domain agree. That is why the
   ensemble, not the point fit, drives the win-map uncertainty.
 - μ is a per-token marginal cost fitted at small batch (≤~110 tokens per iteration),
-  not an MFU. B200's μ (0.69) implies about the same µs per token as H200, so its
+  not an MFU. B200's μ (0.66) implies about the same µs per token as H200, so its
   extra FLOPS do not help small-batch decode.
 - **Prefill MFU is a prior, not a measurement.** The iteration-level timestamps for
   large prefill chunks imply more than 100% MFU on H200, which is a logger timing
@@ -108,39 +138,60 @@ power and J/token, compared against `results.json`. MAPE in %:
 
 | group | n | tok/s v2 | tok/s LOMO | tok/s v1 | power v2 | power LOMO | power v1 | **J/tok v2** | J/tok LOMO | J/tok v1 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| H200 dense 7-8B | 40 | 4.9 | 5.4 | 45.7 | 4.5 | 4.8 | 38.3 | **3.7** | 3.8 | 17.3 |
-| H200 ladder 0.5-32B | 60 | 3.0 | 4.3 | 294 | 3.0 | 4.1 | 102 | **4.0** | 4.3 | 45.1 |
-| H200 MoE 30B-A3B | 10 | 2.5 | 112* | 320 | 10.9 | 57* | 114 | **9.8** | 27.6* | 35.2 |
-| B200 7B | 13 | 4.2 | 4.6 | 145 | 1.9 | 1.8 | 16.3 | **3.2** | 3.4 | 52.5 |
-| B200 32B | 8 | 3.2 | 2.6 | 54.1 | 2.3 | 2.9 | 16.4 | **5.3** | 5.0 | 45.5 |
-| B200 72B | 6 | 3.5 | 3.1 | 19.0 | 1.7 | 1.8 | 29.9 | **3.7** | 3.6 | 41.0 |
-| **all H200** | 110 | 3.7 | 14.5 | 206 | 4.3 | 9.2 | 80.2 | **4.4** | 6.3 | 34.1 |
-| **all B200** | 27 | 3.7 | 3.7 | 90.3 | 2.0 | 2.1 | 19.4 | **3.9** | 3.9 | 47.9 |
-| A100-PCIe (capped) | 40 | 4.5 | – | 35.8 | 3.0 | – | 3.0 | 4.1 | – | 62.5 |
+| H200 dense 7-8B | 40 | 4.9 | 5.4 | 45.7 | 4.2 | 4.5 | 38.3 | **3.4** | 3.6 | 17.3 |
+| H200 ladder 0.5-32B | 60 | 3.0 | 4.3 | 294 | 2.7 | 3.8 | 102 | **3.6** | 3.9 | 45.1 |
+| H200 MoE 30B-A3B | 10 | 2.5 | 112* | 320 | 10.7 | 57* | 114 | **9.6** | 27.6* | 35.2 |
+| B200 7B | 13 | 4.1 | 4.6 | 145 | 1.9 | 1.8 | 16.3 | **2.8** | 3.0 | 52.5 |
+| B200 32B | 8 | 3.2 | 2.9 | 54.1 | 1.9 | 2.5 | 16.4 | **4.9** | 4.7 | 45.5 |
+| B200 72B | 6 | 3.5 | 2.7 | 19.0 | 1.5 | 1.7 | 29.9 | **3.7** | 3.5 | 41.0 |
+| **all H200** | 110 | 3.6 | 14.5 | 206 | 4.0 | 8.9 | 80.2 | **4.1** | 6.0 | 34.1 |
+| **all B200** | 27 | 3.7 | 3.7 | 90.3 | 1.8 | 2.0 | 19.4 | **3.7** | 3.6 | 47.9 |
+| A100-PCIe (capped) | 40 | 5.3 | – | 35.8 | 3.0 | – | 3.0 | 5.6 | – | 62.5 |
+
+**Old vs new (prefix-cache fix).** J/token MAPE, v2.0 → v2.1. v2.0 = uncorrected
+coefficients, logged prefill FLOPs, v2.0 time fit. v2.1 = corrected coefficients,
+measured cached_frac, refit time model. The columns show the measured cached_frac range
+and J/token (power in parentheses):
+
+| group | cached_frac | J/tok | (power) |
+|---|---|---|---|
+| H200 dense 7-8B | 0-0.32 | 3.7 → **3.4** | (4.5 → 4.2) |
+| H200 ladder | 0-0.37 | 4.0 → **3.6** | (3.0 → 2.7) |
+| H200 MoE | n/a (0) | 9.8 → 9.6 | (10.9 → 10.7) |
+| B200 7B | 0-0.30 | 3.2 → **2.8** | (1.9 → 1.9) |
+| B200 32B | 0-0.18 | 5.3 → **4.9** | (2.3 → 1.9) |
+| B200 72B | 0-0.05 | 3.7 → 3.7 | (1.7 → 1.5) |
+| all H200 / all B200 | | 4.4 → **4.1** / 3.9 → **3.7** | |
+| A100-PCIe | n/a (0) | 4.1 → 5.6 | (3.0 → 3.0) |
+
+- Every measured group improves, modestly. The runs have short prompts, so compute is
+  12-13% of dynamic energy.
+- A100 gets worse. Its prior e_gemm is anchored on H200's now-larger value, and its
+  runs carry no computed-token columns, so real cache hits are counted as compute.
 
 - **LOMO** means the time model is refit without that model, which is the honest
   number for a new dense model.
 - `*` MoE LOMO is zero-shot: dense layer floor and no MoE calibration. The time model
   **fails** there, with tok/s 2× too high. τ_moe is required, and it rests on one model.
 - **Energy coefficients are partly in-sample:** the H200 dense and B200 7B runs are the
-  fit sets. B200 32B and 72B are out-of-sample for energy and land at 5.3% and 3.7%.
+  fit sets. B200 32B and 72B are out-of-sample for energy and land at 4.9% and 3.7%.
   The ladder is out-of-sample for H200 energy.
 - **A100 is not a clean zero-shot test.** Its HBM2e prior was set from these same runs,
   and at the cap, power ≈ P_cap by construction. With the HBM3e band instead (a truly
-  zero-shot case), J/token is **−21%** biased. Older HBM2e parts cost measurably more
+  zero-shot case), J/token is **−19%** biased. Older HBM2e parts cost measurably more
   per byte, so "invariant J/byte" holds within HBM3/3e, not across generations.
-- Closed-loop vs Poisson (H200+B200): J/token 4.4% vs 3.9%.
+- Closed-loop vs Poisson (H200+B200): J/token 4.1% vs 3.7%.
 - Signed J/token bias is −2 to −5% on most groups: v2 slightly under-predicts.
 - Worst cases:
   - gemma-7b on H200 runs at 41% MBU against 50% predicted (architecture-specific
     slowness);
-  - A100 gemma c=64 is +33% (throttled time);
+  - A100 c=64 runs are +20 to +38% (throttled time; cache hits not removed);
   - 32B Poisson on H200 is −18%.
 
 ## 4. Recomputed recommendations
 
 **H200 vs B200 win-map** (fig8c,d; prompt 1024 / gen 256; cell = E(B200)/E(H200) per
-token; bold = P(winner) ≥ 0.9):
+token; bold = P(winner) ≥ 0.9; cached_frac = 0):
 
 - **Decode: H200 wins everywhere in the measured domain (≤64 sequences), by
   1.05-1.44×. It is confident (P ≥ 0.9) in every cell except 14B at 64 sequences.** The margin is largest for small models and small
@@ -152,11 +203,18 @@ token; bold = P(winner) ≥ 0.9):
   - so B200's 238 W idle is never paid back.
   At batch ≥128 (extrapolated past the data) the ratio crosses 1 (0.92-1.00).
   Compute energy starts to matter there, and B200's lower e_gemm helps, but
-  P(B200) is only 30-85%: **not confident**.
-- **Prefill: B200 favored by about 17% (ratio 0.80-0.86) for models ≥3B at batch
-  ≥4, with P(B200 best) of 0.82-0.94. Mostly below the 0.9 bar.** B200 is predicted
-  to run near its 1000 W cap on compute-bound prefill. The advantage comes from its
-  lower measured e_gemm (0.54 vs 0.68 pJ) plus 2.3× peak FLOPS amortizing idle. It
+  P(B200) is only 30-85%: **not confident**. The prefix-cache fix leaves decode
+  unchanged to ±0.01.
+- **Prefill: B200 favored by about 13-15% (ratio 0.85-0.88) for models ≥3B at batch
+  ≥4, with P(B200 best) of 0.78-0.88. No cell reaches 0.9.** In v2.0 this was 17%
+  (ratio 0.80-0.86, P up to 0.94).
+  - With corrected e_gemm, absolute prefill energy rose on both GPUs. For 7B, 2048
+    prompt, batch 32: H200 12.5 → 14.1 mJ/token, B200 10.3 → 12.2.
+  - The per-FLOP e_gemm ratio barely moved (0.79 → 0.81), but B200 is now predicted to be more
+    **power-cap-limited** on compute-bound prefill (demand > 1000 W, so it throttles),
+    which eats part of its advantage.
+  - The advantage comes from lower measured e_gemm (0.64 vs 0.79 pJ) plus 2.3× peak
+    FLOPS amortizing idle power. It
   rests on the unmeasured prefill-MFU prior and on e_gemm ranges that drift with model
   size. Tiny prefills (0.5B, batch 1-2) go to H200 (overhead-bound).
 - 72B does not fit on one H200, so the H200 side is TP=2 and extrapolated. On that
@@ -166,19 +224,24 @@ token; bold = P(winner) ≥ 0.9):
 **The phase reversal survives, but only between H200 and B200, not in its old form.**
 - **Among the measured GPUs:** B200 for prefill, H200 for decode. This is a genuine
   disaggregation recommendation. The decode half is confident; the prefill half is
-  about 85-90%.
+  about 80-88%.
 - **The v1 claim ("L40S for prefill, A100 for decode") is not supported.** Both GPUs
-  are prior-only. The joint Monte Carlo gives P(reversal) = 44-53%, a coin flip. The
+  are prior-only. The joint Monte Carlo gives P(reversal) = 42-53%, a coin flip. The
   central L40S/A100 decode ratio is 0.93-1.08, and the decision hinges on GDDR6 J/byte,
   which nobody has measured yet. The A5000 run will decide it.
 
-**A5000:** `load_gpus()` picks up an `A5000` entry in `gpu_coefficients.json`
-automatically, and it then also replaces the GDDR6 prior. `recommender_backtest.py`
-discovers `logs/*A5000*` runs, and `--fit` fits a time model for them. With a single
-model, only t0 and η are fitted; τ, η_kv and μ are fixed at the measured-GPU medians,
-and it falls back to the prior if the fit is worse than 15%. After those two steps,
-`--winmap` also prints A5000 vs H200. None of this is in the current figures: the
-A5000 data is not in yet.
+**A5000:** the current `logs/A5000` sweep is power-limited to 100 W and **excluded**
+(`_excluded` in `gpu_coefficients.json`). Both tools skip `_excluded` GPUs, so it is in
+neither the backtest, the time fit nor the figures, and GDDR6 remains a prior.
+
+Once a valid sweep lands and the entry moves out of `_excluded`, the pipeline takes it
+automatically:
+- `load_gpus()` uses the entry, and it replaces the GDDR6 prior.
+- The backtest discovers `logs/*A5000*`.
+- `--fit` fits a time model for it. With one model it fits only t0 and η, fixing τ,
+  η_kv and μ at the measured-GPU medians, and falls back to the prior if the fit is
+  worse than 15%.
+- `--winmap` then also prints A5000 vs H200.
 
 ## 5. Limitations
 
@@ -191,7 +254,10 @@ A5000 data is not in yet.
 - **Prefill MFU** is a prior. So is **e_gemm** outside the 7B fit sets. The "B200 wins
   prefill" result is the least certain claim here.
 - **MoE timing** rests on one model on one GPU.
-- **Unmeasured GPUs** (H100, A100-SXM, L40S, A5000 until measured) are prior-only.
+- **Prefix cache:** win-maps assume cached_frac = 0. With shared prefixes, pass
+  `--cached-frac`. Prefill energy then scales about linearly, and the GPU ranking does
+  not change.
+- **Unmeasured GPUs** (H100, A100-SXM, L40S, A5000 until a valid sweep) are prior-only.
   Idle power for them is an estimate. Treat their rankings as hypotheses; the tool
   labels them `LOW (prior)`.
 - **Power cap:** the throttling model holds dynamic energy fixed and stretches time.
