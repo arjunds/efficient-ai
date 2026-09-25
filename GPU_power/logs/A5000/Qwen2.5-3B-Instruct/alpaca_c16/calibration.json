@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/A5000/Qwen2.5-3B-Instruct/alpaca_c16",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 263,
+  "n_iters_total": 1903,
+  "weight_bytes": 6171394048.0,
+  "kv_bytes_per_token": 36864.0,
+  "byte_source": "hf_config:Qwen/Qwen2.5-3B-Instruct",
+  "idle_power_w": 61.401,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.8925794788225092e-10,
+  "e_bit_aggregate": 1.9435647858365428e-10,
+  "p_static_w": 61.401,
+  "e_bit_joint": -4.636803555454513e-13,
+  "p_static_joint": 99.67809191578965,
+  "r2_energy": -1.1034205842008116,
+  "r2_power": -8563.32917967814,
+  "mean_power_w": 99.58728736893292,
+  "mean_bytes_per_bin": 39191692447.63498,
+  "mean_dynamic_power_w": 38.18603308058257
+}

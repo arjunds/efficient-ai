@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/ragged/gemma-7b/sharegpt_poisson8",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 237,
+  "n_iters_total": 4609,
+  "weight_bytes": 17075798016.0,
+  "kv_bytes_per_token": 458752.0,
+  "byte_source": "models.py:gemma-7b",
+  "idle_power_w": 118.367,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.5772839635917737e-10,
+  "e_bit_aggregate": 1.6053642410477305e-10,
+  "p_static_w": 118.367,
+  "e_bit_joint": 4.744878423180869e-12,
+  "p_static_joint": 398.12162714382583,
+  "r2_energy": -0.5760024900033698,
+  "r2_power": -0.9964876150148314,
+  "mean_power_w": 406.3940803938854,
+  "mean_bytes_per_bin": 358011392535.76373,
+  "mean_dynamic_power_w": 288.2149635822072
+}

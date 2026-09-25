@@ -1,0 +1,16 @@
+[warn] matplotlib unavailable, skipping plot: No module named 'matplotlib'
+{
+  "run_dir": "logs/load_sweep/Meta-Llama-3-8B/c2_in2048_out128",
+  "calibration": "logs/load_sweep/Meta-Llama-3-8B/c2_in2048_out128/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 226,
+    "rmse_w": 9.305990605933514,
+    "mae_w": 7.4529909578405835,
+    "r2": -9.222680707467573,
+    "mean_measured_w": 383.5329907710892,
+    "mean_predicted_w": 383.2342732968659,
+    "mean_abs_pct_err": 1.9432463796286261
+  },
+  "plot": null
+}

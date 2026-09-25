@@ -59,7 +59,7 @@ VGAO_WLS = {"dram": 5.832e-11, "l2": 3.848e-11, "l1": -0.268e-11,
             "smem": 1.723e-11, "tma": -1.365e-11}
 
 # What we measured on B200 with NVML + analytic bytes (logs/B200, 3-term fit).
-OUR_E_WBYTE = 1.189e-10
+OUR_E_WBYTE = 1.252e-10   # canonical re-binned value (see RECONCILIATION)
 SCALING_LAW_PREDICTION = 0.646e-10   # H200 1.077e-10 x (4.8/8.0)
 
 
@@ -134,8 +134,15 @@ def main():
     ntok_p = os.path.join(args.run_dir, "n_tokens.txt")
     gen = int(open(ntok_p).read().strip()) if os.path.exists(ntok_p) else args.gen_tokens
 
-    from models import model_from_hf_id
-    m = model_from_hf_id(args.model)
+    # Resolve via the canonical MODELS table first (no transformers needed),
+    # falling back to HF-config auto-ingest for a model not in the table.
+    import models as _models
+    from gate_dram import hf_to_model_key
+    key = hf_to_model_key(args.model, _models.MODELS)
+    if key and key in _models.MODELS:
+        m = _models.MODELS[key]
+    else:
+        m = _models.model_from_hf_id(args.model)
     dtb = 2 if args.dtype in ("float16", "bfloat16") else 4
     ctx = args.prompt_len + gen // 2
     # One forward pass per generated token re-reads all weights; KV grows with ctx.
@@ -143,24 +150,28 @@ def main():
     # step emits one more. max_tokens=N therefore means N forward passes, not
     # N+1. (An earlier version used gen+1 and got a 17% discrepancy.)
     passes = gen
-    # EMBEDDING TABLE: active_params() counts embed_tokens AND lm_head. lm_head
-    # really is streamed (a GEMM over the vocab), but embed_tokens during decode
-    # is a LOOKUP of one row (~7 KB), not a 1.09 GB read. Counting it inflates
-    # the expected weight traffic by ~7% for Qwen2-7B.
-    embed_bytes = m.vocab * m.d_model * dtb
-    weight_streamed = m.active_params() * dtb - embed_bytes
+    # EMBEDDING TABLE: the canonical models.py already excludes the input-embed
+    # gather from active_params ("lm_head participates per token; input embed is
+    # a lookup") and counts lm_head once. So active_params x dtype IS the
+    # streamed weight traffic -- do NOT subtract the table again. The hardware
+    # counters confirm this convention: measured 14.20 GB/pass vs 14.14 GB.
+    d_model = getattr(m, "d_model", None) or m.d
+    embed_bytes = m.vocab * d_model * dtb          # reported for context only
+    weight_streamed = m.active_params() * dtb
     analytic_per_tok = weight_streamed + ctx * m.kv_bytes_per_token(dtb)
     analytic_total = analytic_per_tok * passes
-    naive_total = (m.active_params() * dtb + ctx * m.kv_bytes_per_token(dtb)) * passes
+    naive_total = (m.active_params() * dtb + embed_bytes
+                   + ctx * m.kv_bytes_per_token(dtb)) * passes
 
     print(f"model            : {args.model}")
     print(f"kernels profiled : {max(counts.values())} (per metric)")
     print(f"generated tokens : {gen}  => {passes} forward passes "
           f"(prefill emits token 1)")
     print(f"weights streamed : {weight_streamed/1e9:.3f} GB/pass "
-          f"(active_params x{dtb} minus the {embed_bytes/1e9:.2f} GB embed table)")
+          f"(canonical active_params x{dtb}; input-embed gather excluded)")
     print(f"analytic bytes   : {analytic_total/1e9:.1f} GB total "
-          f"({naive_total/1e9:.1f} GB if the embed table were counted)\n")
+          f"({naive_total/1e9:.1f} GB if the {embed_bytes/1e9:.2f} GB input-embed "
+          f"table were also counted)\n")
 
     print("=== measured traffic per level (whole profile) ===")
     print(f"{'channel':<12}{'bytes':>14}{'GB':>10}{'per analytic byte':>20}")

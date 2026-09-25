@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c64",
+  "calibration": "logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c64/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 235,
+    "rmse_w": 98.36768874601269,
+    "mae_w": 72.42025735327267,
+    "r2": -15.34666539641701,
+    "mean_measured_w": 501.2147311189253,
+    "mean_predicted_w": 478.361328681395,
+    "mean_abs_pct_err": 14.448948296391796
+  },
+  "plot": null
+}

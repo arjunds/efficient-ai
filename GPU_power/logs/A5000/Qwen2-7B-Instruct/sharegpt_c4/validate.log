@@ -1,0 +1,16 @@
+[warn] matplotlib unavailable, skipping plot: No module named 'matplotlib'
+{
+  "run_dir": "logs/A5000/Qwen2-7B-Instruct/sharegpt_c4",
+  "calibration": "logs/A5000/Qwen2-7B-Instruct/sharegpt_c4/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 321,
+    "rmse_w": 8.144145507841902,
+    "mae_w": 6.51318406107576,
+    "r2": -704.2334089122387,
+    "mean_measured_w": 99.55026164022637,
+    "mean_predicted_w": 97.86326272946839,
+    "mean_abs_pct_err": 6.542608682048814
+  },
+  "plot": null
+}

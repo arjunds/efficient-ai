@@ -1,0 +1,80 @@
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+INFO 07-14 09:30:54 [__init__.py:216] Automatically detected platform cuda.
+{
+  "hostname": "node12.cl.upenn.edu",
+  "in_slurm": true,
+  "slurm_job_id": "62623",
+  "cuda_visible_devices": "0",
+  "python": {
+    "version": "3.12.11",
+    "executable": "/usr/bin/python3"
+  },
+  "container_runtimes": {
+    "apptainer": null,
+    "singularity": null,
+    "enroot": null,
+    "podman": null,
+    "docker": null,
+    "runai": null
+  },
+  "commands": {
+    "nvidia-smi": {
+      "path": "/usr/bin/nvidia-smi",
+      "query": "NVIDIA H200, 700.00 W, 143771 MiB"
+    },
+    "dcgmi": {
+      "path": null
+    },
+    "ncu": {
+      "path": "/usr/local/cuda/bin/ncu",
+      "version": "NVIDIA (R) Nsight Compute Command Line Profiler"
+    }
+  },
+  "imports": {
+    "torch": {
+      "ok": true,
+      "version": "2.8.0+cu128"
+    },
+    "vllm": {
+      "ok": true,
+      "version": "0.10.2"
+    },
+    "transformers": {
+      "ok": true,
+      "version": "4.56.1"
+    },
+    "pynvml": {
+      "ok": true,
+      "version": "?"
+    },
+    "pandas": {
+      "ok": false,
+      "error": "No module named 'pandas'"
+    },
+    "matplotlib": {
+      "ok": false,
+      "error": "No module named 'matplotlib'"
+    }
+  },
+  "nvml": {
+    "ok": true,
+    "gpu_name": "NVIDIA H200",
+    "power_w": 75.349
+  },
+  "pypi": {
+    "reachable": true,
+    "via": "pip index"
+  },
+  "vllm_api": {
+    "vllm_version": "0.10.2",
+    "scheduler_class": "vllm.v1.core.sched.scheduler.Scheduler",
+    "engine_api": "v1",
+    "schedule_signature": "(self) -> 'SchedulerOutput'",
+    "async_engine_module": "vllm.v1.engine.async_llm"
+  }
+}
+
+[saved] probe_result.json
+
+VERDICT: gpu=True vllm=True dcgmi=False -> READY

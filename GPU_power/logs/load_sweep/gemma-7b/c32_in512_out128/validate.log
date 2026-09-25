@@ -1,0 +1,16 @@
+[warn] matplotlib unavailable, skipping plot: No module named 'matplotlib'
+{
+  "run_dir": "logs/load_sweep/gemma-7b/c32_in512_out128",
+  "calibration": "logs/load_sweep/gemma-7b/c32_in512_out128/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 227,
+    "rmse_w": 25.558630418419614,
+    "mae_w": 14.647384806942368,
+    "r2": -29.593099871172043,
+    "mean_measured_w": 369.26656598437677,
+    "mean_predicted_w": 366.7752893718919,
+    "mean_abs_pct_err": 3.966615490329033
+  },
+  "plot": null
+}

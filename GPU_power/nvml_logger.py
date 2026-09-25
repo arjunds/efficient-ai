@@ -77,6 +77,20 @@ class NvmlPowerLogger:
         mem_mhz = self._try(lambda: pynvml.nvmlDeviceGetClockInfo(h, pynvml.NVML_CLOCK_MEM))
         temp_c = self._try(lambda: pynvml.nvmlDeviceGetTemperature(h, pynvml.NVML_TEMPERATURE_GPU))
 
+        # Additive (A5000 agent, 2026-09-24): NVML field 186 POWER_INSTANT. On
+        # Ampere-non-GA100 and newer, nvmlDeviceGetPowerUsage is a 1 s moving
+        # average, which smears 200 ms bins; the instant field is not. Kept as an
+        # extra trailing column so existing readers of power_w are unaffected.
+        p_inst = None
+        if getattr(self, "_have_inst", False):
+            try:
+                v = pynvml.nvmlDeviceGetFieldValues(h, [186])[0]
+                if v.nvmlReturn == 0:
+                    p_inst = v.value.uiVal * 1e-3
+            except Exception:
+                pass
+        self._last_inst = p_inst
+
         gpu_util = mem_util = None
         try:
             u = pynvml.nvmlDeviceGetUtilizationRates(h)
@@ -100,6 +114,7 @@ class NvmlPowerLogger:
                 "" if gpu_util is None else f"{gpu_util:.1f}",
                 "" if mem_util is None else f"{mem_util:.1f}",
                 "" if temp_c is None else f"{temp_c:.1f}",
+                "" if self._last_inst is None else f"{self._last_inst:.3f}",
             ])
             self._n_rows += 1
             if power_w is not None:
@@ -125,12 +140,21 @@ class NvmlPowerLogger:
             lim_mw = self._try(lambda: pynvml.nvmlDeviceGetPowerManagementLimit(self._handle))
         self.power_limit_w = None if lim_mw is None else lim_mw * 1e-3
 
+        self._have_inst = False
+        self._last_inst = None
+        try:
+            v = pynvml.nvmlDeviceGetFieldValues(self._handle, [186])[0]
+            self._have_inst = (v.nvmlReturn == 0 and v.value.uiVal > 0)
+        except Exception:
+            self._have_inst = False
+
         import os
         os.makedirs(os.path.dirname(self.out_csv) or ".", exist_ok=True)
         self._file = open(self.out_csv, "w", newline="")
         self._writer = csv.writer(self._file)
         self._writer.writerow(
-            ["t_wall", "power_w", "sm_mhz", "mem_mhz", "gpu_util", "mem_util", "temp_c"]
+            ["t_wall", "power_w", "sm_mhz", "mem_mhz", "gpu_util", "mem_util", "temp_c",
+             "power_inst_w"]
         )
 
         self._stop.clear()

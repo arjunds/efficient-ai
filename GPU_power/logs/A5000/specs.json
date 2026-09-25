@@ -1,0 +1,9 @@
+{
+  "bw": 768000000000.0,
+  "peak_flops": 111100000000000.0,
+  "p_cap": 100.0,
+  "tdp_w": 230.0,
+  "gpu_name": "NVIDIA RTX A5000",
+  "mem_tech": "GDDR6 384-bit 16 Gbps",
+  "note": "peak_flops = DENSE fp16 tensor w/ fp32 acc (222.2 sparse / 2); p_cap = ENFORCED limit (admin-set), not TDP"
+}

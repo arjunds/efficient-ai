@@ -1,0 +1,6 @@
+{
+  "e_bit_j_per_byte": 1.3e-10,
+  "p_static_w": 70.0,
+  "weight_bytes": 16060000000.0,
+  "kv_bytes_per_token": 131072
+}

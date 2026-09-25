@@ -1,0 +1,18 @@
+{
+  "run_dir": "logs/first_run/selftest",
+  "phase": "decode",
+  "n_iters_fit": 400,
+  "weight_bytes": 16060000000.0,
+  "kv_bytes_per_token": 131072.0,
+  "byte_source": "run_meta",
+  "idle_power_w": 70.0,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.29970497420826e-10,
+  "p_static_w": 70.0,
+  "e_bit_joint": 1.2953404012248006e-10,
+  "p_static_joint": 70.37589161891418,
+  "r2": 0.9977355833270046,
+  "mean_bytes_per_iter": 17624382003.2,
+  "mean_energy_per_iter_j": 3.7181190069583057,
+  "mean_t_iter_s": 0.020392587184906007
+}

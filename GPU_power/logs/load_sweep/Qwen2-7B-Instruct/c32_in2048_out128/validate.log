@@ -1,0 +1,16 @@
+[warn] matplotlib unavailable, skipping plot: No module named 'matplotlib'
+{
+  "run_dir": "logs/load_sweep/Qwen2-7B-Instruct/c32_in2048_out128",
+  "calibration": "logs/load_sweep/Qwen2-7B-Instruct/c32_in2048_out128/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 229,
+    "rmse_w": 27.696818563877606,
+    "mae_w": 19.526589040159163,
+    "r2": -69.19963681969647,
+    "mean_measured_w": 431.51947783056283,
+    "mean_predicted_w": 429.153783500697,
+    "mean_abs_pct_err": 4.525077092308293
+  },
+  "plot": null
+}

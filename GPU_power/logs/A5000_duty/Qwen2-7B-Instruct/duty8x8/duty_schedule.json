@@ -1,0 +1,45 @@
+{
+ "gaps": [
+  5.0,
+  3.0,
+  2.0,
+  1.5
+ ],
+ "block_s": 45.0,
+ "on_s": 0.02,
+ "idle_s": 25.0,
+ "blocks": [
+  {
+   "gap_s": null,
+   "kind": "idle",
+   "n_seg": 1
+  },
+  {
+   "gap_s": 5.0,
+   "kind": "duty",
+   "n_seg": 18
+  },
+  {
+   "gap_s": 3.0,
+   "kind": "duty",
+   "n_seg": 28
+  },
+  {
+   "gap_s": 2.0,
+   "kind": "duty",
+   "n_seg": 40
+  },
+  {
+   "gap_s": 1.5,
+   "kind": "duty",
+   "n_seg": 52
+  },
+  {
+   "gap_s": null,
+   "kind": "idle",
+   "n_seg": 1
+  }
+ ],
+ "input_len": 8,
+ "output_len": 8
+}

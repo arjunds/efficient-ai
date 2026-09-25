@@ -1,0 +1,24 @@
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+{
+  "run_dir": "logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c16",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 251,
+  "n_iters_total": 2516,
+  "weight_bytes": 63968378880.0,
+  "kv_bytes_per_token": 262144.0,
+  "byte_source": "hf_config:Qwen/Qwen2.5-32B-Instruct",
+  "idle_power_w": 116.345,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.2777299225472643e-10,
+  "e_bit_aggregate": 1.2991288845339396e-10,
+  "p_static_w": 116.345,
+  "e_bit_joint": -2.2576369982921656e-12,
+  "p_static_joint": 501.1742442419977,
+  "r2_energy": -11.792041761081522,
+  "r2_power": -52.767398836432214,
+  "mean_power_w": 494.5242922211564,
+  "mean_bytes_per_bin": 581466611157.1633,
+  "mean_dynamic_power_w": 378.2260110150892
+}

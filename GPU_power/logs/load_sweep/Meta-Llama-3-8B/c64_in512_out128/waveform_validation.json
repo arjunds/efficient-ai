@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/load_sweep/Meta-Llama-3-8B/c64_in512_out128",
+  "calibration": "logs/load_sweep/Meta-Llama-3-8B/c64_in512_out128/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 226,
+    "rmse_w": 31.97734576956885,
+    "mae_w": 22.709589483219993,
+    "r2": -28.984914779770484,
+    "mean_measured_w": 435.3830766636631,
+    "mean_predicted_w": 432.067452603716,
+    "mean_abs_pct_err": 5.2160018844194385
+  },
+  "plot": null
+}

@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/longctx/Qwen2-7B-Instruct/ctx4096_c1",
+  "calibration": "logs/longctx/Qwen2-7B-Instruct/ctx4096_c1/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 279,
+    "rmse_w": 14.320331904754386,
+    "mae_w": 6.445118930512522,
+    "r2": -25.918488149730702,
+    "mean_measured_w": 371.11625405657827,
+    "mean_predicted_w": 370.3346254840954,
+    "mean_abs_pct_err": 1.7366846264647668
+  },
+  "plot": null
+}

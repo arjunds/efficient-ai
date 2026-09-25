@@ -1,0 +1,12 @@
+{
+  "mode": "self_test",
+  "model": "synthetic-Llama3-8B",
+  "model_key": "Llama3-8B",
+  "dtype": "float16",
+  "weight_bytes": 16060000000.0,
+  "kv_bytes_per_token": 131072,
+  "idle_power_w": 70.0,
+  "concurrency_or_rate": 8,
+  "window_wall_t0": 1784035856.8458693,
+  "window_wall_t1": 1784035865.0029042
+}

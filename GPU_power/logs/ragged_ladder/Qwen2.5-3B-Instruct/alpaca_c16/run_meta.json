@@ -1,0 +1,31 @@
+{
+  "gpu_name": "NVIDIA H200",
+  "power_limit_w": 700.0,
+  "dtype": "float16",
+  "model": "Qwen/Qwen2.5-3B-Instruct",
+  "model_key": null,
+  "tp_degree": 1,
+  "vllm_version": "0.10.2",
+  "engine_api": "v1",
+  "max_num_seqs": null,
+  "block_size": null,
+  "gpu_mem_util": 0.9,
+  "input_len": 512,
+  "output_len": 256,
+  "concurrency_or_rate": 16,
+  "arrival_rate": 0.0,
+  "concurrency_schedule": null,
+  "task": "alpaca",
+  "segments": [
+    {
+      "concurrency": 16,
+      "t0": 1786429221.354073,
+      "t1": 1786429267.9771638
+    }
+  ],
+  "idle_power_w": 116.358,
+  "prefill_ceiling_power_w": null,
+  "kv_cache_dtype": "auto",
+  "window_wall_t0": 1786429221.3540723,
+  "window_wall_t1": 1786429267.9771662
+}

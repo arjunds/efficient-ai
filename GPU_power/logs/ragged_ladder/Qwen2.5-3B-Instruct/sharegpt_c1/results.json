@@ -1,0 +1,22 @@
+{
+  "mode": "load",
+  "completed_requests": 29,
+  "generated_tokens_window": 7220,
+  "window_duration_s": 45.100093364715576,
+  "aggregate_tokens_per_sec": 160.08836038571542,
+  "avg_power_window_w": 222.47370875944864,
+  "dram_rows_filled": 0,
+  "nvml_summary": {
+    "gpu_name": "NVIDIA H200",
+    "power_limit_w": 700.0,
+    "n_samples": 4600,
+    "duration_s": 46.11558198928833,
+    "mean_power_w": 221.26313739130435,
+    "median_power_w": 222.104,
+    "max_power_w": 230.306,
+    "min_power_w": 137.451
+  },
+  "dram_backend": null,
+  "dram_total_bytes": null,
+  "peak_hbm_bw_bytes_per_s": 4800000000000.0
+}

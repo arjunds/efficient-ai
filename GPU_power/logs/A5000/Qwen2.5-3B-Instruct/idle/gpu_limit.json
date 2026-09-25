@@ -1,0 +1,8 @@
+{
+ "slurm_job": "84884",
+ "gpu_pci_bus": "00000000:B1:00.0",
+ "enforced_power_limit_w": 100.0,
+ "default_power_limit_w": 230.0,
+ "idle_baseline_measured_on_bus": "B1",
+ "capped_constant_power_regime": null
+}

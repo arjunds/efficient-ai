@@ -1,0 +1,35 @@
+cpu-bind=MASK - node-d1, task  0  0 [1658725]: mask 0xc00000c000 set
+==PROF== Connected to process 1658811 (/usr/bin/python3.12)
+==ERROR== ERR_NVGPUCTRPERM - The user does not have permission to access NVIDIA GPU Performance Counters on the target device 0. For instructions on enabling permissions and to get more information see https://developer.nvidia.com/ERR_NVGPUCTRPERM
+probe kernel ran
+==PROF== Disconnected from process 1658811
+stream_cg_1.00MB              1442.9     0.00    100.0    44.2   1131  1.00 3.066e-11±0.0e+00          -
+stream_cg_2.00MB              1443.0     0.00    100.0    44.2   1104  1.00 3.062e-11±0.0e+00          -
+stream_cg_3.00MB              1435.9     0.00     99.9    44.2   1077  1.00 3.075e-11±0.0e+00          -
+stream_cg_4.50MB              1407.0     0.00     99.9    44.1   1110  1.00 3.132e-11±0.0e+00          -
+stream_cg_6.00MB              1434.9     0.00     99.9    44.1   1071  1.00 3.076e-11±0.0e+00          -
+stream_cg_12.00MB              318.5     0.00    101.5    45.7    248  1.00 1.434e-10±0.0e+00          -
+stream_cg_24.00MB              257.2     0.00    103.7    47.9    210  1.00 1.862e-10±0.0e+00          -
+stream_cg_64.00MB              259.5     0.00    112.1    56.3    210  1.00 2.170e-10±0.0e+00          -
+stream_cg_256.00MB             255.0     0.00    112.3    56.5    210  1.00 2.214e-10±0.0e+00          -
+stream_cg_1024.00MB            242.8     0.00    110.3    54.5    210  1.00 2.245e-10±0.0e+00          -
+stream_cg_4096.00MB            242.6     0.00    110.3    54.5    210  1.00 2.247e-10±0.0e+00          -
+torch_sum_1GB                  290.7     0.00    116.1    60.3    210  1.00 2.074e-10±0.0e+00          -
+torch_copy_512MB               344.8     0.00    122.1    66.3    210  1.00 1.923e-10±0.0e+00          -
+gemv_b1_512MB                  190.3     0.19    111.4    55.6    210  1.00 2.923e-10±0.0e+00    292.294
+gemv_b16_512MB                 171.7     2.74    112.0    56.2    210  1.00 3.274e-10±0.0e+00     20.504
+gemm_fp16_1024                  89.7    30.63     99.0    43.2    779  1.00 4.816e-10±0.0e+00      1.411
+gemm_fp16_2048                  24.7    16.85     98.8    43.0    293  1.00 1.743e-09±0.0e+00      2.553
+gemm_fp16_4096                  18.3    24.97     98.8    43.0    395  1.00 2.350e-09±0.0e+00      1.721
+gemm_fp16_8192                   9.6    26.14     99.0    43.2    406  1.00 4.516e-09±0.0e+00      1.654
+grid_8prog                     147.3     0.00     98.9    43.1   1273  1.00 2.926e-10±0.0e+00          -
+grid_16prog                    177.7     0.00     98.5    42.7    502  1.00 2.404e-10±0.0e+00          -
+grid_32prog                    287.8     0.00    111.1    55.3    478  1.00 1.921e-10±0.0e+00          -
+grid_64prog                    282.3     0.00    111.7    55.9    210  1.00 1.979e-10±0.0e+00          -
+grid_128prog                   283.5     0.00    112.1    56.3    210  1.00 1.987e-10±0.0e+00          -
+grid_256prog                   284.3     0.00    114.8    59.0    210  1.00 2.077e-10±0.0e+00          -
+grid_512prog                   241.9     0.00    110.4    54.6    210  1.00 2.258e-10±0.0e+00          -
+
+duty-cycle slope fits (full clocks, below cap):
+op                     e (marginal)         se   floor W      R2    n     burst rate
+wrote microbench/smoke_full/results_smoke.json

@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_poisson8",
+  "calibration": "logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_poisson8/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 238,
+    "rmse_w": 38.351619750207796,
+    "mae_w": 27.105623123720875,
+    "r2": -4.018067658163828,
+    "mean_measured_w": 450.700360442552,
+    "mean_predicted_w": 447.3487358951339,
+    "mean_abs_pct_err": 6.014111703195734
+  },
+  "plot": null
+}

@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/ragged/Mistral-7B-v0.1/alpaca_poisson8",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 233,
+  "n_iters_total": 7167,
+  "weight_bytes": 14220787712.0,
+  "kv_bytes_per_token": 131072.0,
+  "byte_source": "models.py:Mistral-7B-v0.1",
+  "idle_power_w": 118.37400000000001,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.2371713553946385e-10,
+  "e_bit_aggregate": 1.2440239679916676e-10,
+  "p_static_w": 118.37400000000001,
+  "e_bit_joint": 4.626324371885086e-12,
+  "p_static_joint": 375.57568881835357,
+  "r2_energy": -2.896643975121008,
+  "r2_power": -2.9027462109674014,
+  "mean_power_w": 385.5095022191344,
+  "mean_bytes_per_bin": 429465794357.8369,
+  "mean_dynamic_power_w": 267.1357661109622
+}

@@ -1,0 +1,16 @@
+[warn] matplotlib unavailable, skipping plot: No module named 'matplotlib'
+{
+  "run_dir": "logs/ragged/gemma-7b/alpaca_c4",
+  "calibration": "logs/ragged/gemma-7b/alpaca_c4/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 236,
+    "rmse_w": 9.559933998583375,
+    "mae_w": 7.524999411736748,
+    "r2": -10.703610377528374,
+    "mean_measured_w": 332.2542268099927,
+    "mean_predicted_w": 331.8817906630905,
+    "mean_abs_pct_err": 2.2648318078554026
+  },
+  "plot": null
+}

@@ -18,6 +18,7 @@ Modes:
 Artifacts per run_dir (PROFILING_HANDOFF.md schema):
   power_trace.csv, iter_log.csv, dram_trace.csv, run_meta.json, results.json
   (+ iter_ctx.jsonl sidecar with per-request context lengths)
+  (+ requests.csv: per-request submit / first-token / finish times, load mode)
 
 Example:
   python energy_profile_load.py --mode load --model meta-llama/Meta-Llama-3-8B \
@@ -335,10 +336,30 @@ def run_load(args):
         "peak_hbm_bw_bytes_per_s": dram.peak_bw,
     }
     write_json(os.path.join(args.run_dir, "results.json"), results)
+    write_requests_csv(os.path.join(args.run_dir, "requests.csv"), completions)
     print(f"[saved] {args.run_dir} "
           f"(reqs={len(completions)}, tok/s={results['aggregate_tokens_per_sec']}, "
           f"dram_filled={filled})", flush=True)
     return results
+
+
+def write_requests_csv(path, completions):
+    """Additive per-request latency log (one row per completed request):
+    submit (= arrival for open loop) / first-token / finish wall times, token
+    counts, and derived TTFT / end-to-end latency. Never raises."""
+    try:
+        with open(path, "w", newline="") as f:
+            w = csv.writer(f)
+            w.writerow(["request_id", "t_submit", "t_first_token", "t_finish",
+                        "prompt_tokens", "gen_tokens", "ttft_s", "e2e_s"])
+            for c in sorted(completions, key=lambda c: c.get("t0", 0.0)):
+                t0, t1, tf = c.get("t0"), c.get("t1"), c.get("t_first")
+                w.writerow([c.get("request_id"), f"{t0:.6f}",
+                            "" if tf is None else f"{tf:.6f}", f"{t1:.6f}",
+                            c.get("prompt_tokens", ""), c.get("gen_tokens", ""),
+                            "" if tf is None else f"{tf - t0:.6f}", f"{t1 - t0:.6f}"])
+    except Exception as e:      # latency log must never break a run
+        print(f"[warn] requests.csv not written: {e!r}", flush=True)
 
 
 # ------------------------------------------------------------------ baselines

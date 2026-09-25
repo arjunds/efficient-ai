@@ -131,7 +131,14 @@ async def drain_generate(engine, prompt, sampling_params, request_id) -> dict:
     import time
     t0 = time.time()
     last = None
+    t_first = None          # additive: wall time the first generated token arrived
     async for out in engine.generate(prompt, sampling_params, request_id):
+        if t_first is None:
+            try:
+                if out.outputs and len(out.outputs[0].token_ids) > 0:
+                    t_first = time.time()
+            except Exception:
+                t_first = time.time()
         last = out
     t1 = time.time()
     prompt_tokens = gen_tokens = 0
@@ -145,4 +152,5 @@ async def drain_generate(engine, prompt, sampling_params, request_id) -> dict:
         except Exception:
             pass
     return {"t0": t0, "t1": t1, "prompt_tokens": prompt_tokens,
-            "gen_tokens": gen_tokens, "request_id": request_id}
+            "gen_tokens": gen_tokens, "request_id": request_id,
+            "t_first": t_first}

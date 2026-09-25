@@ -1,0 +1,69 @@
+cpu-bind=MASK - node-d1, task  0  0 [1629029]: mask 0x180000180000 set
+==== microbench start Thu Sep 24 16:29:39 EDT 2026 on node-d1.cl.upenn.edu ====
+name, pci.bus_id, power.limit [W], power.default_limit [W], temperature.gpu
+NVIDIA RTX A5000, 00000000:CA:00.0, 100.00 W, 230.00 W, 27
+GPU: {"name": "NVIDIA RTX A5000", "driver": "565.57.01", "power_limit_enforced_w": 100.0, "power_limit_default_w": 230.0, "power_limit_range_w": [100.0, 230.0], "max_sm_mhz": 2100.0, "max_mem_mhz": 8001.0, "mem_bus_width_bits": 384.0, "sm_count": 64, "l2_bytes": 6291456, "total_mem_bytes": 25310986240, "cc": "8.6", "have_power_instant_field": true, "have_energy_counter": true, "torch": "2.8.0+cu128", "triton": "3.4.0"}
+idle_deep(pre): {"n_samples": 484, "p_energy_w": 3.1073725699328345, "energy_counter_updates": 50, "energy_counter_period_s": 0.09990722792489189, "p_inst_w": 55.76800826446281, "p_avg_w": 53.82253645833333, "sm_mhz": 942.4586776859504, "mem_mhz": 3574.1053719008264, "temp_c": 32.171487603305785, "frac_sw_power_cap": 0.9607438016528925, "frac_thermal": 0.0, "frac_hw_slowdown": 0.0, "p_w": 55.76800826446281, "energy_counter_over_inst": 0.05571962611963952, "duration_s": 5.0000927448272705, "waited_s": 24.00353980064392}
+idle_p0(pre): {"n_samples": 474, "p_energy_w": 28.720181086100336, "energy_counter_updates": 50, "energy_counter_period_s": 0.09996384017321529, "p_inst_w": 84.79207383966245, "p_avg_w": 84.36966230366492, "sm_mhz": 1944.493670886076, "mem_mhz": 7601.0, "temp_c": 34.392405063291136, "frac_sw_power_cap": 0.0, "frac_thermal": 0.0, "frac_hw_slowdown": 0.0, "p_w": 84.79207383966245, "energy_counter_over_inst": 0.33871303985805035, "duration_s": 5.004712104797363}
+=== burstscan ===
+  [scan dram_stream r0 0.4 ms] t_burst=0.45 ms  burst_rate=5.943e+11  floor=84.17  P=90.41 (avg1s 90.14)  dyn=6.23 W  e=3.020e-10 J/byte  sm=1949 cap=0.00
+  [scan dram_stream r0 0.7 ms] t_burst=0.83 ms  burst_rate=6.458e+11  floor=85.51  P=92.33 (avg1s 92.30)  dyn=6.81 W  e=3.249e-10 J/byte  sm=1930 cap=0.00
+  [scan dram_stream r0 1.0 ms] t_burst=1.21 ms  burst_rate=6.659e+11  floor=86.32  P=91.34 (avg1s 91.16)  dyn=5.02 W  e=2.378e-10 J/byte  sm=1931 cap=0.16
+  [scan dram_stream r0 1.5 ms] t_burst=1.59 ms  burst_rate=6.770e+11  floor=86.42  P=91.82 (avg1s 91.44)  dyn=5.40 W  e=2.549e-10 J/byte  sm=1934 cap=0.94
+  [scan dram_stream r0 2.5 ms] t_burst=2.34 ms  burst_rate=6.885e+11  floor=87.25  P=90.62 (avg1s 90.38)  dyn=3.37 W  e=1.607e-10 J/byte  sm=1925 cap=0.94
+  [scan dram_stream r0 4.0 ms] t_burst=3.92 ms  burst_rate=6.840e+11  floor=87.09  P=87.70 (avg1s 87.84)  dyn=0.61 W  e=5.935e-11 J/byte  sm=1916 cap=0.92
+  [scan dram_stream r0 6.0 ms] t_burst=5.81 ms  burst_rate=6.928e+11  floor=87.19  P=87.44 (avg1s 87.71)  dyn=0.25 W  e=2.859e-11 J/byte  sm=1907 cap=0.77
+  [scan dram_stream r1 0.4 ms] t_burst=0.45 ms  burst_rate=5.906e+11  floor=87.11  P=93.24 (avg1s 93.06)  dyn=6.13 W  e=2.975e-10 J/byte  sm=1936 cap=0.27
+  [scan dram_stream r1 0.7 ms] t_burst=0.84 ms  burst_rate=6.415e+11  floor=86.84  P=93.58 (avg1s 93.37)  dyn=6.73 W  e=3.207e-10 J/byte  sm=1934 cap=0.39
+  [scan dram_stream r1 1.0 ms] t_burst=1.22 ms  burst_rate=6.616e+11  floor=87.65  P=93.31 (avg1s 93.14)  dyn=5.66 W  e=2.683e-10 J/byte  sm=1934 cap=0.74
+  [scan dram_stream r1 1.5 ms] t_burst=1.61 ms  burst_rate=6.654e+11  floor=87.72  P=93.85 (avg1s 93.09)  dyn=6.12 W  e=2.899e-10 J/byte  sm=1927 cap=0.94
+  [scan dram_stream r1 2.5 ms] t_burst=2.40 ms  burst_rate=6.707e+11  floor=87.89  P=92.10 (avg1s 91.88)  dyn=4.21 W  e=1.983e-10 J/byte  sm=1917 cap=0.94
+  [scan dram_stream r1 4.0 ms] t_burst=3.86 ms  burst_rate=6.948e+11  floor=87.75  P=89.65 (avg1s 89.17)  dyn=1.90 W  e=1.244e-10 J/byte  sm=1906 cap=0.94
+  [scan dram_stream r1 6.0 ms] t_burst=5.82 ms  burst_rate=6.919e+11  floor=88.16  P=88.05 (avg1s 87.75)  dyn=-0.11 W  e=-1.144e-11 J/byte  sm=1901 cap=0.82
+  [scan l2_stream_half r0 0.4 ms] t_burst=0.06 ms  burst_rate=1.129e+12  floor=88.11  P=91.28 (avg1s 90.80)  dyn=3.17 W  e=9.424e-11 J/byte  sm=1934 cap=0.00
+  [scan l2_stream_half r0 0.7 ms] t_burst=0.08 ms  burst_rate=1.531e+12  floor=88.78  P=92.82 (avg1s 92.63)  dyn=4.04 W  e=7.133e-11 J/byte  sm=1934 cap=0.00
+  [scan l2_stream_half r0 1.0 ms] t_burst=0.10 ms  burst_rate=1.774e+12  floor=88.00  P=93.85 (avg1s 93.72)  dyn=5.85 W  e=8.614e-11 J/byte  sm=1935 cap=0.00
+  [scan l2_stream_half r0 1.5 ms] t_burst=0.14 ms  burst_rate=1.912e+12  floor=88.63  P=93.72 (avg1s 93.32)  dyn=5.10 W  e=7.309e-11 J/byte  sm=1937 cap=0.00
+  [scan l2_stream_half r0 2.5 ms] t_burst=0.18 ms  burst_rate=2.010e+12  floor=88.07  P=93.93 (avg1s 93.50)  dyn=5.86 W  e=8.316e-11 J/byte  sm=1933 cap=0.00
+  [scan l2_stream_half r0 4.0 ms] t_burst=0.31 ms  burst_rate=2.116e+12  floor=89.03  P=94.34 (avg1s 94.13)  dyn=5.31 W  e=7.348e-11 J/byte  sm=1934 cap=0.92
+  [scan l2_stream_half r0 6.0 ms] t_burst=0.51 ms  burst_rate=1.960e+12  floor=88.10  P=94.57 (avg1s 94.21)  dyn=6.46 W  e=8.869e-11 J/byte  sm=1932 cap=0.94
+  [scan l2_stream_half r1 0.4 ms] t_burst=0.06 ms  burst_rate=1.146e+12  floor=88.17  P=91.03 (avg1s 90.93)  dyn=2.86 W  e=8.921e-11 J/byte  sm=1934 cap=0.00
+  [scan l2_stream_half r1 0.7 ms] t_burst=0.08 ms  burst_rate=1.484e+12  floor=88.71  P=93.50 (avg1s 93.27)  dyn=4.80 W  e=8.046e-11 J/byte  sm=1934 cap=0.00
+  [scan l2_stream_half r1 1.0 ms] t_burst=0.10 ms  burst_rate=1.685e+12  floor=88.26  P=94.25 (avg1s 94.03)  dyn=5.99 W  e=8.886e-11 J/byte  sm=1934 cap=0.00
+  [scan l2_stream_half r1 1.5 ms] t_burst=0.11 ms  burst_rate=1.667e+12  floor=88.47  P=94.49 (avg1s 94.10)  dyn=6.03 W  e=8.963e-11 J/byte  sm=1930 cap=0.00
+  [scan l2_stream_half r1 2.5 ms] t_burst=0.22 ms  burst_rate=2.017e+12  floor=88.57  P=94.19 (avg1s 93.84)  dyn=5.61 W  e=7.857e-11 J/byte  sm=1931 cap=0.91
+  [scan l2_stream_half r1 4.0 ms] t_burst=0.31 ms  burst_rate=2.024e+12  floor=88.22  P=94.27 (avg1s 93.97)  dyn=6.06 W  e=8.383e-11 J/byte  sm=1934 cap=0.93
+  [scan l2_stream_half r1 6.0 ms] t_burst=0.52 ms  burst_rate=2.009e+12  floor=88.97  P=94.41 (avg1s 94.47)  dyn=5.44 W  e=7.453e-11 J/byte  sm=1933 cap=0.94
+  [scan gemv_b1 r0 0.4 ms] t_burst=0.92 ms  burst_rate=5.832e+11  floor=88.21  P=95.56 (avg1s 95.30)  dyn=7.35 W  e=3.541e-10 J/byte  sm=1918 cap=0.94
+  [scan gemv_b1 r0 0.7 ms] t_burst=0.86 ms  burst_rate=6.212e+11  floor=87.77  P=95.78 (avg1s 95.42)  dyn=8.01 W  e=3.858e-10 J/byte  sm=1917 cap=0.94
+  [scan gemv_b1 r0 1.0 ms] t_burst=1.07 ms  burst_rate=5.026e+11  floor=87.67  P=95.09 (avg1s 94.95)  dyn=7.42 W  e=3.589e-10 J/byte  sm=1917 cap=0.94
+  [scan gemv_b1 r0 1.5 ms] t_burst=1.61 ms  burst_rate=6.669e+11  floor=88.18  P=90.97 (avg1s 90.46)  dyn=2.80 W  e=2.666e-10 J/byte  sm=1906 cap=0.94
+  [scan gemv_b1 r0 2.5 ms] t_burst=2.42 ms  burst_rate=6.644e+11  floor=87.72  P=89.52 (avg1s 89.11)  dyn=1.80 W  e=1.762e-10 J/byte  sm=1909 cap=0.94
+  [scan gemv_b1 r0 4.0 ms] t_burst=4.04 ms  burst_rate=6.638e+11  floor=87.26  P=87.84 (avg1s 87.57)  dyn=0.58 W  e=7.255e-11 J/byte  sm=1898 cap=0.94
+  [scan gemv_b1 r0 6.0 ms] t_burst=6.36 ms  burst_rate=6.756e+11  floor=87.36  P=87.70 (avg1s 87.67)  dyn=0.34 W  e=5.045e-11 J/byte  sm=1880 cap=0.52
+  [scan gemv_b1 r1 0.4 ms] t_burst=0.91 ms  burst_rate=5.924e+11  floor=87.28  P=94.73 (avg1s 94.46)  dyn=7.45 W  e=3.591e-10 J/byte  sm=1919 cap=0.94
+  [scan gemv_b1 r1 0.7 ms] t_burst=0.84 ms  burst_rate=6.396e+11  floor=87.36  P=94.65 (avg1s 94.39)  dyn=7.29 W  e=3.521e-10 J/byte  sm=1918 cap=0.94
+  [scan gemv_b1 r1 1.0 ms] t_burst=0.85 ms  burst_rate=6.344e+11  floor=87.57  P=94.81 (avg1s 94.82)  dyn=7.24 W  e=3.484e-10 J/byte  sm=1921 cap=0.94
+  [scan gemv_b1 r1 1.5 ms] t_burst=1.66 ms  burst_rate=6.451e+11  floor=87.67  P=92.13 (avg1s 92.07)  dyn=4.47 W  e=2.145e-10 J/byte  sm=1906 cap=0.94
+  [scan gemv_b1 r1 2.5 ms] t_burst=2.48 ms  burst_rate=6.504e+11  floor=87.43  P=90.03 (avg1s 89.73)  dyn=2.61 W  e=1.963e-10 J/byte  sm=1901 cap=0.94
+  [scan gemv_b1 r1 4.0 ms] t_burst=4.03 ms  burst_rate=6.654e+11  floor=87.47  P=88.37 (avg1s 87.83)  dyn=0.90 W  e=1.188e-10 J/byte  sm=1900 cap=0.94
+  [scan gemv_b1 r1 6.0 ms] t_burst=6.35 ms  burst_rate=6.762e+11  floor=87.58  P=87.99 (avg1s 88.08)  dyn=0.40 W  e=5.638e-11 J/byte  sm=1895 cap=0.60
+  [scan gemm_fp16_4096 r0 0.4 ms] t_burst=1.47 ms  burst_rate=9.379e+13  floor=87.25  P=89.69 (avg1s 89.82)  dyn=2.44 W  e=2.644e-12 J/flop  sm=1912 cap=0.94
+  [scan gemm_fp16_4096 r0 0.7 ms] t_burst=1.40 ms  burst_rate=9.834e+13  floor=87.99  P=93.00 (avg1s 93.08)  dyn=5.02 W  e=1.637e-12 J/flop  sm=1900 cap=0.94
+  [scan gemm_fp16_4096 r0 1.0 ms] t_burst=1.44 ms  burst_rate=9.517e+13  floor=88.00  P=92.01 (avg1s 92.12)  dyn=4.01 W  e=2.073e-12 J/flop  sm=1907 cap=0.94
+  [scan gemm_fp16_4096 r0 1.5 ms] t_burst=1.45 ms  burst_rate=9.478e+13  floor=88.05  P=90.66 (avg1s 90.56)  dyn=2.61 W  e=1.380e-12 J/flop  sm=1906 cap=0.94
+  [scan gemm_fp16_4096 r0 2.5 ms] t_burst=2.80 ms  burst_rate=9.816e+13  floor=88.22  P=88.89 (avg1s 88.20)  dyn=0.67 W  e=7.094e-13 J/flop  sm=1905 cap=0.94
+  [scan gemm_fp16_4096 r0 4.0 ms] t_burst=4.15 ms  burst_rate=9.924e+13  floor=88.28  P=88.52 (avg1s 88.45)  dyn=0.24 W  e=2.614e-13 J/flop  sm=1902 cap=0.78
+  [scan gemm_fp16_4096 r0 6.0 ms] t_burst=5.50 ms  burst_rate=1.000e+14  floor=88.15  P=88.77 (avg1s 88.91)  dyn=0.62 W  e=6.812e-13 J/flop  sm=1883 cap=0.58
+  [scan gemm_fp16_4096 r1 0.4 ms] t_burst=1.45 ms  burst_rate=9.473e+13  floor=87.14  P=90.89 (avg1s 90.58)  dyn=3.74 W  e=2.286e-12 J/flop  sm=1907 cap=0.94
+  [scan gemm_fp16_4096 r1 0.7 ms] t_burst=1.42 ms  burst_rate=9.664e+13  floor=87.24  P=89.58 (avg1s 89.50)  dyn=2.34 W  e=1.354e-12 J/flop  sm=1909 cap=0.94
+  [scan gemm_fp16_4096 r1 1.0 ms] t_burst=1.45 ms  burst_rate=9.475e+13  floor=87.96  P=91.57 (avg1s 91.35)  dyn=3.61 W  e=1.391e-12 J/flop  sm=1898 cap=0.94
+  [scan gemm_fp16_4096 r1 1.5 ms] t_burst=1.46 ms  burst_rate=9.427e+13  floor=87.69  P=91.62 (avg1s 91.39)  dyn=3.93 W  e=2.175e-12 J/flop  sm=1905 cap=0.94
+  [scan gemm_fp16_4096 r1 2.5 ms] t_burst=2.80 ms  burst_rate=9.808e+13  floor=88.34  P=89.35 (avg1s 88.83)  dyn=1.01 W  e=9.145e-13 J/flop  sm=1897 cap=0.95
+  [scan gemm_fp16_4096 r1 4.0 ms] t_burst=4.15 ms  burst_rate=9.927e+13  floor=88.14  P=88.49 (avg1s 88.72)  dyn=0.36 W  e=4.891e-13 J/flop  sm=1900 cap=0.61
+  [scan gemm_fp16_4096 r1 6.0 ms] t_burst=5.51 ms  burst_rate=9.982e+13  floor=88.18  P=88.33 (avg1s 87.96)  dyn=0.14 W  e=1.710e-13 J/flop  sm=1893 cap=0.50
+idle_post: {"n_samples": 461, "p_energy_w": 5.678004824339253, "energy_counter_updates": 50, "energy_counter_period_s": 0.09994528244952766, "p_inst_w": 73.60967462039045, "p_avg_w": 71.9908, "sm_mhz": 1856.9088937093275, "mem_mhz": 7601.0, "temp_c": 39.61605206073753, "frac_sw_power_cap": 0.8676789587852495, "frac_thermal": 0.0, "frac_hw_slowdown": 0.0, "p_w": 73.60967462039045, "energy_counter_over_inst": 0.07713666516828213, "duration_s": 5.000073432922363, "waited_s": 32.10098743438721}
+
+point                        BW GB/s   TFLOPS      P W   dyn W  SMMHz   cap   J/byte dyn    pJ/flop
+wrote microbench/results_A5000_burstscan.json
+==== microbench end Thu Sep 24 16:44:24 EDT 2026 ====

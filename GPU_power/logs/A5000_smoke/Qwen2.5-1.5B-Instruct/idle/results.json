@@ -1,0 +1,14 @@
+{
+  "mode": "idle",
+  "idle_power_w": 57.977000000000004,
+  "nvml_summary": {
+    "gpu_name": "NVIDIA RTX A5000",
+    "power_limit_w": 100.0,
+    "n_samples": 1501,
+    "duration_s": 15.000765323638916,
+    "mean_power_w": 58.23494337108595,
+    "median_power_w": 57.977000000000004,
+    "max_power_w": 61.448,
+    "min_power_w": 57.947
+  }
+}

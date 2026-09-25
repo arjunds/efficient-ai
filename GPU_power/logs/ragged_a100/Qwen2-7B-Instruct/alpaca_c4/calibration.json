@@ -1,0 +1,22 @@
+{
+  "run_dir": "logs/ragged_a100/Qwen2-7B-Instruct/alpaca_c4",
+  "phase": "decode",
+  "bin_s": 0.2,
+  "n_bins": 239,
+  "n_iters_total": 4199,
+  "weight_bytes": 14140571648.0,
+  "kv_bytes_per_token": 57344.0,
+  "byte_source": "models.py:Qwen2-7B-Instruct",
+  "idle_power_w": 73.677,
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.8730792921345795e-10,
+  "e_bit_aggregate": 1.8820850449985046e-10,
+  "p_static_w": 73.677,
+  "e_bit_joint": 4.649767801839465e-11,
+  "p_static_joint": 239.6115523910927,
+  "r2_energy": -0.6864983119004562,
+  "r2_power": -1.2014356135571647,
+  "mean_power_w": 294.061904045843,
+  "mean_bytes_per_bin": 233849699597.92468,
+  "mean_dynamic_power_w": 220.37873082743388
+}

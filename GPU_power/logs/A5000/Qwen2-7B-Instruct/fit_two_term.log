@@ -1,0 +1,14 @@
+{
+  "n_runs": 8,
+  "n_bins": 2456,
+  "e_bit_j_per_byte": 2.2938125054203176e-10,
+  "e_flop_j_per_flop": 1.9766363318843957e-13,
+  "e_flop_pJ_per_flop": 0.19766363318843957,
+  "r2_dynamic_energy": -42.13477643815217,
+  "bytes_flops_pearson": -0.21115502721698085,
+  "identifiable": true,
+  "arithmetic_intensity_min": 0.5,
+  "arithmetic_intensity_max": 3853.0630625764616,
+  "ai_span_ratio": 7706.126125152923,
+  "glob": "logs/A5000/Qwen2-7B-Instruct/*"
+}

@@ -1,0 +1,14 @@
+{
+  "n_runs": 10,
+  "n_bins": 2431,
+  "e_bit_j_per_byte": 1.8291337811330448e-10,
+  "e_flop_j_per_flop": 7.483745280950915e-13,
+  "e_flop_pJ_per_flop": 0.7483745280950915,
+  "r2_dynamic_energy": -1.2530226957001278,
+  "bytes_flops_pearson": -0.7010193229291726,
+  "identifiable": true,
+  "arithmetic_intensity_min": 0.8341883586950506,
+  "arithmetic_intensity_max": 3727.8534273886107,
+  "ai_span_ratio": 4468.838948100666,
+  "glob": "logs/ragged_a100/gemma-7b/*"
+}

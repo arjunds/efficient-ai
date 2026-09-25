@@ -1,0 +1,285 @@
+======================================================================
+[2026-08-11 01:33:11] RAGGED MODEL Qwen2.5-0.5B-Instruct
+======================================================================
+[2026-08-11 01:33:11] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2.5-0.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/idle --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --duration_s 15
+[2026-08-11 01:36:34] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-0.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_c1 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 1 --duration_s 45
+[2026-08-11 01:37:46] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_c1
+[2026-08-11 01:37:49] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_c1 --phase decode
+[2026-08-11 01:37:52] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_c1
+[2026-08-11 01:37:54] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-0.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_c4 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 4 --duration_s 45
+[2026-08-11 01:39:04] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_c4
+[2026-08-11 01:39:07] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_c4 --phase decode
+[2026-08-11 01:39:10] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_c4
+[2026-08-11 01:39:13] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-0.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_c16 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 16 --duration_s 45
+[2026-08-11 01:40:23] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_c16
+[2026-08-11 01:40:26] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_c16 --phase decode
+[2026-08-11 01:40:29] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_c16
+[2026-08-11 01:40:32] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-0.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_c64 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 64 --duration_s 45
+[2026-08-11 01:41:43] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_c64
+[2026-08-11 01:41:46] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_c64 --phase decode
+[2026-08-11 01:41:48] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_c64
+[2026-08-11 01:41:51] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-0.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_poisson8 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --arrival_rate 8 --duration_s 45
+[2026-08-11 01:43:02] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_poisson8
+[2026-08-11 01:43:05] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_poisson8 --phase decode
+[2026-08-11 01:43:07] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/alpaca_poisson8
+[2026-08-11 01:43:10] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-0.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_c1 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 1 --duration_s 45
+[2026-08-11 01:44:20] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_c1
+[2026-08-11 01:44:23] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_c1 --phase decode
+[2026-08-11 01:44:25] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_c1
+[2026-08-11 01:44:28] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-0.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_c4 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 4 --duration_s 45
+[2026-08-11 01:45:39] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_c4
+[2026-08-11 01:45:41] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_c4 --phase decode
+[2026-08-11 01:45:44] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_c4
+[2026-08-11 01:45:47] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-0.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_c16 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 16 --duration_s 45
+[2026-08-11 01:46:57] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_c16
+[2026-08-11 01:47:00] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_c16 --phase decode
+[2026-08-11 01:47:03] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_c16
+[2026-08-11 01:47:05] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-0.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_c64 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 64 --duration_s 45
+[2026-08-11 01:48:17] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_c64
+[2026-08-11 01:48:20] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_c64 --phase decode
+[2026-08-11 01:48:22] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_c64
+[2026-08-11 01:48:25] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-0.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_poisson8 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --arrival_rate 8 --duration_s 45
+[2026-08-11 01:49:36] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_poisson8
+[2026-08-11 01:49:39] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_poisson8 --phase decode
+[2026-08-11 01:49:41] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-0.5B-Instruct/sharegpt_poisson8
+[2026-08-11 01:49:44] RUN: /usr/bin/python3 -u fit_two_term.py --glob logs/ragged_ladder/Qwen2.5-0.5B-Instruct/* --out logs/ragged_ladder/Qwen2.5-0.5B-Instruct/two_term_fit.json
+[2026-08-11 01:49:44] Qwen2.5-0.5B-Instruct two-term: e_bit=1.3488772908274542e-10 e_flop_pJ=1.16327159825792 R2=0.7172445753492294 identifiable=True AI_span=399.6038747503404
+[2026-08-11 01:49:44] wrote logs/ragged_ladder/two_term_summary.csv
+======================================================================
+[2026-08-11 01:49:44] RAGGED MODEL Qwen2.5-1.5B-Instruct
+======================================================================
+[2026-08-11 01:49:44] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2.5-1.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/idle --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --duration_s 15
+[2026-08-11 01:57:37] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-1.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c1 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 1 --duration_s 45
+[2026-08-11 01:58:46] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c1
+[2026-08-11 01:58:49] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c1 --phase decode
+[2026-08-11 01:58:52] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c1
+[2026-08-11 01:58:55] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-1.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c4 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 4 --duration_s 45
+[2026-08-11 02:00:05] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c4
+[2026-08-11 02:00:08] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c4 --phase decode
+[2026-08-11 02:00:11] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c4
+[2026-08-11 02:00:14] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-1.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c16 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 16 --duration_s 45
+[2026-08-11 02:01:25] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c16
+[2026-08-11 02:01:28] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c16 --phase decode
+[2026-08-11 02:01:30] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c16
+[2026-08-11 02:01:33] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-1.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c64 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 64 --duration_s 45
+[2026-08-11 02:02:44] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c64
+[2026-08-11 02:02:47] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c64 --phase decode
+[2026-08-11 02:02:50] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_c64
+[2026-08-11 02:02:52] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-1.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_poisson8 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --arrival_rate 8 --duration_s 45
+[2026-08-11 02:04:02] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_poisson8
+[2026-08-11 02:04:05] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_poisson8 --phase decode
+[2026-08-11 02:04:08] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/alpaca_poisson8
+[2026-08-11 02:04:11] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-1.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_c1 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 1 --duration_s 45
+[2026-08-11 02:05:20] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_c1
+[2026-08-11 02:05:23] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_c1 --phase decode
+[2026-08-11 02:05:26] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_c1
+[2026-08-11 02:05:29] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-1.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_c4 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 4 --duration_s 45
+[2026-08-11 02:06:39] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_c4
+[2026-08-11 02:06:42] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_c4 --phase decode
+[2026-08-11 02:06:45] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_c4
+[2026-08-11 02:06:48] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-1.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_c16 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 16 --duration_s 45
+[2026-08-11 02:07:59] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_c16
+[2026-08-11 02:08:02] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_c16 --phase decode
+[2026-08-11 02:08:04] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_c16
+[2026-08-11 02:08:07] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-1.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_c64 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 64 --duration_s 45
+[2026-08-11 02:09:18] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_c64
+[2026-08-11 02:09:21] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_c64 --phase decode
+[2026-08-11 02:09:24] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_c64
+[2026-08-11 02:09:27] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-1.5B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_poisson8 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --arrival_rate 8 --duration_s 45
+[2026-08-11 02:10:38] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_poisson8
+[2026-08-11 02:10:40] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_poisson8 --phase decode
+[2026-08-11 02:10:43] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-1.5B-Instruct/sharegpt_poisson8
+[2026-08-11 02:10:46] RUN: /usr/bin/python3 -u fit_two_term.py --glob logs/ragged_ladder/Qwen2.5-1.5B-Instruct/* --out logs/ragged_ladder/Qwen2.5-1.5B-Instruct/two_term_fit.json
+[2026-08-11 02:10:46] Qwen2.5-1.5B-Instruct two-term: e_bit=1.1837143571301214e-10 e_flop_pJ=0.937203510569117 R2=0.728342551939515 identifiable=True AI_span=489.2006542455663
+[2026-08-11 02:10:46] wrote logs/ragged_ladder/two_term_summary.csv
+======================================================================
+[2026-08-11 02:10:46] RAGGED MODEL Qwen2.5-3B-Instruct
+======================================================================
+[2026-08-11 02:10:46] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2.5-3B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/idle --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --duration_s 15
+[2026-08-11 02:17:15] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-3B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c1 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 1 --duration_s 45
+[2026-08-11 02:18:28] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c1
+[2026-08-11 02:18:31] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c1 --phase decode
+[2026-08-11 02:18:34] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c1
+[2026-08-11 02:18:36] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-3B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c4 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 4 --duration_s 45
+[2026-08-11 02:19:48] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c4
+[2026-08-11 02:19:51] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c4 --phase decode
+[2026-08-11 02:19:54] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c4
+[2026-08-11 02:19:56] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-3B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c16 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 16 --duration_s 45
+[2026-08-11 02:21:08] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c16
+[2026-08-11 02:21:11] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c16 --phase decode
+[2026-08-11 02:21:14] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c16
+[2026-08-11 02:21:17] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-3B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c64 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 64 --duration_s 45
+[2026-08-11 02:22:29] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c64
+[2026-08-11 02:22:32] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c64 --phase decode
+[2026-08-11 02:22:35] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_c64
+[2026-08-11 02:22:37] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-3B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_poisson8 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --arrival_rate 8 --duration_s 45
+[2026-08-11 02:23:49] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_poisson8
+[2026-08-11 02:23:52] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_poisson8 --phase decode
+[2026-08-11 02:23:55] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/alpaca_poisson8
+[2026-08-11 02:23:58] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-3B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_c1 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 1 --duration_s 45
+[2026-08-11 02:25:08] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_c1
+[2026-08-11 02:25:10] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_c1 --phase decode
+[2026-08-11 02:25:13] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_c1
+[2026-08-11 02:25:16] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-3B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_c4 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 4 --duration_s 45
+[2026-08-11 02:26:27] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_c4
+[2026-08-11 02:26:30] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_c4 --phase decode
+[2026-08-11 02:26:32] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_c4
+[2026-08-11 02:26:35] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-3B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_c16 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 16 --duration_s 45
+[2026-08-11 02:27:47] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_c16
+[2026-08-11 02:27:50] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_c16 --phase decode
+[2026-08-11 02:27:53] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_c16
+[2026-08-11 02:27:56] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-3B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_c64 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 64 --duration_s 45
+[2026-08-11 02:29:08] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_c64
+[2026-08-11 02:29:11] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_c64 --phase decode
+[2026-08-11 02:29:14] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_c64
+[2026-08-11 02:29:16] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-3B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_poisson8 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --arrival_rate 8 --duration_s 45
+[2026-08-11 02:30:29] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_poisson8
+[2026-08-11 02:30:32] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_poisson8 --phase decode
+[2026-08-11 02:30:34] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-3B-Instruct/sharegpt_poisson8
+[2026-08-11 02:30:37] RUN: /usr/bin/python3 -u fit_two_term.py --glob logs/ragged_ladder/Qwen2.5-3B-Instruct/* --out logs/ragged_ladder/Qwen2.5-3B-Instruct/two_term_fit.json
+[2026-08-11 02:30:37] Qwen2.5-3B-Instruct two-term: e_bit=1.1432487290582317e-10 e_flop_pJ=0.8507805973730708 R2=0.6837178731434082 identifiable=True AI_span=1109.9067120853072
+[2026-08-11 02:30:37] wrote logs/ragged_ladder/two_term_summary.csv
+======================================================================
+[2026-08-11 02:30:37] RAGGED MODEL Qwen2.5-7B-Instruct
+======================================================================
+[2026-08-11 02:30:37] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2.5-7B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/idle --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --duration_s 15
+[2026-08-11 02:47:00] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-7B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_c1 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 1 --duration_s 45
+[2026-08-11 02:48:13] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_c1
+[2026-08-11 02:48:15] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_c1 --phase decode
+[2026-08-11 02:48:18] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_c1
+[2026-08-11 02:48:21] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-7B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_c4 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 4 --duration_s 45
+[2026-08-11 02:49:35] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_c4
+[2026-08-11 02:49:37] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_c4 --phase decode
+[2026-08-11 02:49:40] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_c4
+[2026-08-11 02:49:43] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-7B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_c16 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 16 --duration_s 45
+[2026-08-11 02:50:56] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_c16
+[2026-08-11 02:50:59] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_c16 --phase decode
+[2026-08-11 02:51:02] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_c16
+[2026-08-11 02:51:04] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-7B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_c64 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 64 --duration_s 45
+[2026-08-11 02:52:18] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_c64
+[2026-08-11 02:52:21] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_c64 --phase decode
+[2026-08-11 02:52:24] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_c64
+[2026-08-11 02:52:27] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-7B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_poisson8 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --arrival_rate 8 --duration_s 45
+[2026-08-11 02:53:40] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_poisson8
+[2026-08-11 02:53:43] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_poisson8 --phase decode
+[2026-08-11 02:53:46] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/alpaca_poisson8
+[2026-08-11 02:53:49] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-7B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c1 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 1 --duration_s 45
+[2026-08-11 02:55:01] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c1
+[2026-08-11 02:55:04] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c1 --phase decode
+[2026-08-11 02:55:07] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c1
+[2026-08-11 02:55:09] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-7B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c4 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 4 --duration_s 45
+[2026-08-11 02:56:22] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c4
+[2026-08-11 02:56:25] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c4 --phase decode
+[2026-08-11 02:56:28] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c4
+[2026-08-11 02:56:30] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-7B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c16 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 16 --duration_s 45
+[2026-08-11 02:57:44] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c16
+[2026-08-11 02:57:46] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c16 --phase decode
+[2026-08-11 02:57:49] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c16
+[2026-08-11 02:57:52] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-7B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c64 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 64 --duration_s 45
+[2026-08-11 02:59:07] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c64
+[2026-08-11 02:59:09] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c64 --phase decode
+[2026-08-11 02:59:12] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_c64
+[2026-08-11 02:59:15] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-7B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_poisson8 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --arrival_rate 8 --duration_s 45
+[2026-08-11 03:00:29] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_poisson8
+[2026-08-11 03:00:31] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_poisson8 --phase decode
+[2026-08-11 03:00:34] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-7B-Instruct/sharegpt_poisson8
+[2026-08-11 03:00:37] RUN: /usr/bin/python3 -u fit_two_term.py --glob logs/ragged_ladder/Qwen2.5-7B-Instruct/* --out logs/ragged_ladder/Qwen2.5-7B-Instruct/two_term_fit.json
+[2026-08-11 03:00:37] Qwen2.5-7B-Instruct two-term: e_bit=1.0993362496321587e-10 e_flop_pJ=0.8361890337745771 R2=0.6482830536171454 identifiable=True AI_span=1747.8538180380426
+[2026-08-11 03:00:37] wrote logs/ragged_ladder/two_term_summary.csv
+======================================================================
+[2026-08-11 03:00:37] RAGGED MODEL Qwen2.5-14B-Instruct
+======================================================================
+[2026-08-11 03:00:37] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2.5-14B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/idle --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --duration_s 15
+[2026-08-11 03:27:52] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-14B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_c1 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 1 --duration_s 45
+[2026-08-11 03:29:11] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_c1
+[2026-08-11 03:29:14] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_c1 --phase decode
+[2026-08-11 03:29:17] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_c1
+[2026-08-11 03:29:19] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-14B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_c4 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 4 --duration_s 45
+[2026-08-11 03:30:37] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_c4
+[2026-08-11 03:30:40] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_c4 --phase decode
+[2026-08-11 03:30:43] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_c4
+[2026-08-11 03:30:46] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-14B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_c16 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 16 --duration_s 45
+[2026-08-11 03:32:05] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_c16
+[2026-08-11 03:32:07] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_c16 --phase decode
+[2026-08-11 03:32:10] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_c16
+[2026-08-11 03:32:13] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-14B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_c64 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 64 --duration_s 45
+[2026-08-11 03:33:33] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_c64
+[2026-08-11 03:33:35] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_c64 --phase decode
+[2026-08-11 03:33:38] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_c64
+[2026-08-11 03:33:41] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-14B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_poisson8 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --arrival_rate 8 --duration_s 45
+[2026-08-11 03:34:59] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_poisson8
+[2026-08-11 03:35:02] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_poisson8 --phase decode
+[2026-08-11 03:35:04] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/alpaca_poisson8
+[2026-08-11 03:35:07] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-14B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c1 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 1 --duration_s 45
+[2026-08-11 03:36:26] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c1
+[2026-08-11 03:36:28] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c1 --phase decode
+[2026-08-11 03:36:31] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c1
+[2026-08-11 03:36:34] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-14B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c4 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 4 --duration_s 45
+[2026-08-11 03:37:53] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c4
+[2026-08-11 03:37:55] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c4 --phase decode
+[2026-08-11 03:37:58] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c4
+[2026-08-11 03:38:01] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-14B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c16 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 16 --duration_s 45
+[2026-08-11 03:39:20] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c16
+[2026-08-11 03:39:23] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c16 --phase decode
+[2026-08-11 03:39:25] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c16
+[2026-08-11 03:39:28] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-14B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c64 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 64 --duration_s 45
+[2026-08-11 03:40:48] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c64
+[2026-08-11 03:40:51] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c64 --phase decode
+[2026-08-11 03:40:54] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_c64
+[2026-08-11 03:40:57] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-14B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_poisson8 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --arrival_rate 8 --duration_s 45
+[2026-08-11 03:42:16] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_poisson8
+[2026-08-11 03:42:18] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_poisson8 --phase decode
+[2026-08-11 03:42:21] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-14B-Instruct/sharegpt_poisson8
+[2026-08-11 03:42:24] RUN: /usr/bin/python3 -u fit_two_term.py --glob logs/ragged_ladder/Qwen2.5-14B-Instruct/* --out logs/ragged_ladder/Qwen2.5-14B-Instruct/two_term_fit.json
+[2026-08-11 03:42:24] Qwen2.5-14B-Instruct two-term: e_bit=1.1247993374516619e-10 e_flop_pJ=0.76624058626361 R2=0.5183794137020916 identifiable=True AI_span=3593.8723313121127
+[2026-08-11 03:42:24] wrote logs/ragged_ladder/two_term_summary.csv
+======================================================================
+[2026-08-11 03:42:24] RAGGED MODEL Qwen2.5-32B-Instruct
+======================================================================
+[2026-08-11 03:42:24] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/idle --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --duration_s 15
+[2026-08-11 04:45:49] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c1 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 1 --duration_s 45
+[2026-08-11 05:01:10] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c1
+[2026-08-11 05:01:26] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c1 --phase decode
+[2026-08-11 05:01:29] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c1
+[2026-08-11 05:01:32] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c4 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 4 --duration_s 45
+[2026-08-11 05:16:55] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c4
+[2026-08-11 05:16:59] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c4 --phase decode
+[2026-08-11 05:17:02] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c4
+[2026-08-11 05:17:05] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c16 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 16 --duration_s 45
+[2026-08-11 05:19:31] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c16
+[2026-08-11 05:19:34] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c16 --phase decode
+[2026-08-11 05:19:37] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c16
+[2026-08-11 05:19:40] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c64 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 64 --duration_s 45
+[2026-08-11 05:21:26] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c64
+[2026-08-11 05:21:29] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c64 --phase decode
+[2026-08-11 05:21:32] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_c64
+[2026-08-11 05:21:34] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_poisson8 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --arrival_rate 8 --duration_s 45
+[2026-08-11 05:23:19] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_poisson8
+[2026-08-11 05:23:21] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_poisson8 --phase decode
+[2026-08-11 05:23:24] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/alpaca_poisson8
+[2026-08-11 05:23:27] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c1 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 1 --duration_s 45
+[2026-08-11 05:24:59] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c1
+[2026-08-11 05:25:02] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c1 --phase decode
+[2026-08-11 05:25:04] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c1
+[2026-08-11 05:25:07] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c4 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 4 --duration_s 45
+[2026-08-11 05:26:37] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c4
+[2026-08-11 05:26:42] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c4 --phase decode
+[2026-08-11 05:26:44] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c4
+[2026-08-11 05:26:47] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c16 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 16 --duration_s 45
+[2026-08-11 05:28:19] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c16
+[2026-08-11 05:28:22] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c16 --phase decode
+[2026-08-11 05:28:24] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c16
+[2026-08-11 05:28:27] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c64 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --concurrency 64 --duration_s 45
+[2026-08-11 05:30:01] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c64
+[2026-08-11 05:30:04] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c64 --phase decode
+[2026-08-11 05:30:06] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c64
+[2026-08-11 05:30:09] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_poisson8 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task sharegpt --arrival_rate 8 --duration_s 45
+[2026-08-11 05:31:40] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_poisson8
+[2026-08-11 05:31:43] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_poisson8 --phase decode
+[2026-08-11 05:31:46] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_poisson8
+[2026-08-11 05:31:49] RUN: /usr/bin/python3 -u fit_two_term.py --glob logs/ragged_ladder/Qwen2.5-32B-Instruct/* --out logs/ragged_ladder/Qwen2.5-32B-Instruct/two_term_fit.json
+[2026-08-11 05:31:49] Qwen2.5-32B-Instruct two-term: e_bit=1.1574619921849376e-10 e_flop_pJ=0.6078270562023079 R2=0.2541641788576783 identifiable=True AI_span=5678.405172500214
+[2026-08-11 05:31:49] wrote logs/ragged_ladder/two_term_summary.csv
+======================================================================
+[2026-08-11 05:31:49] RAGGED SWEEP COMPLETE
+======================================================================

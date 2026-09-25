@@ -306,41 +306,68 @@ the same narrow window the coefficient fitting needs.
 
 ---
 
-# UPDATE 3: hardware counters (2026-09-25) — gotcha #5 answered, and the
-# scaling law DOES hold for the DRAM channel
+# RECONCILIATION (2026-09-24, H200 cluster) — one consistent convention
+
+The reconstructed `models.py` counted **both** embedding tables in `active_params`
+(= total params); the canonical file (the one the whole H200 corpus used, restored
+to the repo) counts lm_head once and **excludes the input-embedding gather**, which
+reads only the batch's rows (e.g. Qwen2-7B: 7.070B vs 7.615B, exactly one
+152064×3584 table). Its "validation anchor" `8.03e9` is the synthetic placeholder in
+`energy_profile_load.py::run_self_test`, not the real accounting. All 30 B200 runs
+were re-binned with the canonical file (`reconcile_gpus.py`,
+`gpu_coefficients.json`, `realized_utilization.csv`).
+
+| | direct c=1 J/byte, Qwen2-7B | 3-term `e_wbyte` [95% CI] | `e_gemm` | R² / held-out | MBU (7B c=1) |
+|---|---|---|---|---|---|
+| H200 | **1.076e-10** | 1.076e-10 [1.073, 1.080] | 0.680 pJ | 0.80 / 7.0% | 0.49 |
+| B200 | **1.252e-10** | 1.252e-10 [1.247, 1.257] | 0.539 pJ | 0.65 / 9.0% | 0.33 |
+| 1/BW-law prediction for B200 | 0.646e-10 | | 0.296 pJ | | |
+
+- **B200/H200 energy per byte = 1.16** (law predicted 0.60). The direct-table ratio
+  above (1.163/0.997 = 1.17) was already self-consistent; the fitted-coefficient
+  comparison (1.189 vs 1.077) mixed conventions and is superseded (1.16).
+- Within-GPU invariance holds tightly: H200 7B–32B 1.03–1.08e-10 (MBU 0.41→0.67);
+  B200 7B/32B/72B 1.24–1.26e-10 (MBU 0.31→0.62).
+- **Caveat:** at very low utilization J/byte inflates (H200 Qwen2.5-0.5B 1.26e-10 at
+  MBU 0.05; 1.5B 1.13e-10 at MBU 0.13) — per-iteration fixed energy not
+  proportional to bytes. Invariance is a statement about MBU ≳ 0.2.
+- Open: why B200 is +16% per byte on the same memory technology (dual-die NV-HBI
+  crossing? load-dependent baseline above idle?). Being tested with microbenchmarks.
+
+---
+
+# UPDATE 3: hardware counters (2026-09-25, B200) — gotcha #5 answered
 
 `logs/B200_ncu/`. Nsight Compute on a batch=1 Qwen2-7B decode, 3004 kernels,
-5 memory-hierarchy metrics. **Counter permission is GRANTED on this cluster** —
-the `ERR_NVGPUCTRPERM` wall that blocked this on the old cluster is gone, so the
-analytic byte model has now been validated against hardware for the first time
-in this project.
+5 memory-hierarchy metrics. **Counter permission is GRANTED on the PARCC
+cluster** — the `ERR_NVGPUCTRPERM` wall is gone here (unlike the A5000 node).
+Numbers below use the CANONICAL `models.py`, so they compose with the
+RECONCILIATION section above.
 
 ## Q1 — the analytic byte model is correct to 0.4%
 
 | | |
 |---|---|
-| measured DRAM traffic | 113.6 GB over 8 forward passes = **14.20 GB/pass** |
-| analytic prediction | **14.14 GB/pass** |
+| measured DRAM | 113.6 GB over 8 forward passes = **14.20 GB/pass** |
+| canonical analytic | `active_params x 2` = **14.14 GB/pass** |
 | **ratio** | **1.004** |
 
-The denominator under every coefficient in this project is sound. Two accounting
-details were needed to get there, and both are real corrections:
+Gate #1 passes. The denominator under every coefficient in this corpus is sound.
+
+**This independently confirms the canonical convention.** Two accounting details
+were required, and both match what the canonical file already does:
 
 1. **Pass count.** vLLM's prefill emits the *first* output token, so
-   `max_tokens=N` means **N** forward passes, not N+1. Using N+1 gave 0.829.
-2. **The embedding table.** `active_params()` counts `embed_tokens` *and*
-   `lm_head`. `lm_head` genuinely is streamed (a GEMM over the vocab), but during
-   decode `embed_tokens` is a **lookup of one row (~7 KB)**, not a 1.09 GB read.
-   Counting it inflates expected weight traffic by ~7% for Qwen2-7B.
-
-`models.py` is unchanged: this 7% applies **equally to H200 and B200**, so it
-cancels in every cross-GPU ratio and does not affect the scaling-law test. It
-does mean absolute `e_wbyte` values are ~7% low in J-per-actually-streamed-byte
-terms. Worth fixing before anyone quotes an absolute figure.
+   `max_tokens=N` is **N** forward passes, not N+1. (N+1 gave 0.829.)
+2. **The input-embedding gather is not streamed.** Using the reconstructed
+   file's `active_params` (which counted both tables) gives **0.932**; using the
+   canonical one (lm_head once, input embed excluded) gives **1.004**. The
+   hardware agrees with the canonical file's own comment, "input embed is a
+   lookup" — arrived at from opposite directions.
 
 ## Q2 — the lumped coefficient spans the whole memory hierarchy
 
-Measured traffic per analytic (streamed) byte, on the real serving workload:
+Measured traffic per canonical analytic byte, on the real serving workload:
 
 | channel | bytes / analytic byte |
 |---|---|
@@ -350,66 +377,54 @@ Measured traffic per analytic (streamed) byte, on the real serving workload:
 | L1 | 0.002 |
 | shared | 0.004 |
 
-Every weight byte pulled from HBM crosses L2 roughly **1.9 times** and the TMA
-path ~1.2 times. Combining those measured ratios with the group's per-channel
-energy coefficients:
+Every weight byte pulled from HBM crosses L2 roughly **1.9x** and the TMA path
+~1.2x. Combining those measured ratios with the group's per-channel energies
+(`results/coefficients/pooled_phys3_*.json`, B200 GEMM microbenchmarks):
 
 | | value | vs |
 |---|---|---|
-| **DRAM channel alone** | **0.664e-10** | scaling-law prediction 0.646e-10 → **+3%** |
-| full hierarchy sum (OLS) | 1.001e-10 | our measured `e_wbyte` 1.189e-10 → −16% |
-| full hierarchy sum (WLS) | 1.142e-10 | our measured `e_wbyte` 1.189e-10 → **−4%** |
+| **DRAM channel alone** | **0.664e-10** | 1/BW-law prediction 0.646e-10 → **+3%** |
+| full hierarchy (OLS) | 1.001e-10 | canonical `e_wbyte` 1.252e-10 → −20% |
+| full hierarchy (WLS) | 1.142e-10 | canonical `e_wbyte` 1.252e-10 → −9% |
 
-**This reframes the headline.** `e_byte ∝ 1/HBM_bandwidth` appears to hold for
-the DRAM channel — to within 3%. What fails is applying it to our *lumped*
-`e_wbyte`, which is ~1.8x larger because it also carries the L2 and TMA traffic
-that every streamed byte incurs, and that on-chip traffic does not scale with
-HBM bandwidth.
+So the 1/BW law appears to hold for the **DRAM channel** (+3%). What fails is
+applying it to a *lumped* coefficient that also carries on-chip traffic which
+does not scale with HBM bandwidth. That is consistent with, not contrary to, the
+A5000 result: across memory *technologies* (GDDR6 vs HBM3e) the DRAM term itself
+shifts, which is why `FINDINGS_A5000.md` finds energy/byte set by technology.
+
+## Bearing on the open "+16% B200 vs H200" question
+
+The RECONCILIATION section asks why B200 costs +16% per byte on the same memory
+technology. This decomposition offers a testable answer: only ~53% of B200's
+lumped coefficient is DRAM; the rest is on-chip (L2 1.86x, TMA 1.16x). If H200
+moves fewer on-chip bytes per analytic byte — plausible given B200's dual-die
+layout and NV-HBI crossing — that difference lands entirely in the lumped
+number. **Running this same NCU capture on H200 would settle it**, but H200
+access was revoked 2026-09-24, so it may only be answerable from the archived
+logs or not at all.
 
 ## What is ours and what is borrowed
 
-Being precise about the evidence chain, because the conclusion leans on someone
-else's numbers:
+* **Measured here:** the traffic ratios, and the lumped `e_wbyte`. Real serving
+  workload, B200.
+* **Borrowed:** per-channel *energies* from the colleague's GEMM
+  microbenchmarks. NCU replay destroys the power waveform, so traffic and energy
+  cannot be captured in one run. Their OLS/WLS fits differ ~15%, which is why
+  the reconstruction spans −9% to −20%, and why the +3% DRAM agreement is soft.
 
-* **Measured here:** the lumped `e_wbyte` (1.189e-10), and the per-channel
-  traffic ratios above. Both on the real vLLM serving workload.
-* **Borrowed:** the per-channel *energies* (`dram` 6.6e-11, `l2` 1.7–3.8e-11,
-  ...) from a colleague's B200 GEMM microbenchmarks. We cannot measure those
-  ourselves: NCU kernel replay destroys the power waveform, so traffic and
-  energy cannot be captured in one run.
-* Their OLS and WLS fits disagree by ~15%, which is why the reconstruction lands
-  anywhere from −4% to −16%. The +3% DRAM agreement is correspondingly soft —
-  it is essentially their DRAM coefficient agreeing with the H200-scaled
-  prediction, which we noted before this run.
+Traffic amplification is **established**; energy attribution is **supported but
+not independently verified here**.
 
-So: the traffic amplification is **established**; the energy attribution is
-**strongly supported but not independently verified here**.
+## Method note (this cost 75 min of B200 to get wrong twice)
 
-## Does this rescue the recommender?
-
-Partly, and not in the convenient direction. Correcting `e_wbyte` to
-J-per-actually-streamed-byte makes it 1.189e-10 x (15.23/14.14) = **1.281e-10**,
-so the gap to the 0.646e-10 prediction *widens* from +84% to +98%. A recommender
-that scales a lumped byte coefficient by datasheet bandwidth is still wrong by
-~2x. The fix is to model the channels separately — scale the DRAM term by
-bandwidth and treat the on-chip terms as architecture constants — rather than to
-keep one lumped coefficient and scale it.
-
-The direct-measurement result is untouched: J per byte of *analytic* traffic is
-flat at 1.16–1.24e-10 across 7B/32B/72B and a 1.8x span of realized bandwidth.
-That was never a claim about DRAM physics; it is a claim about what a serving
-workload actually costs, and it stands.
-
-## Method note for anyone repeating this
-
-NCU **kernel** replay is unusable here: ~20 s/kernel x ~2500 kernels ≈ 14 hours,
-and two attempts timed out with partial captures. `--replay-mode application`
-re-runs the whole process once per metric pass-group and finished in **10.5
-minutes**. Also required: `--profile-from-start off` with
-`cudaProfilerStart/Stop` around only the measured generate (otherwise the 15 GB
-weight upload and FlashInfer's JIT autotuner land in the counts), a warmup pass
-outside the profiled region, and a **distinct warmup prompt** so vLLM's automatic
-prefix caching does not let the measured generate skip its prefill.
-`ncu_hierarchy.py` now refuses to interpret a capture whose DRAM/analytic ratio
-is physically impossible — a truncated profile otherwise produces a small ratio
-that reads like a real finding.
+NCU **kernel** replay is unusable on an LLM decode: ~20 s/kernel x ~2500 kernels
+≈ 14 h; two runs timed out with partial captures. **`--replay-mode application`**
+re-runs the process once per metric pass-group and finished in **10.5 min**.
+Also required: `--profile-from-start off` with `cudaProfilerStart/Stop` around
+only the measured `generate` (otherwise the 15 GB weight upload and FlashInfer's
+JIT autotuner land in the counts), a warmup outside the profiled region, and a
+**distinct warmup prompt** so vLLM prefix caching does not let the measured
+generate skip its prefill. `ncu_hierarchy.py` now refuses to interpret a capture
+whose DRAM/analytic ratio is physically impossible — a truncated profile
+otherwise yields a small ratio that reads exactly like a real finding.

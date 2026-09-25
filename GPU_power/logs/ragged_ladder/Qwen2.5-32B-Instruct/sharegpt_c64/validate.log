@@ -1,0 +1,18 @@
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+[warn] matplotlib unavailable, skipping plot: No module named 'matplotlib'
+{
+  "run_dir": "logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c64",
+  "calibration": "logs/ragged_ladder/Qwen2.5-32B-Instruct/sharegpt_c64/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 255,
+    "rmse_w": 223.81201343847184,
+    "mae_w": 148.4309012141753,
+    "r2": -37.971884636122134,
+    "mean_measured_w": 641.9281698803187,
+    "mean_predicted_w": 555.6914457533678,
+    "mean_abs_pct_err": 23.122665148321627
+  },
+  "plot": null
+}

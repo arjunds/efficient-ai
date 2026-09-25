@@ -1,0 +1,37 @@
+cpu-bind=MASK - node-d1, task  0  0 [1614264]: mask 0x1c00001c000 set
+==== A5000 sweep start Thu Sep 24 16:04:05 EDT 2026 on node-d1.cl.upenn.edu ====
+name, pci.bus_id, power.limit [W], power.default_limit [W], memory.total [MiB], clocks.max.sm [MHz], clocks.max.memory [MHz], driver_version
+NVIDIA RTX A5000, 00000000:CA:00.0, 100.00 W, 230.00 W, 24564 MiB, 2100 MHz, 8001 MHz, 565.57.01
+{
+  "bw": 768000000000.0,
+  "peak_flops": 111100000000000.0,
+  "p_cap": 100.0,
+  "tdp_w": 230.0,
+  "gpu_name": "NVIDIA RTX A5000",
+  "mem_tech": "GDDR6 384-bit 16 Gbps",
+  "note": "peak_flops = DENSE fp16 tensor w/ fp32 acc (222.2 sparse / 2); p_cap = ENFORCED limit (admin-set), not TDP"
+}
+======================================================================
+[2026-09-24 16:04:05] RAGGED MODEL Qwen2-7B-Instruct
+======================================================================
+[2026-09-24 16:04:05] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A5000/Qwen2-7B-Instruct/idle --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --duration_s 15.0
+[2026-09-24 16:07:30] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A5000/Qwen2-7B-Instruct/alpaca_c1 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 1 --duration_s 45.0
+[2026-09-24 16:09:07] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A5000/Qwen2-7B-Instruct/alpaca_c1
+[2026-09-24 16:09:07] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/A5000/Qwen2-7B-Instruct/alpaca_c1 --phase decode
+[2026-09-24 16:09:07] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/A5000/Qwen2-7B-Instruct/alpaca_c1
+[2026-09-24 16:09:07] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A5000/Qwen2-7B-Instruct/alpaca_c64 --gpu_id 0 --max_model_len 8192 --gpu_memory_utilization 0.9 --output_len 256 --task alpaca --concurrency 64 --duration_s 45.0
+[2026-09-24 16:11:21] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A5000/Qwen2-7B-Instruct/alpaca_c64
+[2026-09-24 16:11:21] RUN: /usr/bin/python3 -u energy_model.py --run_dir logs/A5000/Qwen2-7B-Instruct/alpaca_c64 --phase decode
+[2026-09-24 16:11:21] RUN: /usr/bin/python3 -u validate_waveform.py --run_dir logs/A5000/Qwen2-7B-Instruct/alpaca_c64
+[2026-09-24 16:11:21] RUN: /usr/bin/python3 -u fit_two_term.py --glob logs/A5000/Qwen2-7B-Instruct/* --out logs/A5000/Qwen2-7B-Instruct/two_term_fit.json
+[2026-09-24 16:11:21] Qwen2-7B-Instruct two-term: e_bit=2.7065088411947224e-10 e_flop_pJ=0.5230358213128058 R2=-22.972632490626065 identifiable=True AI_span=1716.6755490538164
+[2026-09-24 16:11:21] wrote logs/A5000/two_term_summary.csv
+======================================================================
+[2026-09-24 16:11:21] RAGGED SWEEP COMPLETE
+======================================================================
+
+=== avg power vs ENFORCED cap per run ===
+Qwen2-7B-Instruct/alpaca_c1              avgW=  102.5 tok/s=    10.5 idleW=  60.8 limitW=100.0
+Qwen2-7B-Instruct/alpaca_c64             avgW=  100.3 tok/s=   409.2 idleW=  60.8 limitW=100.0
+Qwen2-7B-Instruct/idle                   avgW=    0.0 tok/s=     0.0 idleW=   0.0 limitW=0
+==== A5000 sweep end Thu Sep 24 16:11:21 EDT 2026 ====

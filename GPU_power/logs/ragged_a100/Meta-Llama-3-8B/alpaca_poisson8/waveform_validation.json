@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/ragged_a100/Meta-Llama-3-8B/alpaca_poisson8",
+  "calibration": "logs/ragged_a100/Meta-Llama-3-8B/alpaca_poisson8/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 236,
+    "rmse_w": 23.130608808733687,
+    "mae_w": 18.11999099179714,
+    "r2": -17.030166386469407,
+    "mean_measured_w": 296.7032792704915,
+    "mean_predicted_w": 294.60497540475535,
+    "mean_abs_pct_err": 6.107108433836327
+  },
+  "plot": null
+}

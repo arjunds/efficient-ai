@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/ragged/Qwen2-7B-Instruct/alpaca_c16",
+  "calibration": "logs/ragged/Qwen2-7B-Instruct/alpaca_c16/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 233,
+    "rmse_w": 24.505125124433064,
+    "mae_w": 16.77369968070904,
+    "r2": -19.18548051388597,
+    "mean_measured_w": 400.67632590879316,
+    "mean_predicted_w": 398.84763882528944,
+    "mean_abs_pct_err": 4.186346583533182
+  },
+  "plot": null
+}

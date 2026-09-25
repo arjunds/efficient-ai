@@ -1,0 +1,10 @@
+ROOT=logs/A5000
+model                    n R2_bytesonly R2_2term_v1 R2_2term_v2  R2_constP e_bit(e-10) e_flop(pJ)  resid~AI
+Qwen2-7B-Instruct     2456      -45.104     -42.122     -42.135      0.288       2.294      0.198    -0.054
+Qwen2.5-3B-Instruct   2055      -41.526     -32.440     -32.464      0.986       1.928      0.533    -0.080
+
+Bootstrap 95% CI (pooled, v2): e_bit=2.119 [2.098,2.142] e-10 ; e_flop=0.290 [0.212,0.417] pJ/flop
+
+Leave-one-model-out (fit others, predict held; v2 flops):
+  predict Qwen2-7B-Instruct    R2=-61.321  MAPE=  24.0%
+  predict Qwen2.5-3B-Instruct  R2=-48.748  MAPE=  25.4%

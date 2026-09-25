@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/ragged/Mistral-7B-v0.1/alpaca_c64",
+  "calibration": "logs/ragged/Mistral-7B-v0.1/alpaca_c64/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 235,
+    "rmse_w": 59.91198989511482,
+    "mae_w": 47.5570941768305,
+    "r2": -24.610102106042877,
+    "mean_measured_w": 497.97109310730315,
+    "mean_predicted_w": 489.1561831168288,
+    "mean_abs_pct_err": 9.550171653554772
+  },
+  "plot": null
+}

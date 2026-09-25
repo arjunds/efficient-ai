@@ -19,6 +19,6 @@
     "smem": 3004
   },
   "dram_over_analytic": 1.0043631552617904,
-  "our_e_wbyte": 1.189e-10,
+  "our_e_wbyte": 1.252e-10,
   "scaling_law_prediction": 6.46e-11
 }

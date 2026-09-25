@@ -1,206 +1,228 @@
-# A Physically-Grounded Energy Model for LLM Serving, and Energy-Optimal GPU Selection
+# A Measured, Interpretable Energy Model for LLM Serving — and What It Buys: GPU Selection and Power Control
 
-**Status:** preliminary results + proposal. All data on NVIDIA H200 (+ one A100
-cross-GPU point) via vLLM 0.10.2 continuous batching. Branch `vllm_ragged`.
+**Status (v2, 2026-09-24):** preliminary results + proposal. vLLM 0.10.2 continuous
+batching, fp16. Measured on NVIDIA **H200** (primary), **B200** (second session,
+Penn PARCC), **RTX A5000 / GDDR6** (power-capped; microbenchmarks), and an A100-PCIe
+(power-capped). Branch `vllm_ragged` on `arjunds/efficient-ai`.
+
+> **What changed since v1 (read this first).**
+> 1. **The datasheet scaling law is falsified.** v1 proposed `e_byte ∝ 1/bandwidth`
+>    so a recommender could work "zero-shot from datasheets." B200 (2× bandwidth)
+>    costs **1.16× H200** per byte, not 0.60×. Energy per byte is instead **set by
+>    memory technology**: HBM3e ≈ 1.1–1.25, GDDR6 ≈ 2.7–3.1 (×10⁻¹⁰ J/byte).
+> 2. **The recommender now uses measured coefficients + realized utilization**, and
+>    is validated for the first time: **J/token within 4.1% (H200) / 3.7% (B200)** on
+>    137 measured runs (6.0% leave-one-model-out on H200); v1 was off by 34–62%.
+> 3. **Two measurement biases were found and corrected**: prefix-cache hits made us
+>    over-count prefill FLOPs (→ `e_gemm` +17–19%), and a possible NVML power smoothing
+>    (→ `e_gemm` maybe +26–30% more, not yet adopted). The **memory coefficient is
+>    robust to both (±2%)**; the compute coefficient is the uncertain one.
+> 4. **The "L40S prefill / A100 decode" reversal from v1 is withdrawn** (it rested on
+>    the falsified law). The defensible reversal is between measured GPUs:
+>    **B200 for prefill (probable), H200 for decode (confident).**
+> 5. **New: a control layer.** The energy model serves as the internal model of an
+>    economic MPC that allocates a shared power budget across a heterogeneous
+>    H200+B200 fleet: **−12% to −22% energy vs the best feedback baseline** (simulation;
+>    live validation in progress).
 
 ---
 
 ## 1. Motivation
 
-LLM inference energy is now a first-order cost, but the field lacks a model that
-is simultaneously **(a) physically interpretable**, **(b) validated against
-measured power**, and **(c) predictive for unseen models and hardware**. Existing
-work sits at two extremes:
+LLM inference energy is a first-order cost, but existing models pick two of three:
+**interpretable** (roofline/analytical: LIMINAL, LLM-Viewer, "Tokens-to-Watt-hours"
+— datasheet constants, never validated against measured power), **measured and
+predictive** (WattGPU — learned XGBoost, not interpretable, excludes MoE), or
+**controlled** (POLCA, reactive power capping without a predictive model).
 
-- **Analytical / roofline** models (LIMINAL; LLM-Viewer; "Tokens-to-Watt-hours")
-  predict performance or estimate energy from datasheet constants but are **not
-  calibrated or validated against measured power**.
-- **Black-box learned** models (WattGPU: XGBoost on GPU specs) predict power on
-  unseen GPUs well but are **not interpretable** and **exclude MoE**.
+We target a model whose coefficients are **measured, physically meaningful, and
+transferable** — and then use it for two concrete decisions:
 
-**The gap we target:** a model whose coefficients are *measured* yet *physically
-meaningful*, so it can answer a concrete deployment question:
+> **(a) Which GPU — or which GPU for each serving phase — minimizes energy?**
+> **(b) How should a shared, fluctuating power budget be allocated across a
+> heterogeneous fleet under latency SLOs?**
 
-> **Given a workload (model + prompt/generation profile), which GPU — or which GPU
-> for each *phase* of serving — minimizes energy?**
-
-This matters because **prefill is compute-bound and decode is memory-bound**, so
-the energy-optimal hardware can differ *within a single request* — motivating
-disaggregated prefill/decode placement across heterogeneous GPUs.
+Prefill is compute-bound and decode is memory-bound, so both answers depend on
+getting the memory/compute split right.
 
 ---
 
-## 2. Model formulation (X → Y)
+## 2. Model
 
-We fit a per-time-bin regression on **measured** GPU energy against **analytically
-computed** work. Binned over Δ≈200 ms of real ragged continuous-batching traffic.
+**Energy (per ~200 ms bin), fit by OLS on measured NVML power:**
+```
+E_bin − P_static·Δt  =  e_wbyte·weight_bytes + e_kvbyte·kv_bytes + e_gemm·gemm_flops
+```
+- **Y:** measured dynamic energy (∫P dt − idle·Δt). **X:** analytic, from model
+  architecture (`models.py`) + vLLM per-iteration scheduler logs (resident KV tokens,
+  prefill/decode tokens). **gemm_flops use *computed* prefill tokens** (prefix-cache
+  hits excluded — §3d). `weight_bytes` counts all layer weights + lm_head once
+  (the input-embedding gather is excluded; this convention matters, see §3c).
+- **Why 3 terms, not more:** attention in decode is memory-bound — within a model
+  its work is exactly proportional to resident KV tokens, collinear with `kv_bytes`.
+  A separate attention-FLOP term is unidentifiable (returns an unphysical ~65
+  pJ/flop). Model params as extra regressors would be collinear *and* would turn
+  hardware constants into per-model fits.
 
-**Y (response):** measured *dynamic* energy per bin,
-`Y_i = ∫ P_NVML dt over bin i − P_static · Δt_i`, with `P_static` = measured idle.
+**Time (per iteration) — the roofline, plus the part LIMINAL leaves out:**
+```
+t_iter ≈ t_overhead(host CPU launch, ~1.4–2.2 ms/step) + per-layer max(latency floor,
+          weight-streaming at asymptotic MBU η) + KV + per-token terms
+```
+Asymptotic **η = 0.72 (H200), 0.86–0.87 (B200)** — found independently by two
+analyses (the recommender and the control-plant system ID). The v1 "MBU ≈ 45%" was
+an *effective* number that hid 2–5 ms of fixed per-iteration CPU overhead; that
+overhead is why a 7B model runs only ~10% faster on B200 than on H200.
 
-**X (regressors), all analytic from model architecture + vLLM per-iteration logs
-(prefill/decode tokens, resident KV tokens):**
+**Performance is a max, energy is a sum.** Roofline time is bounded by the bottleneck
+resource; energy adds across resources that all draw power simultaneously. So
+`power = E_iter/t_iter`, `perf/watt = tokens_s/power` — the energy layer LIMINAL lacks.
 
-| model | regressors | coefficients |
+**Domain of validity:** uncapped GPUs (a GPU pinned at its power limit is in a
+constant-power regime — §3c), fp16, one GPU, contexts ≲ 1.3k tokens, ≤ 64 sequences,
+realized MBU ≳ 0.2 (at very low utilization per-iteration fixed energy inflates J/byte).
+
+---
+
+## 3. Results
+
+### 3a. The memory coefficient is a hardware constant — within a memory technology
+
+H200, 9,274 bins over 4 dense models (canonical fit, `gpu_coefficients.json`):
+**`e_wbyte` = 1.066 [1.063, 1.069]×10⁻¹⁰ J/B, `e_kvbyte` = 3.29e-10, `e_gemm` = 0.794
+[0.773, 0.822] pJ/flop; R² 0.84, held-out-by-model MAPE 6.6%.** The FLOP term is
+essential (bytes-only R² is negative); KV bytes cost ~3× weight bytes per byte.
+- **Size-independent:** Qwen2.5 0.5B→32B (64×), `e_wbyte` 1.06–1.14e-10 for ≥1.5B;
+  **a single 7B calibration predicts every size at 7.2% MAPE** (leave-one-size-out
+  4.6–6.9%).
+- **Architecture transfer:** dense-calibrated coefficients predict a held-out 30B MoE
+  at R² 0.79 once weight traffic is modeled by expert occupancy `E·(1−(1−k/E)^t)`
+  (R² −1.35 without it).
+
+### 3b. The datasheet scaling law is falsified; memory technology sets energy per byte
+
+Direct c=1 measurement (dynamic energy ÷ bytes over the run — no regression):
+
+| GPU (memory) | J/byte, Qwen2-7B c=1 | 1/BW-law prediction |
 |---|---|---|
-| 2-term | `bytes`, `flops` | `e_bit`, `e_flop` |
-| **3-term (best)** | `weight_bytes`, `kv_bytes`, `gemm_flops` | `e_wbyte`, `e_kvbyte`, `e_gemm` |
+| H200 (HBM3e, 4.8 TB/s) | **1.076e-10** | anchor |
+| B200 (HBM3e, 8.0 TB/s) | **1.252e-10** (flat 1.24–1.26 for 7B/32B/72B, MBU 0.31→0.62) | 0.646e-10 |
+| A5000 (GDDR6, 0.77 TB/s) | **2.70–2.78e-10** (lower bound; capped) · DRAM-stream microbench 2.6–3.1e-10 | 6.7e-10 |
 
-where per iteration: `weight_bytes = params_resident · dtype`, `kv_bytes =
-kv_tokens_resident · kv_bytes/token`, `gemm_flops = 2·active_params·tokens`.
-`P_static` is fixed from the idle baseline, not fit. Fit by ordinary least
-squares; coefficients are physically constrained ≥ 0.
+- B200 is **1.16×** H200 per byte on the same memory technology (law: 0.60×); a 72B
+  that doubles realized bandwidth does not lower J/byte, ruling out "the 7B just
+  doesn't exercise the B200."
+- GDDR6 is **2.2–2.8×** HBM3e per byte but only **0.40–0.50×** the law's prediction.
+  DRAM-only energy ≈ 22–28 pJ/bit; ~30% of a streamed byte's energy is on-chip.
+- **Not hidden on-chip traffic:** on the same GPU and clock state, serving costs
+  1.04–1.14× a pure weight-streaming GEMV per analytic byte.
+- Ordering so far: **HBM3e (1.07–1.25) < HBM2e (~1.75, weak) < GDDR6 (≥2.7) ×10⁻¹⁰
+  J/B**. Confounded with process node and V/f point (medium-strong evidence).
+- **A convention trap we hit:** a reconstructed `models.py` counted both embedding
+  tables (+7.7% bytes for Qwen2-7B); all cross-GPU numbers above use one canonical
+  convention (`reconcile_gpus.py`).
 
-**Training-space characterization (domain of validity):**
-- **Hardware:** H200, **uncapped** regime (see §5 — the model breaks under power
-  capping; that boundary is itself a result).
-- **Models:** dense 7–8B (calibration) + a size ladder 0.5–32B + one 30B MoE (§4).
-- **Load:** concurrency 1–64 and Poisson arrivals; real variable-length prompts
-  (alpaca + sharegpt) → heterogeneous batches.
-- **Arithmetic-intensity span ≈ 1–2000× FLOP/byte** — the identifiability
-  condition that lets `e_*` separate. **Extrapolation beyond this range (fp8,
-  100k-context, cap-limited) is untested and out of domain.**
+### 3c. Where the linear model breaks (measured boundaries)
+- **Power-capped GPUs:** an A100-PCIe at 300 W and all node-d1 A5000s at an enforced
+  100 W sit at the cap at every operating point → energy ≈ `P_cap·t`, fits have
+  negative R². Such GPUs are gated out of the coefficient table.
+- **Saturating models:** a 72B on B200 pins power near its ceiling (CV of dynamic
+  energy 0.05) → coefficients degenerate to a ratio of means (R² −0.57). Fits need a
+  model big enough to use the GPU but small enough that power still swings (7B–32B).
 
----
+### 3d. The compute coefficient carries real systematic uncertainty
+- **Prefix-cache bias (corrected):** logged prefill tokens include prefix-cache hits;
+  26–36% of prompt tokens at c=64 were never computed. Using computed tokens raises
+  `e_gemm` +17% (H200) / +19% (B200), CIs disjoint, R² and held-out error improve.
+- **Power-smoothing bias (not yet adopted):** per-bin NVML power on H200/B200 behaves
+  like a ~0.4 s smear; correcting raises `e_gemm` a further 26–30% (R² 0.80→0.86),
+  moves `e_wbyte` −1–2%. Cause (1 s averaging vs timestamp lag) is being settled on B200.
+- ⇒ **Absolute prefill energy is uncertain at the tens-of-percent level; the
+  B200/H200 `e_gemm` ratio is robust (~0.79–0.81 under every variant)**, so relative
+  prefill conclusions hold. Decode (memory-dominated) is robust.
 
-## 3. Result A — the FLOP term is essential, coefficients are precise
-
-On 9,274 bins across 4 dense models (H200):
-
-- **Bytes-only R² is negative** (−0.2 to −0.9): a memory-only model is worse than
-  the mean. Adding the FLOP term is what makes the model work.
-- **2-term:** R² 0.62, held-out (leave-one-model-out) MAPE **8.5%**, with tight
-  bootstrap CIs: `e_bit = 1.120 [1.115, 1.126] ×10⁻¹⁰ J/byte`,
-  `e_flop = 0.874 [0.85, 0.91] pJ/flop`.
-- **3-term (weight/KV split): R² 0.80, held-out 7.0%** — separating KV from weight
-  bytes is a large, identifiable improvement (all CIs exclude 0):
-  `e_wbyte = 1.077e-10`, `e_kvbyte = 3.38e-10`, `e_gemm = 0.673 pJ/flop`.
-  **KV-cache bytes cost ~3× more per byte than weight bytes** — a real
-  memory-hierarchy finding (scattered paged KV reads vs streaming weight reads).
-
-*(Sanity: `e_flop ≈ 0.7–0.9 pJ/flop` is the right order for H200 fp16 peak
-efficiency; `e_bit` is an effective coefficient, not the raw HBM cell energy —
-see caveats §6.)*
-
-## 3a. Roofline unification — the energy layer on top of LIMINAL
-
-The multi-term model *is* a roofline tie-in. The bridge is one observation:
-**performance is bounded by the bottleneck resource (a `max`), but energy is the
-sum across resources** — memory and compute draw power simultaneously.
-
-- **LIMINAL (time):** `t_iter = max(bytes/(β·MBU), flops/(π·MFU))` — roofline.
-- **Ours (energy):** `E_iter = e_wbyte·Wb + e_kvbyte·KVb + e_gemm·F` — additive.
-- **Together:** `power = E_iter/t_iter`, `perf/watt = tokens_s / power`.
-
-So each term maps to a hardware resource, and each coefficient should scale with
-that resource's datasheet spec (β for memory terms, π for compute) — the same
-scaling the recommender uses. Two results from wiring the analytic roofline time
-to the measured energy coefficients across all 40 operating points:
-
-- **Roofline predicts iteration time at a consistent utilization:** implied
-  **memory-bandwidth utilization = 44.6% ± 3.5%** across every model, concurrency,
-  and task — i.e. LIMINAL's roofline (with a single ~45% MBU) reproduces the
-  observed time. Combined with the energy coefficients, the analytic
-  (roofline-time + energy) pipeline predicts **measured power within ±5%**.
-- **Everything is memory-bound** (arithmetic intensity 1–107 FLOP/byte, all below
-  the ridge at π/β = 206) — which is *why* the memory coefficient is the clean
-  hardware constant. The compute-energy share rises from ~1% to ~35% as intensity
-  climbs toward the ridge (high concurrency + long prompts) — an "energy roofline."
-- **Attention is memory-bound, not compute:** within a model, attention work is
-  exactly proportional to resident-KV tokens (the same driver as `kv_bytes`), so it
-  is collinear with the KV term. That is why a 4-term model with a separate
-  attention-*flops* coefficient is unidentifiable and returns an unphysical value
-  (~65 pJ/flop). The roofline-correct parsimonious model is the **3-term**:
-  weight-bandwidth + KV-bandwidth (attention folded in) + tensor-core compute.
-
-## 3b. Result B — energy splits by phase exactly as the recommender needs
-
-Using the fitted coefficients, dynamic-energy attribution per bin:
-
-| phase | compute share | memory share |
-|---|---:|---:|
-| decode-heavy | 5.9% | **94.1%** |
-| mixed | 16.9% | 83.1% |
-| prefill-heavy | **35.1%** | 64.9% |
-
-Compute share rises **6×** from decode to prefill — the memory-bound-decode /
-compute-bound-prefill split, measured.
-
-## 3c. Result C — coefficients are hardware constants (transfer across models)
-
-- Across the 4 dense architectures the coefficients agree to <7% — they behave as
-  **hardware constants**, not per-model fits.
-- **Held-out prediction (fit 3 models, predict the 4th): 6.5–11% MAPE.**
-- **Size independence (Qwen2.5 ladder, 0.5B→32B, 64× range, single architecture):**
-  the memory coefficient is size-independent and the channel split makes it more
-  so — **`e_wbyte` = 1.06–1.14 ×10⁻¹⁰ J/byte for models ≥1.5B (±7% across 64×
-  size)**, tighter than the lumped `e_bit` (1.10–1.35). The 3-term fit's R²
-  exceeds the 2-term's at *every* size (e.g. 0.82 vs 0.65 at 7B; 0.90 vs 0.73 at
-  1.5B). The ladder's 7B point (e_bit 1.10, e_flop 0.84) independently reproduces
-  the cross-family Qwen2-7B result — a consistency check across model versions.
-  **Honest limitation:** the *compute* coefficient is less stable — `e_flop`
-  drifts ~2× (1.16→0.61 pJ, small→large) and 2-term R² falls for the big,
-  strongly memory-bound models (32B: R²=0.25, →0.51 with channels), because those
-  runs have little compute-bound variance to pin `e_flop`. So *memory* energy is a
-  clean hardware constant; *compute* energy needs a utilization/overhead term for
-  the extremes (small models: fixed overhead; large models: identifiability).
-  ⇒ the coefficients are **not** an artifact of overfitting to 7–8B.
-- **Size transfer (the decisive test, data in hand):** fitting on some sizes and
-  predicting a *held-out* size's per-bin energy works — leave-one-size-out MAPE
-  **4.6–6.9%** for ≥1.5B (0.5B 13%), with `e_wbyte` invariant at 1.073–1.078e-10
-  regardless of which size is dropped. Extrapolation holds too: fit ≤3B → predict
-  14B+32B at **8.0%**; **a single 7B calibration predicts all sizes 0.5B–32B (64×
-  range) at R²=0.95, 7.2% MAPE.** ⇒ calibrate once, predict any size.
+### 3e. Energy splits by phase
+Decode-heavy bins: ~94% memory energy; prefill-heavy: ~35% compute (6× shift).
 
 ---
 
-## 4. Result D — transfer to a new architecture (MoE), with a routing correction
+## 4. Application 1 — energy-optimal GPU selection (recommender v2.1)
 
-Fit on 4 dense models, predict a held-out **30B MoE (Qwen3-30B-A3B)**:
+Measured per-GPU coefficients + the realized-utilization time model + power-cap
+throttling + prefix-cache fraction; unmeasured GPUs get memory-technology-class
+priors (labeled LOW confidence).
 
-- With naive per-token `active_params` byte accounting: **fails, R² = −1.35**.
-- **Fix (necessary + sufficient):** MoE weight-byte HBM traffic scales with the
-  *expected distinct experts touched by a batch*, `E·(1−(1−k/E)^t)` for `t`
-  batched tokens — not per-token active params. With this: **R² = 0.79, MAPE 21%**
-  (naive baseline 115%; MoE self-fit ceiling R² 0.91).
-- The fix also collapses the MoE's *own* fitted `e_bit` from 4.8e-10 onto the
-  dense ~1.1e-10 — independent confirmation that `e_bit` is hardware, not model.
+**Backtest on every measured serving run** (prediction from model, GPU, measured
+prompt/gen lengths, concurrency only):
 
-*(The occupancy formula is standard combinatorics and appears in prior MoE
-latency/perf work; our contribution here is applying it to **energy** and showing
-it is what makes cross-architecture energy transfer work.)*
+| | J/token MAPE | v1 (datasheet) |
+|---|---|---|
+| H200 (110 runs: dense, size ladder, MoE) | **4.1%** (6.0% leave-one-model-out) | 34% |
+| B200 (27 runs: 7B/32B/72B) | **3.7%** | 48% |
+| A100-PCIe (capped; prior tuned on these) | 5.6% | 62% |
+
+**H200 vs B200 win map** (prompt 1024 / gen 256):
+- **Decode: H200 wins by 1.05–1.44× at ≤64 concurrent sequences — confident**
+  (P ≥ 0.9 nearly everywhere). B200's +16% J/byte and 2× idle power (238 vs 116 W)
+  are never recovered at realized utilization. Beyond 128 sequences: a toss-up.
+- **Prefill: B200 ~13–15% cheaper for ≥3B at batch ≥4 — probable, not confident**
+  (P 0.78–0.88); its compute demand approaches its 1000 W cap.
+- **Phase reversal:** B200-prefill / H200-decode (the credible pair).
+- **Unmeasured GPUs via memory-technology priors** (HBM3e 1.07–1.25, HBM2e ~1.75
+  [1.4, 2.3], GDDR6 ~3.2 [2.5, 4.1] ×10⁻¹⁰ J/B): **A100 decodes 1.56–1.76× cheaper
+  than L40S (P≈1.0)** — the decode half of v1's claim returns, but because GDDR6
+  costs ~1.8× HBM2e per byte, not because of 1/BW scaling. The prefill half ("L40S for
+  prefill") is **unsupported**: it hinges entirely on Ada `e_gemm`, which is unmeasured
+  (P(L40S wins prefill) 0.32–0.42).
 
 ---
 
-## 5. Result E + the proposal — energy-optimal GPU selection
+## 5. Application 2 — model-predictive power control (simulation; live test in progress)
 
-**Cross-GPU boundary (measured):** the same fit on an **A100-80-PCIe** gives
-*negative* R² — because its **300 W cap is saturated at every operating point**
-(even concurrency 1). Power is DVFS-clamped ≈ constant, so energy ≈ `P_cap·t`, not
-work. A constant-power model beats the two-term there (R² +0.13..+0.42 vs
-negative). ⇒ the model is valid in the **uncapped** regime, and a serving-time
-model must include a cap term `P = min(e·rates + P_static, P_cap)`.
+**Plant (system identification).** A discrete-time model of one GPU serving one
+model: queue, running batch, staged decode progress and KV occupancy as state;
+admission cap and power cap as inputs; our energy model + time model as outputs.
+Held-out iteration-time error 1.1–5.1% per GPU×model (pure roofline 2–41%); 1–10 s
+ahead predictions beat persistence for running batch, KV and throughput. *Untested
+in logs:* real queues, a binding cap, KV-full preemption.
 
-**Recommender prototype (the deliverable):** given a workload, predict per-phase
-energy on candidate GPUs (3-term model + roofline latency + cap throttling) and
-recommend the energy-optimal GPU. Coefficients: **H200 measured**; other GPUs
-**datasheet-scaled** via physical priors `e_byte ∝ 1/HBM_BW`, `e_flop ∝
-1/peak_FLOPS`. Example (Qwen2-7B, prompt 2048 / gen 256 / batch 32):
+**Controller.** Economic MPC (HiGHS MILP over per-GPU caps, routing and on/off, 10 s
+horizon, Little's-law SLO, drain-aware budget, online correction); solve 8–42 ms mean
+for 2–8 GPUs. Compared against uncapped, POLCA-style reactive capping, PI on
+admission, PI on power cap, and a tuned static setting.
 
-| phase | winner | 2nd | key reversal |
-|---|---|---|---|
-| **prefill** (compute) | H100/H200 | **L40S > A100** | high-FLOPS parts win |
-| **decode** (memory) | H200 | **A100 > L40S** (2×) | high-bandwidth parts win |
+| scenario | MPC vs best feedback baseline (PI-cap) |
+|---|---|
+| 2×H200 + 2×B200, 7B | **−12%** energy (−9% on the calibrated plant) |
+| 4×H200, 7B | **−17%** (−14%) |
+| 32B | **−22%** (−18%) |
 
-**L40S and A100 swap rank between phases** — the model recommends *different*
-hardware for prefill vs decode, i.e. disaggregated placement. This is the novel,
-useful output; it falls directly out of the interpretable memory/compute split.
-
-**Proposed validation (the core next experiment):** confirm the datasheet scaling
-by *measuring* `e_*` on 2–3 more (uncapped) GPUs. If `e_byte ∝ 1/BW` and `e_flop ∝
-1/FLOPS` hold, we get **zero-shot** energy-optimal GPU selection from datasheets —
-physically grounded, unlike WattGPU's black box, and covering MoE, unlike all
-prior work.
+- **SLO-aware power capping is the dominant lever** — any feedback controller gets
+  −48–52% vs uncapped by running at the lowest power that meets TPOT (bigger batches
+  amortize weight reads).
+- **MPC's extra gain comes from model-based allocation, not prediction:**
+  consolidation/on-off ~6%, heterogeneity-awareness 4–8%; a 1-step horizon matches a
+  10-step one; a perfect forecast adds 0.8%.
+- **Our own hypothesis was wrong:** MPC's advantage is the same on flat and
+  fluctuating budgets; *load variability* is what matters. On steady load a tuned
+  static setting is within 2.5% — MPC is overkill there.
+- Robust to ±20% coefficient error (<2% energy); online adaptation is essential.
+- Heterogeneous routing depends on unmeasured parameters (B200 minimum power limit,
+  parked power, wake time) — flagged, with sensitivity sweeps.
+- **Disaggregated prefill/decode pools** (first steady-state pass, corrected
+  coefficients, 2×H200+2×B200): prefill belongs on B200 (9.3 vs 11.4 mJ/token, 7B);
+  the reversed split costs 5–8%. But **the best split exactly ties colocated serving
+  on energy** in all four model/workload cases — structurally, colocation with
+  optimal routing can replicate any split in a linear energy model. Under a budget,
+  colocation serves more for 7B (69.7 vs 59.2 req/s); a split is slightly better for
+  32B (12.8 vs 11.1). ⇒ in this model **disaggregation's value is SLO isolation, not
+  energy**. *[Dynamic budget-split study and e_gemm/cap-floor sensitivity: pending.]*
+- **Regime-dependent control:** on a power-capped GPU (A5000 at 100 W) power is ~flat
+  whenever anything runs, so the only energy lever is **batch-synchronous gating**
+  (hold arrivals → release one big batch → drain → idle): predicted −21% J/token vs
+  work-conserving at a 30 s TTFT SLO — a lever that is worthless on uncapped GPUs,
+  where the lever is SLO-aware power capping. *[Live closed-loop validation built and
+  dry-run; not yet executed — awaiting approval to submit the GPU job.]*
 
 ---
 
@@ -208,36 +230,46 @@ prior work.
 
 | piece | closest prior | our delta |
 |---|---|---|
-| two-term memory+compute energy form | Choi et al. 2013 (roofline energy); Horowitz 2014 | not novel as a *form* |
-| analytical LLM-inference energy | "Tokens-to-Watt-hours" (2025) | they use datasheet constants, **no measured-power calibration/validation** |
-| cross-GPU inference power prediction | WattGPU | they are **black-box XGBoost, exclude MoE**; we are interpretable + MoE |
-| MoE expert-occupancy byte count | MoE latency/perf papers; MoE-CAP (S-MBU) | we apply it to **energy** + show it enables cross-arch transfer |
-| power waveform from scheduler state | "Smoothing the Ramp" (2025) | overlaps; we tie it to the fitted energy model |
+| memory+compute energy decomposition | Choi et al. 2013; Horowitz 2014 | not novel as a form |
+| analytical LLM-inference energy | "Tokens-to-Watt-hours" (2025) | datasheet constants; no measured calibration or validation |
+| cross-GPU power prediction | WattGPU | black-box, excludes MoE; we are interpretable, MoE-aware, and show *why* datasheet scaling fails |
+| MoE expert-occupancy bytes | MoE-CAP, MoE latency work | applied to energy; enables cross-arch transfer |
+| MPC for phase power caps | **arXiv 2609.11133 (this month)** | they calibrate per config and punt on heterogeneous clusters; we do heterogeneous fleets with a validated plant, and find the value is model-based allocation, not forecasting |
+| disaggregated prefill/decode | DistServe, Splitwise | static/heuristic placement; we supply the energy model to choose hardware per phase |
 
-**What is genuinely ours (integration + empirical):** measured-power-calibrated,
-interpretable coefficients that are shown to be **transferable hardware constants**
-(across models, sizes, and one MoE), packaged into a **phase-aware energy-optimal
-GPU recommender**. No single prior work does calibrated + interpretable +
-MoE + phase-level GPU selection together. This is a **measurement/systems** paper
-(MLSys / workshop tier), not a new-model paper.
+**What is ours:** a measured, interpretable, transferable energy model with a
+validated time model; the measurement that falsifies datasheet scaling and points to
+memory technology; a recommender validated at ~4%; and a model-based controller that
+exploits fleet heterogeneity. Framing: a **measurement + systems** paper (MLSys /
+workshop), with the controls result as a second contribution.
 
 ## 7. Risks / open threats
-- **Byte/FLOP counts are analytic, not HW-measured** (perf counters blocked by
-  `ERR_NVGPUCTRPERM`). `e_*` are effective coefficients; a DCGM/NCU cross-check
-  would ground them. *(needs admin)*
-- **Cross-GPU scaling rests on 1 clean GPU (H200)** + datasheet priors; needs 2–3
-  measured (uncapped) GPUs to be more than a hypothesis. *(needs unpegged A100 /
-  more hardware)*
-- MoE transfer (21%) assumes uniform routing; real routing has 20–31% expert
-  overlap → occupancy is an upper bound.
+- **Byte counts are analytic, not hardware-measured.** Path: `ncu` is available on the
+  B200 node (permission probe pending) — `HANDOFF_TO_B200_v2.md`.
+- **Compute coefficient uncertainty** (§3d) — absolute prefill energy ±tens of %.
+- **Memory-technology claim** has one GDDR6 part, power-capped, confounded with process
+  node and V/f.
+- **Time-model overhead is host-specific** (zero-shot transfer to a new host was 33%
+  off; a 30 s calibration run fixes it).
+- **All control results are simulation** so far; cap floors, parked power and wake
+  time are assumptions.
+- **Compute access:** H200 access was revoked on 2026-09-24 (all H200 raw data is
+  backed up in the repo); the only local GPUs (A5000s) are capped at 100 W by another
+  user.
 
-## 8. Plan (next 3 experiments, by leverage)
-1. **Size-ladder analysis** (data in hand) — lock the size-independence claim.
-2. **Measure `e_*` on 2–3 GPUs** — turn the scaling law + recommender from
-   proposal into result. *(hardware access is the blocker)*
-3. **HW byte validation** via DCGM/NCU if perf counters get enabled *(admin)*.
+## 8. Plan (by leverage)
+1. **Hardware byte validation with `ncu` on B200** — DRAM/L2/L1 bytes per op and per
+   decode step vs our analytic counts.
+2. **Live closed-loop control** on an A5000 (in progress) — validates the plant's
+   queue/saturation dynamics that logs never exercised.
+3. **Settle `e_gemm`**: B200 smoothing test; decide on the smoothing correction.
+4. **An uncapped GDDR6 / HBM2e measurement** (needs a power-limit change or other
+   hardware) to firm up the memory-technology ordering.
+5. **Disaggregated pools in the MPC** (in progress).
 
 ---
-*Artifacts: `two_term_summary.csv`, `logs/ragged*/…/binned_table.csv` (re-fittable),
-`fit_channels.py`, `diagnose_fit.py`, `predict_moe.py`, `recommend_gpu.py`,
-`plots_two_term/`. Full narrative: `SESSION_LOG.md`.*
+*Artifacts: `gpu_coefficients.json` (canonical), `realized_utilization.csv`,
+`reconcile_gpus.py`, `recommend_gpu.py` + `recommender_backtest.py` + `RECOMMENDER.md`,
+`controls/` (`plant.py`, `sysid.py`, `controllers.py`, `SYSID.md`, `RESULTS.md`),
+`microbench/`, `FINDINGS_B200.md`, `FINDINGS_A5000.md`, `CONTROL_THEORY_NOTES.md`.
+Full narrative: `SESSION_LOG.md`.*

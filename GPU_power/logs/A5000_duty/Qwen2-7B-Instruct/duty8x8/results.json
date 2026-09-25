@@ -1,0 +1,22 @@
+{
+  "mode": "load",
+  "completed_requests": 69,
+  "generated_tokens_window": 552,
+  "window_duration_s": 263.1349287033081,
+  "aggregate_tokens_per_sec": 2.097783075474542,
+  "avg_power_window_w": 66.28409094364002,
+  "dram_rows_filled": 0,
+  "nvml_summary": {
+    "gpu_name": "NVIDIA RTX A5000",
+    "power_limit_w": 100.0,
+    "n_samples": 26389,
+    "duration_s": 263.89463353157043,
+    "mean_power_w": 66.30405543976657,
+    "median_power_w": 66.675,
+    "max_power_w": 89.793,
+    "min_power_w": 17.263
+  },
+  "dram_backend": null,
+  "dram_total_bytes": null,
+  "peak_hbm_bw_bytes_per_s": 768000000000.0
+}

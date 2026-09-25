@@ -1,0 +1,15 @@
+{
+  "run_dir": "logs/ragged/gemma-7b/sharegpt_c64",
+  "calibration": "logs/ragged/gemma-7b/sharegpt_c64/calibration.json",
+  "bin_s": 0.2,
+  "metrics": {
+    "n_bins": 240,
+    "rmse_w": 132.46847912633754,
+    "mae_w": 95.52459182087713,
+    "r2": -16.53685763362202,
+    "mean_measured_w": 532.8185295046133,
+    "mean_predicted_w": 495.8163584549641,
+    "mean_abs_pct_err": 17.928166257598228
+  },
+  "plot": null
+}
