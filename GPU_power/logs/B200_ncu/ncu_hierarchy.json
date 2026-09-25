@@ -1,0 +1,24 @@
+{
+  "model": "Qwen/Qwen2-7B-Instruct",
+  "gen_tokens": 8,
+  "weight_sweeps": 8,
+  "analytic_bytes_per_token": 14141259776,
+  "analytic_bytes_total": 113130078208,
+  "measured": {
+    "dram": 113623682304.0,
+    "tma": 131445522432.0,
+    "l1": 209343232.0,
+    "l2": 210004810208.0,
+    "smem": 465819896.0
+  },
+  "kernels": {
+    "dram": 3004,
+    "tma": 3004,
+    "l1": 3004,
+    "l2": 3004,
+    "smem": 3004
+  },
+  "dram_over_analytic": 1.0043631552617904,
+  "our_e_wbyte": 1.189e-10,
+  "scaling_law_prediction": 6.46e-11
+}

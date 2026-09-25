@@ -94,7 +94,24 @@ off it.
 
 ## Headline, so you know what you are checking
 
-The datasheet scaling law **`e_byte ∝ 1/HBM_bandwidth` does not hold**:
+> **READ UPDATE 3 in `FINDINGS_B200.md` BEFORE INTERPRETING ANY OF THIS.**
+> Hardware counters (2026-09-25) changed the reading. Short version: the law
+> appears to hold for the **DRAM channel** (measured DRAM-only energy lands
+> within 3% of the prediction). What fails is applying it to our *lumped*
+> `e_wbyte`, which is ~1.8x larger because every streamed weight byte also
+> crosses L2 (~1.9x) and the TMA path (~1.2x), and that on-chip traffic does not
+> scale with HBM bandwidth. Also: the analytic byte model was validated against
+> hardware to **0.4%**, so the denominator is sound (gotcha #5, finally
+> answered — counter permission IS granted on the Penn cluster).
+>
+> One accounting correction it surfaced: `active_params()` includes the
+> embedding table, which during decode is a one-row lookup, not a full read.
+> That inflates expected weight traffic ~7%. It applies equally to H200 and
+> B200 so it **cancels in every cross-GPU ratio**, but absolute `e_wbyte` values
+> are ~7% low in J-per-actually-streamed-byte terms.
+
+The datasheet scaling law **`e_byte ∝ 1/HBM_bandwidth` does not hold** for the
+lumped analytic-byte coefficient:
 
 | | realized BW | J/byte |
 |---|---|---|

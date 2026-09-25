@@ -303,3 +303,113 @@ the same narrow window the coefficient fitting needs.
 * **Recommender:** `scaled_gpu()`'s `e_byte ∝ 1/bw` should go. Given B200 also
   idles at 237 W vs H200's 117 W, a datasheet-driven recommender will pick a
   B200 for memory-bound decode and lose on energy.
+
+---
+
+# UPDATE 3: hardware counters (2026-09-25) — gotcha #5 answered, and the
+# scaling law DOES hold for the DRAM channel
+
+`logs/B200_ncu/`. Nsight Compute on a batch=1 Qwen2-7B decode, 3004 kernels,
+5 memory-hierarchy metrics. **Counter permission is GRANTED on this cluster** —
+the `ERR_NVGPUCTRPERM` wall that blocked this on the old cluster is gone, so the
+analytic byte model has now been validated against hardware for the first time
+in this project.
+
+## Q1 — the analytic byte model is correct to 0.4%
+
+| | |
+|---|---|
+| measured DRAM traffic | 113.6 GB over 8 forward passes = **14.20 GB/pass** |
+| analytic prediction | **14.14 GB/pass** |
+| **ratio** | **1.004** |
+
+The denominator under every coefficient in this project is sound. Two accounting
+details were needed to get there, and both are real corrections:
+
+1. **Pass count.** vLLM's prefill emits the *first* output token, so
+   `max_tokens=N` means **N** forward passes, not N+1. Using N+1 gave 0.829.
+2. **The embedding table.** `active_params()` counts `embed_tokens` *and*
+   `lm_head`. `lm_head` genuinely is streamed (a GEMM over the vocab), but during
+   decode `embed_tokens` is a **lookup of one row (~7 KB)**, not a 1.09 GB read.
+   Counting it inflates expected weight traffic by ~7% for Qwen2-7B.
+
+`models.py` is unchanged: this 7% applies **equally to H200 and B200**, so it
+cancels in every cross-GPU ratio and does not affect the scaling-law test. It
+does mean absolute `e_wbyte` values are ~7% low in J-per-actually-streamed-byte
+terms. Worth fixing before anyone quotes an absolute figure.
+
+## Q2 — the lumped coefficient spans the whole memory hierarchy
+
+Measured traffic per analytic (streamed) byte, on the real serving workload:
+
+| channel | bytes / analytic byte |
+|---|---|
+| DRAM | 1.004 |
+| **L2** | **1.856** |
+| TMA | 1.162 |
+| L1 | 0.002 |
+| shared | 0.004 |
+
+Every weight byte pulled from HBM crosses L2 roughly **1.9 times** and the TMA
+path ~1.2 times. Combining those measured ratios with the group's per-channel
+energy coefficients:
+
+| | value | vs |
+|---|---|---|
+| **DRAM channel alone** | **0.664e-10** | scaling-law prediction 0.646e-10 → **+3%** |
+| full hierarchy sum (OLS) | 1.001e-10 | our measured `e_wbyte` 1.189e-10 → −16% |
+| full hierarchy sum (WLS) | 1.142e-10 | our measured `e_wbyte` 1.189e-10 → **−4%** |
+
+**This reframes the headline.** `e_byte ∝ 1/HBM_bandwidth` appears to hold for
+the DRAM channel — to within 3%. What fails is applying it to our *lumped*
+`e_wbyte`, which is ~1.8x larger because it also carries the L2 and TMA traffic
+that every streamed byte incurs, and that on-chip traffic does not scale with
+HBM bandwidth.
+
+## What is ours and what is borrowed
+
+Being precise about the evidence chain, because the conclusion leans on someone
+else's numbers:
+
+* **Measured here:** the lumped `e_wbyte` (1.189e-10), and the per-channel
+  traffic ratios above. Both on the real vLLM serving workload.
+* **Borrowed:** the per-channel *energies* (`dram` 6.6e-11, `l2` 1.7–3.8e-11,
+  ...) from a colleague's B200 GEMM microbenchmarks. We cannot measure those
+  ourselves: NCU kernel replay destroys the power waveform, so traffic and
+  energy cannot be captured in one run.
+* Their OLS and WLS fits disagree by ~15%, which is why the reconstruction lands
+  anywhere from −4% to −16%. The +3% DRAM agreement is correspondingly soft —
+  it is essentially their DRAM coefficient agreeing with the H200-scaled
+  prediction, which we noted before this run.
+
+So: the traffic amplification is **established**; the energy attribution is
+**strongly supported but not independently verified here**.
+
+## Does this rescue the recommender?
+
+Partly, and not in the convenient direction. Correcting `e_wbyte` to
+J-per-actually-streamed-byte makes it 1.189e-10 x (15.23/14.14) = **1.281e-10**,
+so the gap to the 0.646e-10 prediction *widens* from +84% to +98%. A recommender
+that scales a lumped byte coefficient by datasheet bandwidth is still wrong by
+~2x. The fix is to model the channels separately — scale the DRAM term by
+bandwidth and treat the on-chip terms as architecture constants — rather than to
+keep one lumped coefficient and scale it.
+
+The direct-measurement result is untouched: J per byte of *analytic* traffic is
+flat at 1.16–1.24e-10 across 7B/32B/72B and a 1.8x span of realized bandwidth.
+That was never a claim about DRAM physics; it is a claim about what a serving
+workload actually costs, and it stands.
+
+## Method note for anyone repeating this
+
+NCU **kernel** replay is unusable here: ~20 s/kernel x ~2500 kernels ≈ 14 hours,
+and two attempts timed out with partial captures. `--replay-mode application`
+re-runs the whole process once per metric pass-group and finished in **10.5
+minutes**. Also required: `--profile-from-start off` with
+`cudaProfilerStart/Stop` around only the measured generate (otherwise the 15 GB
+weight upload and FlashInfer's JIT autotuner land in the counts), a warmup pass
+outside the profiled region, and a **distinct warmup prompt** so vLLM's automatic
+prefix caching does not let the measured generate skip its prefill.
+`ncu_hierarchy.py` now refuses to interpret a capture whose DRAM/analytic ratio
+is physically impossible — a truncated profile otherwise produces a small ratio
+that reads like a real finding.
