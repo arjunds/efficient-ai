@@ -1,0 +1,2 @@
+index, pci.bus_id, power.limit [W], enforced.power.limit [W], power.default_limit [W]
+0, 00000000:CA:00.0, 100.00 W, 100.00 W, 230.00 W

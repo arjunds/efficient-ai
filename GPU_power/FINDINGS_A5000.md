@@ -116,3 +116,15 @@ by another user, and we cannot change it without root. So:
 A local `ncu` permission probe + end-to-end smoke of the default suite (job 84945,
 `microbench/ncu_A5000/`, `microbench/smoke_full/`) was queued when this was written.
 Check it before the B200 session relies on the handoff.
+
+## Addendum — job 84945 (ncu probe + full-suite smoke)
+- **`ncu` counters are blocked on node-d1** (`ERR_NVGPUCTRPERM`, same as the old
+  cluster): the per-op DRAM/L2 byte check cannot run here. It needs either an admin
+  (`NVreg_RestrictProfilingToAdminUsers=0`) or the B200 node, where
+  `HANDOFF_TO_B200_v2.md` probes permission first and falls back to `dcgmi`.
+- **The full default microbenchmark suite passed end-to-end** (~6 min, short
+  windows, every section wrote output: duty, duty10, burstlen, burstscan, stream,
+  grid, vendor, gemv, gemm, square, idle checks). Safe to run on B200.
+- The GPU used (CA) was also capped at 100 W; its capped steady-state numbers match
+  the earlier runs within ~3% (DRAM stream 2.2e-10 J/B, GEMV 2.9e-10 J/B, GEMM
+  25–30 TFLOPS under cap). Limits: `logs/A5000_gpu_limits/job_84945.csv`.
