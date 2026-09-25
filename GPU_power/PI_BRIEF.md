@@ -8,7 +8,7 @@
 - **Refuted:** energy per byte does not scale as 1/(datasheet bandwidth). A B200 costs 1.16× an H200 per byte. The law predicted 0.60×.
 - **Probable:** energy per byte depends on memory technology. On GDDR6 it is 2.2–2.8× HBM3e. The evidence is medium-strong, because memory technology is confounded with process node and clock state.
 - **What replaces v1:** the model's *structure* transfers between GPUs, but the *coefficient values* must be measured on each GPU. The recommender built this way predicts J/token within about 4% on both H200 and B200. v1 was off by 34–62%.
-- **Applications:** the model tells which GPU is cheaper for each serving phase (decode on H200 is a confident result; prefill on B200 is probable). In simulation, a model-based fleet power controller uses 12–22% less energy than the best feedback baseline.
+- **Applications:** the model tells which GPU is cheaper for each serving phase (decode on H200 is a confident result; prefill on B200 is probable). In simulation, a model-based fleet power controller uses 12–22% less energy than the best feedback baseline; in a live test on a real vLLM server it used 30% less energy per token than serving requests immediately while meeting a 30 s latency SLO.
 
 ## 1. Question
 
@@ -150,7 +150,7 @@ LIMINAL is a roofline model of *time and performance*. We add the *energy* layer
 - **What the roofline misses.** Each step has a fixed host-CPU overhead of about 1.4–2.2 ms. The "about 45% MBU" in v1 was therefore an *effective* number. Asymptotic weight-streaming MBU is 0.72 on H200 and 0.86 on B200. The overhead is also why a 7B model runs only about 10% faster on B200 than on H200.
 - **Accuracy.** The pure roofline predicts iteration time with 2–41% error. With the overhead term, error is 1.1–5.1% per GPU and model, holding out each run.
 
-## 7. Application: fleet power control (simulation)
+## 7. Application: fleet power control (simulation + one live test)
 
 **The plant model.** We identified a discrete-time state model of one GPU serving one model:
 
@@ -174,7 +174,16 @@ For running batch, KV and throughput, it predicts 1–10 s ahead better than per
 
 **Closest prior work:** arXiv 2609.11133 (this month) applies MPC to prefill/decode power caps. It calibrates per configuration and does not address heterogeneous clusters. We cover heterogeneous fleets with a validated plant and find that the value comes from allocation, not forecasting.
 
-**Not yet run:** a live closed-loop test on one A5000 is built and dry-run. The CPU simulation predicts about 20% lower J/token from batch-synchronous gating at a 30 s TTFT SLO.
+**Live test on a real server.** We ran the controllers in the loop on a real vLLM server: one RTX A5000, Qwen2.5-3B, bursty arrivals, a virtual power budget stepping 100 → 88 → 78 → 100 W, and a 30 s time-to-first-token (TTFT) SLO. Four controllers × 3 reps, each rep replaying the same arrival trace for every controller.
+
+![Live closed-loop test](pi_brief_figs/fig_live_control.png)
+
+*Figure 9. On a real server, MPC used 30% less energy per token than serving requests immediately, and it was the only controller that met the latency SLO and nearly held the power budget.*
+
+- **MPC:** −30% ± 3 J/token vs always-on; TTFT median 10 s, p99 27 s (0% SLO violations); over budget in 6% of 20 s windows; 23–31 ms per decision.
+- **PI:** −7% energy, but it missed the SLO 60% of the time and the budget 26%. **POLCA-style:** +6% energy, 77% SLO misses, 40% over budget. **Always-on:** meets latency trivially (0.05 s) but exceeds the budget 40% of the time.
+- **The simulation got the ranking right** and predicted about −18% for MPC; the live saving was larger.
+- **Caveats.** This A5000 is capped at 100 W, so power is nearly flat whenever it runs. The only lever is holding requests and releasing them in batches, which trades latency (median 10 s) for energy. That suits batch or offline serving with a 30 s SLO, not interactive chat. The budget is virtual (enforced through admission), not a hardware power cap. The heterogeneous-fleet power-capping result above remains simulation-only.
 
 ## 8. Evidence at a glance
 
@@ -188,7 +197,8 @@ For running batch, KV and throughput, it predicts 1–10 s ahead better than per
 | Prefill is cheaper on B200 | Probable (P 0.78–0.88) |
 | L40S cheaper for prefill | Unsupported (Ada compute energy unmeasured) |
 | Absolute `e_gemm` | Uncertain (±tens of %); the ratio between GPUs is robust |
-| MPC saves 12–22% vs best feedback | Simulation only |
+| MPC saves 12–22% vs best feedback on H200+B200 fleets | Simulation only |
+| MPC in the loop on a real server: −30% J/token, 0% SLO misses | Established for one capped A5000, latency-tolerant workload |
 
 **Not novel as a form:** the memory-plus-compute energy decomposition (Choi et al. 2013; Horowitz 2014) and phase disaggregation (DistServe, Splitwise). **Our contribution:** measured, validated coefficients; a measurement that falsifies datasheet scaling; MoE-aware bytes; and a validated time model with a controller built on it.
 
@@ -196,7 +206,7 @@ For running batch, KV and throughput, it predicts 1–10 s ahead better than per
 
 1. **Validate byte counts on hardware with `ncu` on B200.** Our byte counts are analytic and have never been checked against hardware counters. Counters are blocked on the A5000 node (`ERR_NVGPUCTRPERM`).
 2. **Settle `e_gemm`.** Run the NVML smoothing test ("square" test) on B200, then decide whether to adopt the correction.
-3. **Run the live closed-loop control test on an A5000.** It is built; it needs one GPU-hour.
+3. **Extend the live control test** to an interactive (sub-second TTFT) SLO and to an uncapped GPU, where the lever is power capping rather than batching.
 4. **Measure an uncapped GDDR6 or HBM2e point** to firm up the memory-technology ordering.
 
 **Constraints on compute access:** H200 access was revoked on 2026-09-24; the H200 raw data is backed up. The only GPUs available locally are A5000s capped at 100 W by another user, and we cannot change power limits without root. The B200 cluster is the path for steps 1 and 2.

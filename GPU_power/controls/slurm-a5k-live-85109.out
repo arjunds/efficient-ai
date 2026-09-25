@@ -1,0 +1,260 @@
+cpu-bind=MASK - node-d1, task  0  0 [6468]: mask 0x7000007 set
+==== A5000 live start Fri Sep 25 13:45:20 EDT 2026 on node-d1.cl.upenn.edu job 85109 ====
+index, pci.bus_id, power.limit [W], enforced.power.limit [W], power.default_limit [W], power.min_limit [W], power.max_limit [W]
+0, 00000000:17:00.0, 100.00 W, 100.00 W, 230.00 W, 100.00 W, 230.00 W
+---- (1) idle baseline
+/workspace/nvml_logger.py:31: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml
+INFO 09-25 13:45:42 [__init__.py:216] Automatically detected platform cuda.
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+INFO 09-25 13:46:01 [__init__.py:742] Resolved architecture: Qwen2ForCausalLM
+`torch_dtype` is deprecated! Use `dtype` instead!
+WARNING 09-25 13:46:01 [__init__.py:2767] Casting torch.bfloat16 to torch.float16.
+INFO 09-25 13:46:01 [__init__.py:1815] Using max model len 4096
+INFO 09-25 13:46:02 [scheduler.py:222] Chunked prefill is enabled with max_num_batched_tokens=2048.
+INFO 09-25 13:46:02 [__init__.py:3400] Cudagraph is disabled under eager mode
+[1;36m(EngineCore_DP0 pid=6570)[0;0m INFO 09-25 13:46:03 [core.py:654] Waiting for init message from front-end.
+[1;36m(EngineCore_DP0 pid=6570)[0;0m INFO 09-25 13:46:03 [core.py:76] Initializing a V1 LLM engine (v0.10.2) with config: model='Qwen/Qwen2.5-3B-Instruct', speculative_config=None, tokenizer='Qwen/Qwen2.5-3B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.float16, max_seq_len=4096, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=True, kv_cache_dtype=auto, device_config=cuda, decoding_config=DecodingConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_backend=''), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=0, served_model_name=Qwen/Qwen2.5-3B-Instruct, enable_prefix_caching=True, chunked_prefill_enabled=True, use_async_output_proc=True, pooler_config=None, compilation_config={"level":0,"debug_dump_path":"","cache_dir":"","backend":"","custom_ops":[],"splitting_ops":null,"use_inductor":true,"compile_sizes":[],"inductor_compile_config":{"enable_auto_functionalized_v2":false},"inductor_passes":{},"cudagraph_mode":0,"use_cudagraph":true,"cudagraph_num_of_warmups":0,"cudagraph_capture_sizes":[],"cudagraph_copy_inputs":false,"full_cuda_graph":false,"pass_config":{},"max_capture_size":0,"local_cache_dir":null}
+[1;36m(EngineCore_DP0 pid=6570)[0;0m W0925 13:46:04.532000 6570 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=6570)[0;0m W0925 13:46:04.532000 6570 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[W925 13:46:07.378754104 ProcessGroupNCCL.cpp:981] Warning: TORCH_NCCL_AVOID_RECORD_STREAMS is the default now, this environment variable is thus deprecated. (function operator())
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[1;36m(EngineCore_DP0 pid=6570)[0;0m INFO 09-25 13:46:07 [parallel_state.py:1165] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+[1;36m(EngineCore_DP0 pid=6570)[0;0m WARNING 09-25 13:46:07 [topk_topp_sampler.py:62] FlashInfer is available, but it is not enabled. Falling back to the PyTorch-native implementation of top-p & top-k sampling. For the best performance, please set VLLM_USE_FLASHINFER_SAMPLER=1.
+[1;36m(EngineCore_DP0 pid=6570)[0;0m INFO 09-25 13:46:07 [gpu_model_runner.py:2338] Starting to load model Qwen/Qwen2.5-3B-Instruct...
+[1;36m(EngineCore_DP0 pid=6570)[0;0m INFO 09-25 13:46:07 [gpu_model_runner.py:2370] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=6570)[0;0m INFO 09-25 13:46:08 [cuda.py:362] Using Flash Attention backend on V1 engine.
+[1;36m(EngineCore_DP0 pid=6570)[0;0m INFO 09-25 13:46:09 [weight_utils.py:348] Using model weights format ['*.safetensors']
+[1;36m(EngineCore_DP0 pid=6570)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/2 [00:00<?, ?it/s]
+[1;36m(EngineCore_DP0 pid=6570)[0;0m Loading safetensors checkpoint shards:  50% Completed | 1/2 [00:25<00:25, 25.48s/it]
+[1;36m(EngineCore_DP0 pid=6570)[0;0m Loading safetensors checkpoint shards: 100% Completed | 2/2 [01:06<00:00, 34.70s/it]
+[1;36m(EngineCore_DP0 pid=6570)[0;0m Loading safetensors checkpoint shards: 100% Completed | 2/2 [01:06<00:00, 33.32s/it]
+[1;36m(EngineCore_DP0 pid=6570)[0;0m 
+[1;36m(EngineCore_DP0 pid=6570)[0;0m INFO 09-25 13:47:16 [default_loader.py:268] Loading weights took 66.69 seconds
+[1;36m(EngineCore_DP0 pid=6570)[0;0m INFO 09-25 13:47:16 [gpu_model_runner.py:2392] Model loading took 5.7916 GiB and 68.669518 seconds
+[1;36m(EngineCore_DP0 pid=6570)[0;0m INFO 09-25 13:47:18 [gpu_worker.py:298] Available KV cache memory: 14.70 GiB
+[1;36m(EngineCore_DP0 pid=6570)[0;0m INFO 09-25 13:47:18 [kv_cache_utils.py:864] GPU KV cache size: 428,256 tokens
+[1;36m(EngineCore_DP0 pid=6570)[0;0m INFO 09-25 13:47:18 [kv_cache_utils.py:868] Maximum concurrency for 4,096 tokens per request: 104.55x
+[1;36m(EngineCore_DP0 pid=6570)[0;0m INFO 09-25 13:47:18 [gpu_worker.py:391] Free memory on device (23.33/23.57 GiB) on startup. Desired GPU memory utilization is (0.9, 21.22 GiB). Actual usage is 5.79 GiB for weight, 0.7 GiB for peak activation, 0.02 GiB for non-torch memory, and 0.0 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=15630177280` to fit into requested memory, or `--kv-cache-memory=17905226752` to fully utilize gpu memory. Current kv cache memory in use is 15787463680 bytes.
+[1;36m(EngineCore_DP0 pid=6570)[0;0m INFO 09-25 13:47:19 [core.py:218] init engine (profile, create kv cache, warmup model) took 2.78 seconds
+[1;36m(EngineCore_DP0 pid=6570)[0;0m INFO 09-25 13:47:19 [__init__.py:3400] Cudagraph is disabled under eager mode
+INFO 09-25 13:47:19 [loggers.py:142] Engine 000: vllm cache_config_info with initialization after num_gpu_blocks is: 26766
+INFO 09-25 13:47:19 [async_llm.py:180] Torch profiler disabled. AsyncLLM CPU traces will not be collected.
+[idle] idle_power_w=57.717
+---- (2) staircase
+python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-3B-Instruct --task alpaca --output_len 256 --concurrency_schedule 1:25,2:25,4:25,8:25,16:25,32:25,64:25,0:20,48:25,24:25,12:25,6:25,3:25 --run_dir logs/A5000_live/staircase --max_model_len 4096
+/workspace/nvml_logger.py:31: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml
+[prompts] task=alpaca file=prompts_alpaca.json n=2000 token-len p5/50/95=13/20/52
+INFO 09-25 13:48:03 [__init__.py:216] Automatically detected platform cuda.
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+INFO 09-25 13:48:15 [__init__.py:742] Resolved architecture: Qwen2ForCausalLM
+`torch_dtype` is deprecated! Use `dtype` instead!
+WARNING 09-25 13:48:15 [__init__.py:2767] Casting torch.bfloat16 to torch.float16.
+INFO 09-25 13:48:15 [__init__.py:1815] Using max model len 4096
+INFO 09-25 13:48:15 [scheduler.py:222] Chunked prefill is enabled with max_num_batched_tokens=2048.
+INFO 09-25 13:48:15 [__init__.py:3400] Cudagraph is disabled under eager mode
+[1;36m(EngineCore_DP0 pid=7336)[0;0m INFO 09-25 13:48:16 [core.py:654] Waiting for init message from front-end.
+[1;36m(EngineCore_DP0 pid=7336)[0;0m INFO 09-25 13:48:16 [core.py:76] Initializing a V1 LLM engine (v0.10.2) with config: model='Qwen/Qwen2.5-3B-Instruct', speculative_config=None, tokenizer='Qwen/Qwen2.5-3B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.float16, max_seq_len=4096, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=True, kv_cache_dtype=auto, device_config=cuda, decoding_config=DecodingConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_backend=''), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=0, served_model_name=Qwen/Qwen2.5-3B-Instruct, enable_prefix_caching=True, chunked_prefill_enabled=True, use_async_output_proc=True, pooler_config=None, compilation_config={"level":0,"debug_dump_path":"","cache_dir":"","backend":"","custom_ops":[],"splitting_ops":null,"use_inductor":true,"compile_sizes":[],"inductor_compile_config":{"enable_auto_functionalized_v2":false},"inductor_passes":{},"cudagraph_mode":0,"use_cudagraph":true,"cudagraph_num_of_warmups":0,"cudagraph_capture_sizes":[],"cudagraph_copy_inputs":false,"full_cuda_graph":false,"pass_config":{},"max_capture_size":0,"local_cache_dir":null}
+[1;36m(EngineCore_DP0 pid=7336)[0;0m W0925 13:48:17.640000 7336 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=7336)[0;0m W0925 13:48:17.640000 7336 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[W925 13:48:19.562986772 ProcessGroupNCCL.cpp:981] Warning: TORCH_NCCL_AVOID_RECORD_STREAMS is the default now, this environment variable is thus deprecated. (function operator())
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[1;36m(EngineCore_DP0 pid=7336)[0;0m INFO 09-25 13:48:19 [parallel_state.py:1165] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+[1;36m(EngineCore_DP0 pid=7336)[0;0m WARNING 09-25 13:48:19 [topk_topp_sampler.py:62] FlashInfer is available, but it is not enabled. Falling back to the PyTorch-native implementation of top-p & top-k sampling. For the best performance, please set VLLM_USE_FLASHINFER_SAMPLER=1.
+[1;36m(EngineCore_DP0 pid=7336)[0;0m INFO 09-25 13:48:19 [gpu_model_runner.py:2338] Starting to load model Qwen/Qwen2.5-3B-Instruct...
+[1;36m(EngineCore_DP0 pid=7336)[0;0m INFO 09-25 13:48:19 [gpu_model_runner.py:2370] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=7336)[0;0m INFO 09-25 13:48:19 [cuda.py:362] Using Flash Attention backend on V1 engine.
+[1;36m(EngineCore_DP0 pid=7336)[0;0m INFO 09-25 13:48:19 [weight_utils.py:348] Using model weights format ['*.safetensors']
+[1;36m(EngineCore_DP0 pid=7336)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/2 [00:00<?, ?it/s]
+[1;36m(EngineCore_DP0 pid=7336)[0;0m Loading safetensors checkpoint shards:  50% Completed | 1/2 [00:01<00:01,  1.10s/it]
+[1;36m(EngineCore_DP0 pid=7336)[0;0m Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:02<00:00,  1.19s/it]
+[1;36m(EngineCore_DP0 pid=7336)[0;0m Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:02<00:00,  1.18s/it]
+[1;36m(EngineCore_DP0 pid=7336)[0;0m 
+[1;36m(EngineCore_DP0 pid=7336)[0;0m INFO 09-25 13:48:22 [default_loader.py:268] Loading weights took 2.54 seconds
+[1;36m(EngineCore_DP0 pid=7336)[0;0m INFO 09-25 13:48:22 [gpu_model_runner.py:2392] Model loading took 5.7916 GiB and 3.033516 seconds
+[1;36m(EngineCore_DP0 pid=7336)[0;0m INFO 09-25 13:48:24 [gpu_worker.py:298] Available KV cache memory: 14.70 GiB
+[1;36m(EngineCore_DP0 pid=7336)[0;0m INFO 09-25 13:48:24 [kv_cache_utils.py:864] GPU KV cache size: 428,256 tokens
+[1;36m(EngineCore_DP0 pid=7336)[0;0m INFO 09-25 13:48:24 [kv_cache_utils.py:868] Maximum concurrency for 4,096 tokens per request: 104.55x
+[1;36m(EngineCore_DP0 pid=7336)[0;0m INFO 09-25 13:48:24 [gpu_worker.py:391] Free memory on device (23.33/23.57 GiB) on startup. Desired GPU memory utilization is (0.9, 21.22 GiB). Actual usage is 5.79 GiB for weight, 0.7 GiB for peak activation, 0.02 GiB for non-torch memory, and 0.0 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=15630177280` to fit into requested memory, or `--kv-cache-memory=17905226752` to fully utilize gpu memory. Current kv cache memory in use is 15787463680 bytes.
+[1;36m(EngineCore_DP0 pid=7336)[0;0m INFO 09-25 13:48:24 [core.py:218] init engine (profile, create kv cache, warmup model) took 1.59 seconds
+[1;36m(EngineCore_DP0 pid=7336)[0;0m INFO 09-25 13:48:24 [__init__.py:3400] Cudagraph is disabled under eager mode
+INFO 09-25 13:48:25 [loggers.py:142] Engine 000: vllm cache_config_info with initialization after num_gpu_blocks is: 26766
+INFO 09-25 13:48:25 [async_llm.py:180] Torch profiler disabled. AsyncLLM CPU traces will not be collected.
+[warn] DRAM counter: dcgmi not found on PATH; DRAM counter disabled
+[1;36m(EngineCore_DP0 pid=7336)[0;0m WARNING 09-25 13:48:25 [cudagraph_dispatcher.py:102] cudagraph dispatching keys are not initialized. No cudagraph will be used.
+[saved] logs/A5000_live/staircase (reqs=754, tok/s=452.4900923931474, dram_filled=0)
+---- (3) table + sysid fit
+{
+ "table": {
+  "1": 26.087186655201364,
+  "2": 78.46745855753592,
+  "3": 116.55282934086532,
+  "5": 195.69328172670382,
+  "7": 250.7484136918535,
+  "11": 396.9804802118601,
+  "15": 504.7534479060709,
+  "21": 604.5237428527251,
+  "26": 739.972297915339,
+  "41": 1065.26260600366,
+  "60": 1311.3962191674218
+ },
+ "p_busy": 99.45295997087342,
+ "p_idle": 59.4045,
+ "gen_mean": 238.70291777188328,
+ "sources": [
+  "logs/A5000_live/staircase"
+ ]
+}
+  logs/A5000_live/staircase                               c=  1 n=   1.0 tok/s=    26.1 P= 101.1 (p95 109.0)
+  logs/A5000_live/staircase                               c=  2 n=   2.0 tok/s=    78.5 P=  99.5 (p95 100.1)
+  logs/A5000_live/staircase                               c=  4 n=   3.2 tok/s=   119.4 P=  99.4 (p95 100.2)
+  logs/A5000_live/staircase                               c=  8 n=   6.9 tok/s=   250.7 P=  99.5 (p95 100.2)
+  logs/A5000_live/staircase                               c= 16 n=  15.1 tok/s=   504.8 P=  99.4 (p95 100.1)
+  logs/A5000_live/staircase                               c= 32 n=  26.5 tok/s=   740.0 P=  99.4 (p95 100.0)
+  logs/A5000_live/staircase                               c= 64 n=  59.7 tok/s=  1311.4 P=  99.1 (p95 100.4)
+  logs/A5000_live/staircase                               c= 48 n=  41.3 tok/s=  1065.3 P=  99.3 (p95 100.3)
+  logs/A5000_live/staircase                               c= 24 n=  21.1 tok/s=   604.5 P=  99.5 (p95 100.0)
+  logs/A5000_live/staircase                               c= 12 n=  11.4 tok/s=   397.0 P=  99.5 (p95 100.0)
+  logs/A5000_live/staircase                               c=  6 n=   5.3 tok/s=   195.7 P=  99.4 (p95 100.0)
+  logs/A5000_live/staircase                               c=  3 n=   3.0 tok/s=   113.7 P=  99.5 (p95 100.0)
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+[a5000_sysid] fitting runs matching logs/A5000/*/alpaca_c*,logs/A5000_live/staircase -> logs/A5000_live/plant_params_a5000.json
+[fit] 9 runs loaded
+run                                                   match cached%
+A5000/Qwen2-7B-Instruct/alpaca_c1                      1.00     0.0
+A5000/Qwen2-7B-Instruct/alpaca_c16                     1.00     0.0
+A5000/Qwen2-7B-Instruct/alpaca_c4                      1.00     0.0
+A5000/Qwen2-7B-Instruct/alpaca_c64                     1.00     3.7
+A5000/Qwen2.5-3B-Instruct/alpaca_c1                    1.00     0.0
+A5000/Qwen2.5-3B-Instruct/alpaca_c16                   1.00     1.0
+A5000/Qwen2.5-3B-Instruct/alpaca_c4                    1.00     0.0
+A5000/Qwen2.5-3B-Instruct/alpaca_c64                   1.00     4.2
+A5000_live/staircase                                   1.00    10.0
+
+=== iteration-time model: 1 s bin busy-time error, MAPE % (in-sample / leave-one-run-out) ===
+GPU|model                      bins const     roofline  roofline+oh     additive         phys       phys_p lawLOMO
+A5000|Qwen2-7B-Instruct         250  21.9 12.18/21.93  10.32/22.94   8.75/14.02   8.96/14.23   8.96/14.60    50.17
+A5000|Qwen2.5-3B-Instruct       583  22.6 12.09/13.03  10.62/11.71  11.21/11.75  11.05/11.61  11.05/11.61   115.69
+
+=== GPU-level laws (joint dense fit), LOMO = leave-one-model-out ===
+A5000 law_sum  a=0.000ms b=0.0us/layer tau=0.00us/seq u_w=0.286 u_kv=0.042 u_f=0.078 p=nan | in 13.77% LOMO 94.65%  Qwen2-7B:-52.5 Qwen2.5-3B:+136.8
+A5000 law_max  a=0.000ms b=100.0us/layer tau=0.00us/seq u_w=0.286 u_kv=0.042 u_f=0.078 p=nan | in 13.77% LOMO 82.93%  Qwen2-7B:-50.2 Qwen2.5-3B:+115.7
+A5000 law_p    a=0.000ms b=2.2us/layer tau=0.00us/seq u_w=0.286 u_kv=0.042 u_f=0.078 p=12.00 | in 13.77% LOMO 113.41%  Qwen2-7B:-52.3 Qwen2.5-3B:+174.5
+   -> selected law_max
+
+=== per GPU x model 'phys_p' params (u_w, p pinned from GPU law) ===
+A5000|Qwen2-7B-Instruct        t_ser= 9.188ms t_cpu=38.614ms tau=736.77us u_kv=0.067 u_f=0.216 (u_w=0.286,p=12.0) mean_iter=90.74ms worst-run alpaca_c1 -26.2%
+A5000|Qwen2.5-3B-Instruct      t_ser= 0.000ms t_cpu= 0.115ms tau=189.38us u_kv=0.136 u_f=0.213 (u_w=0.286,p=12.0) mean_iter=32.78ms worst-run alpaca_c1 -39.4%
+---- (4) live episodes
+[gpu] index, pci.bus_id, power.limit [W], enforced.power.limit [W], power.default_limit [W], power.min_limit [W], power.max_limit [W] | 0, 00000000:17:00.0, 100.00 W, 100.00 W, 230.00 W, 100.00 W, 230.00 W
+/workspace/nvml_logger.py:31: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml
+INFO 09-25 13:55:42 [__init__.py:216] Automatically detected platform cuda.
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+INFO 09-25 13:55:54 [__init__.py:742] Resolved architecture: Qwen2ForCausalLM
+`torch_dtype` is deprecated! Use `dtype` instead!
+WARNING 09-25 13:55:54 [__init__.py:2767] Casting torch.bfloat16 to torch.float16.
+INFO 09-25 13:55:54 [__init__.py:1815] Using max model len 4096
+INFO 09-25 13:55:54 [scheduler.py:222] Chunked prefill is enabled with max_num_batched_tokens=2048.
+INFO 09-25 13:55:54 [__init__.py:3400] Cudagraph is disabled under eager mode
+[1;36m(EngineCore_DP0 pid=8203)[0;0m INFO 09-25 13:55:55 [core.py:654] Waiting for init message from front-end.
+[1;36m(EngineCore_DP0 pid=8203)[0;0m INFO 09-25 13:55:55 [core.py:76] Initializing a V1 LLM engine (v0.10.2) with config: model='Qwen/Qwen2.5-3B-Instruct', speculative_config=None, tokenizer='Qwen/Qwen2.5-3B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.float16, max_seq_len=4096, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=True, kv_cache_dtype=auto, device_config=cuda, decoding_config=DecodingConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_backend=''), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=0, served_model_name=Qwen/Qwen2.5-3B-Instruct, enable_prefix_caching=True, chunked_prefill_enabled=True, use_async_output_proc=True, pooler_config=None, compilation_config={"level":0,"debug_dump_path":"","cache_dir":"","backend":"","custom_ops":[],"splitting_ops":null,"use_inductor":true,"compile_sizes":[],"inductor_compile_config":{"enable_auto_functionalized_v2":false},"inductor_passes":{},"cudagraph_mode":0,"use_cudagraph":true,"cudagraph_num_of_warmups":0,"cudagraph_capture_sizes":[],"cudagraph_copy_inputs":false,"full_cuda_graph":false,"pass_config":{},"max_capture_size":0,"local_cache_dir":null}
+[1;36m(EngineCore_DP0 pid=8203)[0;0m W0925 13:55:56.562000 8203 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=8203)[0;0m W0925 13:55:56.562000 8203 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[W925 13:55:58.466563573 ProcessGroupNCCL.cpp:981] Warning: TORCH_NCCL_AVOID_RECORD_STREAMS is the default now, this environment variable is thus deprecated. (function operator())
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[1;36m(EngineCore_DP0 pid=8203)[0;0m INFO 09-25 13:55:58 [parallel_state.py:1165] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+[1;36m(EngineCore_DP0 pid=8203)[0;0m WARNING 09-25 13:55:58 [topk_topp_sampler.py:62] FlashInfer is available, but it is not enabled. Falling back to the PyTorch-native implementation of top-p & top-k sampling. For the best performance, please set VLLM_USE_FLASHINFER_SAMPLER=1.
+[1;36m(EngineCore_DP0 pid=8203)[0;0m INFO 09-25 13:55:58 [gpu_model_runner.py:2338] Starting to load model Qwen/Qwen2.5-3B-Instruct...
+[1;36m(EngineCore_DP0 pid=8203)[0;0m INFO 09-25 13:55:58 [gpu_model_runner.py:2370] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=8203)[0;0m INFO 09-25 13:55:58 [cuda.py:362] Using Flash Attention backend on V1 engine.
+[1;36m(EngineCore_DP0 pid=8203)[0;0m INFO 09-25 13:55:58 [weight_utils.py:348] Using model weights format ['*.safetensors']
+[1;36m(EngineCore_DP0 pid=8203)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/2 [00:00<?, ?it/s]
+[1;36m(EngineCore_DP0 pid=8203)[0;0m Loading safetensors checkpoint shards:  50% Completed | 1/2 [00:01<00:01,  1.05s/it]
+[1;36m(EngineCore_DP0 pid=8203)[0;0m Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:02<00:00,  1.13s/it]
+[1;36m(EngineCore_DP0 pid=8203)[0;0m Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:02<00:00,  1.12s/it]
+[1;36m(EngineCore_DP0 pid=8203)[0;0m 
+[1;36m(EngineCore_DP0 pid=8203)[0;0m INFO 09-25 13:56:01 [default_loader.py:268] Loading weights took 2.29 seconds
+[1;36m(EngineCore_DP0 pid=8203)[0;0m INFO 09-25 13:56:01 [gpu_model_runner.py:2392] Model loading took 5.7916 GiB and 2.828447 seconds
+[1;36m(EngineCore_DP0 pid=8203)[0;0m INFO 09-25 13:56:02 [gpu_worker.py:298] Available KV cache memory: 14.70 GiB
+[1;36m(EngineCore_DP0 pid=8203)[0;0m INFO 09-25 13:56:03 [kv_cache_utils.py:864] GPU KV cache size: 428,256 tokens
+[1;36m(EngineCore_DP0 pid=8203)[0;0m INFO 09-25 13:56:03 [kv_cache_utils.py:868] Maximum concurrency for 4,096 tokens per request: 104.55x
+[1;36m(EngineCore_DP0 pid=8203)[0;0m INFO 09-25 13:56:03 [gpu_worker.py:391] Free memory on device (23.33/23.57 GiB) on startup. Desired GPU memory utilization is (0.9, 21.22 GiB). Actual usage is 5.79 GiB for weight, 0.7 GiB for peak activation, 0.02 GiB for non-torch memory, and 0.0 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=15630177280` to fit into requested memory, or `--kv-cache-memory=17905226752` to fully utilize gpu memory. Current kv cache memory in use is 15787463680 bytes.
+[1;36m(EngineCore_DP0 pid=8203)[0;0m INFO 09-25 13:56:03 [core.py:218] init engine (profile, create kv cache, warmup model) took 1.62 seconds
+[1;36m(EngineCore_DP0 pid=8203)[0;0m INFO 09-25 13:56:03 [__init__.py:3400] Cudagraph is disabled under eager mode
+INFO 09-25 13:56:03 [loggers.py:142] Engine 000: vllm cache_config_info with initialization after num_gpu_blocks is: 26766
+INFO 09-25 13:56:03 [async_llm.py:180] Torch profiler disabled. AsyncLLM CPU traces will not be collected.
+[1;36m(EngineCore_DP0 pid=8203)[0;0m WARNING 09-25 13:56:03 [cudagraph_dispatcher.py:102] cudagraph dispatching keys are not initialized. No cudagraph will be used.
+[episode] pi rep0 start
+[episode] pi rep0 done: 165 done, 0 left
+[episode] static64 rep0 start
+[episode] static64 rep0 done: 165 done, 0 left
+[episode] polca rep0 start
+[episode] polca rep0 done: 165 done, 0 left
+[episode] mpc rep0 start
+[episode] mpc rep0 done: 165 done, 0 left
+[episode] pi rep1 start
+[episode] pi rep1 done: 370 done, 0 left
+[episode] polca rep1 start
+[episode] polca rep1 done: 370 done, 0 left
+[episode] mpc rep1 start
+[episode] mpc rep1 done: 370 done, 0 left
+[episode] static64 rep1 start
+[episode] static64 rep1 done: 370 done, 0 left
+[episode] pi rep2 start
+[episode] pi rep2 done: 371 done, 0 left
+[episode] polca rep2 start
+[episode] polca rep2 done: 371 done, 0 left
+[episode] static64 rep2 start
+[episode] static64 rep2 done: 371 done, 0 left
+[episode] mpc rep2 start
+[episode] mpc rep2 done: 371 done, 0 left
+/workspace/controls/live_load.py:396: DeprecationWarning: `trapz` is deprecated. Use `trapezoid` instead, or one of the numerical integration functions in `scipy.integrate`.
+  energy = float(np.trapz(pp, tt)) if len(tt) > 1 else float("nan")
+{'episode': 'mpc_rep0', 'controller': 'mpc', 'energy_j': 20511.186, 'tokens': 40246, 'j_per_tok': 0.51, 'done': 165, 'left': 0, 'mean_w': 66.812, 'ttft_p50': 11.105, 'ttft_p99': 26.537, 'ttft_viol': 0.0, 'tpot_p50': 0.028, 'tpot_p99': 0.03, 'bviol_1s': 0.12, 'bviol_win': 0.0, 'over_j': 0.0, 'ctrl_ms_mean': 23.063, 'ctrl_ms_max': 50.027}
+{'episode': 'mpc_rep1', 'controller': 'mpc', 'energy_j': 21897.761, 'tokens': 86526, 'j_per_tok': 0.253, 'done': 370, 'left': 0, 'mean_w': 71.096, 'ttft_p50': 9.455, 'ttft_p99': 27.563, 'ttft_viol': 0.0, 'tpot_p50': 0.036, 'tpot_p99': 0.039, 'bviol_1s': 0.173, 'bviol_win': 0.1, 'over_j': 42.614, 'ctrl_ms_mean': 30.899, 'ctrl_ms_max': 68.513}
+{'episode': 'mpc_rep2', 'controller': 'mpc', 'energy_j': 22148.579, 'tokens': 88750, 'j_per_tok': 0.25, 'done': 371, 'left': 0, 'mean_w': 71.911, 'ttft_p50': 10.018, 'ttft_p99': 27.421, 'ttft_viol': 0.0, 'tpot_p50': 0.036, 'tpot_p99': 0.04, 'bviol_1s': 0.183, 'bviol_win': 0.073, 'over_j': 28.678, 'ctrl_ms_mean': 30.818, 'ctrl_ms_max': 67.905}
+{'episode': 'pi_rep0', 'controller': 'pi', 'energy_j': 28786.159, 'tokens': 40111, 'j_per_tok': 0.718, 'done': 165, 'left': 0, 'mean_w': 93.461, 'ttft_p50': 6.293, 'ttft_p99': 106.434, 'ttft_viol': 0.297, 'tpot_p50': 0.032, 'tpot_p99': 0.046, 'bviol_1s': 0.246, 'bviol_win': 0.282, 'over_j': 504.905, 'ctrl_ms_mean': 0.032, 'ctrl_ms_max': 0.102}
+{'episode': 'pi_rep1', 'controller': 'pi', 'energy_j': 28401.558, 'tokens': 86835, 'j_per_tok': 0.327, 'done': 370, 'left': 0, 'mean_w': 92.815, 'ttft_p50': 57.174, 'ttft_p99': 122.268, 'ttft_viol': 0.765, 'tpot_p50': 0.044, 'tpot_p99': 0.046, 'bviol_1s': 0.223, 'bviol_win': 0.239, 'over_j': 414.516, 'ctrl_ms_mean': 0.032, 'ctrl_ms_max': 0.221}
+{'episode': 'pi_rep2', 'controller': 'pi', 'energy_j': 28537.938, 'tokens': 88806, 'j_per_tok': 0.321, 'done': 371, 'left': 0, 'mean_w': 92.957, 'ttft_p50': 51.432, 'ttft_p99': 122.944, 'ttft_viol': 0.733, 'tpot_p50': 0.043, 'tpot_p99': 0.046, 'bviol_1s': 0.226, 'bviol_win': 0.249, 'over_j': 402.711, 'ctrl_ms_mean': 0.03, 'ctrl_ms_max': 0.211}
+{'episode': 'polca_rep0', 'controller': 'polca', 'energy_j': 30113.586, 'tokens': 39931, 'j_per_tok': 0.754, 'done': 165, 'left': 0, 'mean_w': 97.14, 'ttft_p50': 33.055, 'ttft_p99': 61.73, 'ttft_viol': 0.545, 'tpot_p50': 0.028, 'tpot_p99': 0.046, 'bviol_1s': 0.379, 'bviol_win': 0.399, 'over_j': 1759.781, 'ctrl_ms_mean': 0.001, 'ctrl_ms_max': 0.01}
+{'episode': 'polca_rep1', 'controller': 'polca', 'energy_j': 33520.442, 'tokens': 86676, 'j_per_tok': 0.387, 'done': 370, 'left': 0, 'mean_w': 97.727, 'ttft_p50': 94.798, 'ttft_p99': 162.21, 'ttft_viol': 0.87, 'tpot_p50': 0.045, 'tpot_p99': 0.047, 'bviol_1s': 0.372, 'bviol_win': 0.399, 'over_j': 1740.761, 'ctrl_ms_mean': 0.001, 'ctrl_ms_max': 0.006}
+{'episode': 'polca_rep2', 'controller': 'polca', 'energy_j': 33459.438, 'tokens': 88771, 'j_per_tok': 0.377, 'done': 371, 'left': 0, 'mean_w': 97.549, 'ttft_p50': 100.437, 'ttft_p99': 172.363, 'ttft_viol': 0.881, 'tpot_p50': 0.045, 'tpot_p99': 0.047, 'bviol_1s': 0.379, 'bviol_win': 0.399, 'over_j': 1744.503, 'ctrl_ms_mean': 0.001, 'ctrl_ms_max': 0.006}
+{'episode': 'static64_rep0', 'controller': 'static64', 'energy_j': 30641.437, 'tokens': 39986, 'j_per_tok': 0.766, 'done': 165, 'left': 0, 'mean_w': 98.843, 'ttft_p50': 0.044, 'ttft_p99': 0.081, 'ttft_viol': 0.0, 'tpot_p50': 0.027, 'tpot_p99': 0.036, 'bviol_1s': 0.395, 'bviol_win': 0.399, 'over_j': 1954.302, 'ctrl_ms_mean': 0.001, 'ctrl_ms_max': 0.005}
+{'episode': 'static64_rep1', 'controller': 'static64', 'energy_j': 30389.876, 'tokens': 86493, 'j_per_tok': 0.351, 'done': 370, 'left': 0, 'mean_w': 99.313, 'ttft_p50': 0.05, 'ttft_p99': 0.07, 'ttft_viol': 0.0, 'tpot_p50': 0.03, 'tpot_p99': 0.034, 'bviol_1s': 0.399, 'bviol_win': 0.399, 'over_j': 1975.685, 'ctrl_ms_mean': 0.001, 'ctrl_ms_max': 0.001}
+{'episode': 'static64_rep2', 'controller': 'static64', 'energy_j': 30498.183, 'tokens': 88272, 'j_per_tok': 0.346, 'done': 371, 'left': 0, 'mean_w': 99.342, 'ttft_p50': 0.05, 'ttft_p99': 0.072, 'ttft_viol': 0.0, 'tpot_p50': 0.03, 'tpot_p99': 0.035, 'bviol_1s': 0.399, 'bviol_win': 0.399, 'over_j': 1974.015, 'ctrl_ms_mean': 0.001, 'ctrl_ms_max': 0.001}
+index, pci.bus_id, power.limit [W], enforced.power.limit [W]
+0, 00000000:17:00.0, 100.00 W, 100.00 W
+---- (5) analysis
+/workspace/controls/live_load.py:396: DeprecationWarning: `trapz` is deprecated. Use `trapezoid` instead, or one of the numerical integration functions in `scipy.integrate`.
+  energy = float(np.trapz(pp, tt)) if len(tt) > 1 else float("nan")
+{'episode': 'mpc_rep0', 'controller': 'mpc', 'energy_j': 20511.186, 'tokens': 40246, 'j_per_tok': 0.51, 'done': 165, 'left': 0, 'mean_w': 66.812, 'ttft_p50': 11.105, 'ttft_p99': 26.537, 'ttft_viol': 0.0, 'tpot_p50': 0.028, 'tpot_p99': 0.03, 'bviol_1s': 0.12, 'bviol_win': 0.0, 'over_j': 0.0, 'ctrl_ms_mean': 23.063, 'ctrl_ms_max': 50.027}
+{'episode': 'mpc_rep1', 'controller': 'mpc', 'energy_j': 21897.761, 'tokens': 86526, 'j_per_tok': 0.253, 'done': 370, 'left': 0, 'mean_w': 71.096, 'ttft_p50': 9.455, 'ttft_p99': 27.563, 'ttft_viol': 0.0, 'tpot_p50': 0.036, 'tpot_p99': 0.039, 'bviol_1s': 0.173, 'bviol_win': 0.1, 'over_j': 42.614, 'ctrl_ms_mean': 30.899, 'ctrl_ms_max': 68.513}
+{'episode': 'mpc_rep2', 'controller': 'mpc', 'energy_j': 22148.579, 'tokens': 88750, 'j_per_tok': 0.25, 'done': 371, 'left': 0, 'mean_w': 71.911, 'ttft_p50': 10.018, 'ttft_p99': 27.421, 'ttft_viol': 0.0, 'tpot_p50': 0.036, 'tpot_p99': 0.04, 'bviol_1s': 0.183, 'bviol_win': 0.073, 'over_j': 28.678, 'ctrl_ms_mean': 30.818, 'ctrl_ms_max': 67.905}
+{'episode': 'pi_rep0', 'controller': 'pi', 'energy_j': 28786.159, 'tokens': 40111, 'j_per_tok': 0.718, 'done': 165, 'left': 0, 'mean_w': 93.461, 'ttft_p50': 6.293, 'ttft_p99': 106.434, 'ttft_viol': 0.297, 'tpot_p50': 0.032, 'tpot_p99': 0.046, 'bviol_1s': 0.246, 'bviol_win': 0.282, 'over_j': 504.905, 'ctrl_ms_mean': 0.032, 'ctrl_ms_max': 0.102}
+{'episode': 'pi_rep1', 'controller': 'pi', 'energy_j': 28401.558, 'tokens': 86835, 'j_per_tok': 0.327, 'done': 370, 'left': 0, 'mean_w': 92.815, 'ttft_p50': 57.174, 'ttft_p99': 122.268, 'ttft_viol': 0.765, 'tpot_p50': 0.044, 'tpot_p99': 0.046, 'bviol_1s': 0.223, 'bviol_win': 0.239, 'over_j': 414.516, 'ctrl_ms_mean': 0.032, 'ctrl_ms_max': 0.221}
+{'episode': 'pi_rep2', 'controller': 'pi', 'energy_j': 28537.938, 'tokens': 88806, 'j_per_tok': 0.321, 'done': 371, 'left': 0, 'mean_w': 92.957, 'ttft_p50': 51.432, 'ttft_p99': 122.944, 'ttft_viol': 0.733, 'tpot_p50': 0.043, 'tpot_p99': 0.046, 'bviol_1s': 0.226, 'bviol_win': 0.249, 'over_j': 402.711, 'ctrl_ms_mean': 0.03, 'ctrl_ms_max': 0.211}
+{'episode': 'polca_rep0', 'controller': 'polca', 'energy_j': 30113.586, 'tokens': 39931, 'j_per_tok': 0.754, 'done': 165, 'left': 0, 'mean_w': 97.14, 'ttft_p50': 33.055, 'ttft_p99': 61.73, 'ttft_viol': 0.545, 'tpot_p50': 0.028, 'tpot_p99': 0.046, 'bviol_1s': 0.379, 'bviol_win': 0.399, 'over_j': 1759.781, 'ctrl_ms_mean': 0.001, 'ctrl_ms_max': 0.01}
+{'episode': 'polca_rep1', 'controller': 'polca', 'energy_j': 33520.442, 'tokens': 86676, 'j_per_tok': 0.387, 'done': 370, 'left': 0, 'mean_w': 97.727, 'ttft_p50': 94.798, 'ttft_p99': 162.21, 'ttft_viol': 0.87, 'tpot_p50': 0.045, 'tpot_p99': 0.047, 'bviol_1s': 0.372, 'bviol_win': 0.399, 'over_j': 1740.761, 'ctrl_ms_mean': 0.001, 'ctrl_ms_max': 0.006}
+{'episode': 'polca_rep2', 'controller': 'polca', 'energy_j': 33459.438, 'tokens': 88771, 'j_per_tok': 0.377, 'done': 371, 'left': 0, 'mean_w': 97.549, 'ttft_p50': 100.437, 'ttft_p99': 172.363, 'ttft_viol': 0.881, 'tpot_p50': 0.045, 'tpot_p99': 0.047, 'bviol_1s': 0.379, 'bviol_win': 0.399, 'over_j': 1744.503, 'ctrl_ms_mean': 0.001, 'ctrl_ms_max': 0.006}
+{'episode': 'static64_rep0', 'controller': 'static64', 'energy_j': 30641.437, 'tokens': 39986, 'j_per_tok': 0.766, 'done': 165, 'left': 0, 'mean_w': 98.843, 'ttft_p50': 0.044, 'ttft_p99': 0.081, 'ttft_viol': 0.0, 'tpot_p50': 0.027, 'tpot_p99': 0.036, 'bviol_1s': 0.395, 'bviol_win': 0.399, 'over_j': 1954.302, 'ctrl_ms_mean': 0.001, 'ctrl_ms_max': 0.005}
+{'episode': 'static64_rep1', 'controller': 'static64', 'energy_j': 30389.876, 'tokens': 86493, 'j_per_tok': 0.351, 'done': 370, 'left': 0, 'mean_w': 99.313, 'ttft_p50': 0.05, 'ttft_p99': 0.07, 'ttft_viol': 0.0, 'tpot_p50': 0.03, 'tpot_p99': 0.034, 'bviol_1s': 0.399, 'bviol_win': 0.399, 'over_j': 1975.685, 'ctrl_ms_mean': 0.001, 'ctrl_ms_max': 0.001}
+{'episode': 'static64_rep2', 'controller': 'static64', 'energy_j': 30498.183, 'tokens': 88272, 'j_per_tok': 0.346, 'done': 371, 'left': 0, 'mean_w': 99.342, 'ttft_p50': 0.05, 'ttft_p99': 0.072, 'ttft_viol': 0.0, 'tpot_p50': 0.03, 'tpot_p99': 0.035, 'bviol_1s': 0.399, 'bviol_win': 0.399, 'over_j': 1974.015, 'ctrl_ms_mean': 0.001, 'ctrl_ms_max': 0.001}
+==== A5000 live end Fri Sep 25 15:03:10 EDT 2026 ====

@@ -221,8 +221,12 @@ admission, PI on power cap, and a tuned static setting.
   whenever anything runs, so the only energy lever is **batch-synchronous gating**
   (hold arrivals → release one big batch → drain → idle): predicted −21% J/token vs
   work-conserving at a 30 s TTFT SLO — a lever that is worthless on uncapped GPUs,
-  where the lever is SLO-aware power capping. *[Live closed-loop validation built and
-  dry-run; not yet executed — awaiting approval to submit the GPU job.]*
+  where the lever is SLO-aware power capping. **Live test (real vLLM server, capped A5000, Qwen2.5-3B, bursty
+  arrivals, virtual budget 100→88→78→100 W, 30 s TTFT SLO, 4 controllers × 3 paired
+  reps):** MPC used **−30% ± 3 J/token** vs always-on with **0% SLO misses** (TTFT
+  median 10 s / p99 27 s) and 6% of windows over budget; PI −7% (60% SLO misses, 26%
+  over budget); POLCA-style +6% (77%, 40%); always-on 40% over budget. The CPU
+  simulation predicted the ranking and ~−18%. Valid for latency-tolerant serving only.
 
 ---
 

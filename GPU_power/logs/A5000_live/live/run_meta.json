@@ -1,0 +1,139 @@
+{
+ "gpu_name": "NVIDIA RTX A5000",
+ "power_limit_w": 100.0,
+ "model": "Qwen/Qwen2.5-3B-Instruct",
+ "dtype": "float16",
+ "task": "alpaca",
+ "mode": "live_admission",
+ "arrival_rate": 0.0,
+ "concurrency_schedule": null,
+ "segments": [
+  {
+   "controller": "pi",
+   "t0": 1790358983.5034184,
+   "t1": 1790359291.5055573
+  },
+  {
+   "controller": "static64",
+   "t0": 1790359311.5319555,
+   "t1": 1790359621.5335832
+  },
+  {
+   "controller": "polca",
+   "t0": 1790359641.542499,
+   "t1": 1790359951.5439563
+  },
+  {
+   "controller": "mpc",
+   "t0": 1790359971.5559802,
+   "t1": 1790360278.5565383
+  },
+  {
+   "controller": "pi",
+   "t0": 1790360298.5813265,
+   "t1": 1790360604.582703
+  },
+  {
+   "controller": "polca",
+   "t0": 1790360624.6069212,
+   "t1": 1790360967.6080053
+  },
+  {
+   "controller": "mpc",
+   "t0": 1790360987.6245694,
+   "t1": 1790361295.6268811
+  },
+  {
+   "controller": "static64",
+   "t0": 1790361315.6422617,
+   "t1": 1790361621.6437023
+  },
+  {
+   "controller": "pi",
+   "t0": 1790361641.6539736,
+   "t1": 1790361948.6560407
+  },
+  {
+   "controller": "polca",
+   "t0": 1790361968.668618,
+   "t1": 1790362311.670585
+  },
+  {
+   "controller": "static64",
+   "t0": 1790362331.699009,
+   "t1": 1790362638.7003353
+  },
+  {
+   "controller": "mpc",
+   "t0": 1790362658.729841,
+   "t1": 1790362966.7317421
+  }
+ ],
+ "window_wall_t0": 1790358963.7680326,
+ "window_wall_t1": 1790362987.0262654,
+ "idle_power_w": 59.4045,
+ "vllm": {
+  "vllm_version": "0.10.2",
+  "engine_api": "v1",
+  "max_num_seqs": null,
+  "block_size": null
+ },
+ "table_json": "logs/A5000_live/a5000_table.json",
+ "table_meta": {
+  "table": {
+   "1": 26.087186655201364,
+   "2": 78.46745855753592,
+   "3": 116.55282934086532,
+   "5": 195.69328172670382,
+   "7": 250.7484136918535,
+   "11": 396.9804802118601,
+   "15": 504.7534479060709,
+   "21": 604.5237428527251,
+   "26": 739.972297915339,
+   "41": 1065.26260600366,
+   "60": 1311.3962191674218
+  },
+  "p_busy": 99.45295997087342,
+  "p_idle": 59.4045,
+  "gen_mean": 238.70291777188328,
+  "sources": [
+   "logs/A5000_live/staircase"
+  ]
+ },
+ "args": {
+  "model": "Qwen/Qwen2.5-3B-Instruct",
+  "task": "alpaca",
+  "prompt_file": null,
+  "output_len": 256,
+  "dtype": "float16",
+  "tensor_parallel_size": 1,
+  "gpu_memory_utilization": 0.9,
+  "max_model_len": 4096,
+  "enforce_eager": true,
+  "gpu_id": 0,
+  "run_dir": "logs/A5000_live/live",
+  "controllers": "static64,pi,polca,mpc",
+  "ctrl_kw": "{}",
+  "reps": 3,
+  "duration_s": 300.0,
+  "drain_s": 90.0,
+  "gap_s": 20.0,
+  "rate_lo": 0.6,
+  "rate_hi": 2.0,
+  "dur_lo": 40.0,
+  "dur_hi": 12.0,
+  "budget_schedule": "100:90,88:60,78:60,100:90",
+  "slo_ttft": 30.0,
+  "slo_tpot": 0.25,
+  "budget_window": 20,
+  "horizon": 30,
+  "m_max": 64,
+  "table_json": "logs/A5000_live/a5000_table.json",
+  "p_idle": null,
+  "p_busy": null,
+  "gen_mean": 235.0,
+  "seed": 0,
+  "mock": false,
+  "analyze": null
+ }
+}
