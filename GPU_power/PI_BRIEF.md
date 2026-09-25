@@ -85,6 +85,8 @@ v1 assumed `e_byte ∝ 1/bandwidth`, so that coefficients for any GPU could be d
 
 **Confounds.** Memory technology is confounded with process node (Samsung 8N vs TSMC 4N) and with the voltage/frequency operating point. All four A5000s on our node are capped at 100 W by another user. The serving number is therefore a lower bound, and the microbenchmarks carry the GDDR6 claim. **Open question:** why B200 costs 16% more per byte than H200 on the same memory technology.
 
+**New: hardware counters validate the byte model (B200, `ncu`).** On a batch-1 Qwen2-7B decode, measured DRAM traffic was 14.20 GB per forward pass against our analytic 14.14 GB, a ratio of **1.004**. The denominator under every coefficient is correct to 0.4%, and this independently confirms our byte-counting convention (the rejected convention gives 0.932). The counters also show every DRAM byte crosses L2 about 1.9× and the TMA path about 1.2×. So our per-byte coefficient is DRAM energy plus on-chip hierarchy energy; using a colleague's per-channel energies, DRAM is only about half of B200's per-byte cost. Whether the 1/BW law holds for the DRAM channel *alone* is unestablished: a bound argument disfavors it (it would require H200 to spend almost nothing on-chip), and the same measurement on H200 would settle it, but H200 access is gone.
+
 ### 3c. What worked instead: measured coefficients plus realized utilization (established on H200/B200)
 
 The model structure transfers across GPUs. The coefficient values do not. Each GPU needs either a short calibration run or a memory-technology prior, which is labeled low confidence.
@@ -192,6 +194,8 @@ For running batch, KV and throughput, it predicts 1–10 s ahead better than per
 | Memory coefficient is stable within a GPU across models, sizes (≥1.5B) and MoE (with occupancy bytes) | Established |
 | J/byte scales as 1/bandwidth | Refuted (B200 and A5000) |
 | J/byte is set by memory technology | Probable (one GDDR6 part, capped; process-node confound) |
+| Analytic byte counts match hardware DRAM counters (1.004) | Established (B200, `ncu`, batch-1 decode) |
+| 1/BW law holds for the DRAM channel alone | Unestablished (borrowed per-channel energies; bound argument disfavors it) |
 | Recommender within ~4% J/token on measured GPUs | Established (H200, B200) |
 | Decode is cheaper on H200 than on B200 | Established within the model (P ≥ 0.9) |
 | Prefill is cheaper on B200 | Probable (P 0.78–0.88) |
@@ -204,7 +208,7 @@ For running batch, KV and throughput, it predicts 1–10 s ahead better than per
 
 ## 9. Next steps (by leverage)
 
-1. **Validate byte counts on hardware with `ncu` on B200.** Our byte counts are analytic and have never been checked against hardware counters. Counters are blocked on the A5000 node (`ERR_NVGPUCTRPERM`).
+1. **Split the per-byte coefficient into DRAM and on-chip channels.** Hardware counters now validate the byte counts (done on B200) and give the per-channel traffic; the next step is per-channel energies measured on our own GPUs rather than borrowed.
 2. **Settle `e_gemm`.** Run the NVML smoothing test ("square" test) on B200, then decide whether to adopt the correction.
 3. **Extend the live control test** to an interactive (sub-second TTFT) SLO and to an uncapped GPU, where the lever is power capping rather than batching.
 4. **Measure an uncapped GDDR6 or HBM2e point** to firm up the memory-technology ordering.

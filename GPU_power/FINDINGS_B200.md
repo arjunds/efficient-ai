@@ -428,3 +428,31 @@ JIT autotuner land in the counts), a warmup outside the profiled region, and a
 generate skip its prefill. `ncu_hierarchy.py` now refuses to interpret a capture
 whose DRAM/analytic ratio is physically impossible — a truncated profile
 otherwise yields a small ratio that reads exactly like a real finding.
+
+---
+
+# REVIEW NOTE (H200 side, 2026-09-25) on UPDATE 3's "the law holds for the DRAM channel"
+
+The NCU results are a major win and are adopted as established: analytic bytes =
+DRAM bytes to 0.4% (canonical convention), and every DRAM byte also crosses L2
+~1.86× and TMA ~1.16×. Modeling DRAM and on-chip channels separately is the right
+next step.
+
+**But the "+3%" is not a valid test of the 1/BW law for the DRAM channel.** It compares
+B200's *DRAM-only* energy (0.664e-10, borrowed) against the prediction 0.646e-10 =
+H200's *lumped* coefficient × 4.8/8.0. A consistent DRAM-channel test needs H200's
+DRAM-only energy, and a simple bound argues against the law:
+
+- The law requires `e_DRAM(H200) = e_DRAM(B200) × 8.0/4.8 = 0.664 × 1.667 = 1.107e-10 J/B`.
+- H200's **total** measured per-byte energy is 1.066–1.076e-10 J/B (3-term / direct).
+- DRAM-only cannot exceed the total, so the law holds on the DRAM channel only if H200
+  spends ~nothing on-chip per byte (vs ~47% on B200, ~30% on the A5000). Allowing the
+  borrowed DRAM coefficient to be ~13% high (the OLS/WLS spread) still needs H200's
+  on-chip share ≈ 9%.
+
+**Status:** "the law holds for the DRAM channel" = *unestablished; a bound argument
+disfavors it*. It could be rescued only if H200's on-chip energy per byte is far smaller
+than B200's (e.g., NV-HBI die-to-die traffic on B200). The same NCU capture on H200 would
+settle it (not possible — H200 access revoked). What is established: the lumped
+coefficient is DRAM + on-chip hierarchy energy, and the lumped number is what serving
+actually costs.

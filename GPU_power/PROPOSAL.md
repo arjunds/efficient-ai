@@ -248,8 +248,11 @@ exploits fleet heterogeneity. Framing: a **measurement + systems** paper (MLSys 
 workshop), with the controls result as a second contribution.
 
 ## 7. Risks / open threats
-- **Byte counts are analytic, not hardware-measured.** Path: `ncu` is available on the
-  B200 node (permission probe pending) — `HANDOFF_TO_B200_v2.md`.
+- ~~Byte counts are analytic, not hardware-measured.~~ **Resolved (2026-09-25):** `ncu` on
+  B200 measured 14.20 GB DRAM per decode pass vs our analytic 14.14 GB (ratio 1.004),
+  confirming the canonical convention; each DRAM byte also crosses L2 ~1.9× and TMA
+  ~1.2×, so per-byte energy = DRAM + on-chip hierarchy. "The 1/BW law holds for DRAM
+  alone" is unestablished (see FINDINGS_B200.md review note).
 - **Compute coefficient uncertainty** (§3d) — absolute prefill energy ±tens of %.
 - **Memory-technology claim** has one GDDR6 part, power-capped, confounded with process
   node and V/f.
