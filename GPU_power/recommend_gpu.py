@@ -119,23 +119,32 @@ DATASHEET = {
 }
 
 # Memory-technology-class priors for GPUs with no measured coefficients: (center, lo, hi).
-# Energy per byte is set by MEMORY TECHNOLOGY (FINDINGS_B200.md, FINDINGS_A5000.md):
+# Energy per byte is set by memory technology: HBM vs GDDR, NOT HBM generation.
 #  HBM3/3e : the measured H200/B200 band, 1.07-1.25e-10 J/B.
-#  HBM2e   : ~1.7-1.8e-10 from the A100-PCIe c=1 runs pinned at its 300 W cap — weak, wide.
-#  GDDR6   : A5000 microbenchmarks at full clocks: cuBLAS GEMV 2.7-3.6e-10, and serving on
-#            the same GPU costs 1.04-1.14x GEMV per analytic byte -> ~2.8-4.1e-10. It is
-#            confounded with process node (Samsung 8N) and the V/f point, so kept wide.
-#  e_kvbyte: the HBM parts show KV = weight + 1.6-2.2e-10 (additive) or 2.3-3.1x
-#            (multiplicative); the prior spans both readings.
+#  HBM2/2e : EnergAIzer (Lee et al., ISPASS 2026; LIT_ENERGAIZER.md) measurement DB,
+#            A100-PCIe: ~113 pJ/B flat over locked SM 510-900 MHz, 136 pJ/B at 1410 MHz
+#            (boost, higher core voltage). Serving runs at BOOST clocks (same principle
+#            as GDDR6), so center = 1.36e-10, range [1.05, 1.60]. Backtest on our
+#            A100-PCIe runs (at its default 300 W TDP): J/tok MAPE 13.3% at 1.36 vs
+#            20.4% at 1.13. (v2.2's 1.75e-10 was read off those TDP-bound runs, where
+#            J/byte is not identifiable.)
+#  GDDR6   : strongly CLOCK-dependent. A5000 steady capped streaming at SM 210-460 MHz
+#            gave ~1.3e-10; EnergAIzer A10 at 900 MHz ~1.5e-10 (approximate, idle
+#            unknown); A5000 full-clock (1.9 GHz) bursts 2.6-3.1e-10. Serving runs at
+#            boost clocks, so the center sits in the boost regime with a range covering
+#            the clock dependence. A matched-clock comparison is pending.
+#  e_kvbyte: kept proportionate (the HBM parts show KV ~2.3-3.1x weight J/B).
 MEM_PRIOR = {
     "HBM3e": dict(e_wbyte=(1.16e-10, 1.07e-10, 1.25e-10), e_kvbyte=(3.1e-10, 2.7e-10, 3.5e-10),
                   src="HBM3/3e class prior (H200+B200 measured band)"),
     "HBM3":  dict(e_wbyte=(1.16e-10, 1.07e-10, 1.25e-10), e_kvbyte=(3.1e-10, 2.7e-10, 3.5e-10),
                   src="HBM3/3e class prior (H200+B200 measured band)"),
-    "HBM2e": dict(e_wbyte=(1.75e-10, 1.4e-10, 2.3e-10), e_kvbyte=(4.5e-10, 3.3e-10, 6.5e-10),
-                  src="HBM2e class prior (A100-PCIe, cap-bound; weak)"),
-    "GDDR6": dict(e_wbyte=(3.2e-10, 2.5e-10, 4.1e-10), e_kvbyte=(6.0e-10, 3.7e-10, 11.0e-10),
-                  src="GDDR6 class prior (A5000 microbench)"),
+    "HBM2e": dict(e_wbyte=(1.36e-10, 1.05e-10, 1.60e-10), e_kvbyte=(3.67e-10, 2.4e-10, 4.9e-10),
+                  src="HBM2/2e class prior (EnergAIzer DB-derived, boost-clock point)"),
+    "HBM2":  dict(e_wbyte=(1.36e-10, 1.05e-10, 1.60e-10), e_kvbyte=(3.67e-10, 2.4e-10, 4.9e-10),
+                  src="HBM2/2e class prior (EnergAIzer DB-derived, boost-clock point)"),
+    "GDDR6": dict(e_wbyte=(2.3e-10, 1.3e-10, 3.1e-10), e_kvbyte=(4.4e-10, 2.5e-10, 9.0e-10),
+                  src="GDDR6 class prior (clock-dependent; matched-clock comparison pending)"),
 }
 # e_gemm priors for unmeasured parts (J/flop, fp16 dense): (center, lo, hi, source).
 #  Ampere GA10x (A5000): cuBLAS measured 2-4 pJ/flop at 98-100 TFLOPS (88-90% of 111.1

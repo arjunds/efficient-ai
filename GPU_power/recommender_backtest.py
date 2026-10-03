@@ -495,7 +495,7 @@ def make_figure(rows, wm, path):
         b.scatter([r["j_tok"] for r in sel], [r["preds"]["v2"]["j_tok"] for r in sel], s=26,
                   color=C[gk], edgecolor="white", linewidth=0.7, zorder=3,
                   label="%s: v2 %.0f%% | v1 %.0f%% MAPE%s" % (
-                      gk, err, err1, "\n   (cap-bound; its HBM2e prior was set from these runs)"
+                      gk, err, err1, "\n   (zero-shot HBM2 prior, EnergAIzer boost point; runs at 300 W default TDP)"
                       if gk.startswith("A100") else ""))
     lim = [0.01, 30]
     b.plot(lim, lim, color=INK2, lw=0.8); b.fill_between(lim, [x * 0.85 for x in lim],
@@ -549,7 +549,7 @@ def make_figure(rows, wm, path):
                       % ("c" if phase == "decode" else "d", phase.upper()), loc="left", fontsize=8.5)
         cb = fig.colorbar(im, ax=axx, fraction=0.04, pad=0.02, ticks=[-1, -0.5, 0, 0.5, 1])
         cb.ax.set_yticklabels(["0.5", "0.71", "1", "1.41", "2"]); cb.set_label("B200 / H200", fontsize=8)
-    fig.suptitle("Recommender v2.2: measured (prefix-cache-corrected) coefficients + realized utilization (vLLM 0.10.2, fp16); win-maps at cached_frac=0",
+    fig.suptitle("Recommender v2.4: measured (prefix-cache-corrected) coefficients + realized utilization (vLLM 0.10.2, fp16); win-maps at cached_frac=0",
                  x=0.01, ha="left", fontsize=11.5, color=INK)
     fig.tight_layout(rect=(0, 0, 1, 0.97))
     fig.savefig(path, facecolor=fig.get_facecolor())

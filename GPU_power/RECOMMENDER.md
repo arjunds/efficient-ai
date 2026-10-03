@@ -1,4 +1,4 @@
-# GPU recommender v2.2: measured coefficients and realized utilization
+# GPU recommender v2.4: measured coefficients and realized utilization
 
 *v2.1 (2026-09-24): prefix-cache-corrected coefficients, a `cached_frac` workload
 parameter (§1a), and the power-limited A5000 excluded. v2.0 was commit 84fea1a.*
@@ -6,6 +6,15 @@ parameter (§1a), and the power-limited A5000 excluded. v2.0 was commit 84fea1a.
 *v2.2: memory-technology-class priors for unmeasured GPUs, with GDDR6 and Ampere
 GA10x e_gemm taken from the A5000 microbenchmarks (`FINDINGS_A5000.md`). The L40S/A100
 question is re-answered in §4.*
+
+*v2.3 (2026-10-03): HBM2/2e prior replaced with the EnergAIzer DB-derived value
+(1.13e-10 J/B, down from 1.75e-10), so HBM generations now look flat. GDDR6 prior
+re-centred on boost clocks and widened for its clock dependence (2.3e-10
+[1.3, 3.1]). Measured H200/B200 results are unchanged.*
+
+*v2.4: the HBM2/2e center follows the same boost-clock principle, using EnergAIzer's
+1410 MHz point: 1.36e-10 [1.05, 1.60] (KV scaled in proportion). It cuts the A100
+zero-shot miss from 20.4% to 13.3% (§3).*
 
 Files: `recommend_gpu.py` (the tool, CLI compatible with v1), `recommender_backtest.py`
 (fit, backtest, win-map, figure), `plots_proposal/fig8_recommender_v2.png`.
@@ -45,13 +54,14 @@ re-binned everything under canonical `~/models.py`. v2 uses that convention
 throughout, and `e_gemm` multiplies dense GEMM FLOPs only, as the fit does.
 
 **Memory-technology-class priors for unmeasured GPUs.** Energy per byte is set by
-memory technology (`FINDINGS_A5000.md`). Weight stream, J/byte, center [lo, hi]:
+**HBM vs GDDR**, not by HBM generation (`FINDINGS_A5000.md`; EnergAIzer, Lee et al.,
+ISPASS 2026, summarized in `LIT_ENERGAIZER.md`). Weight stream, J/byte, center [lo, hi]:
 
 | class | e_wbyte | e_kvbyte | evidence |
 |---|---|---|---|
 | HBM3/3e (H100) | 1.16e-10 [1.07, 1.25] | 3.1e-10 [2.7, 3.5] | H200 and B200 measured band |
-| HBM2e (A100) | 1.75e-10 [1.4, 2.3] | 4.5e-10 [3.3, 6.5] | A100-PCIe c=1 runs pinned at the 300 W cap. Weak |
-| GDDR6 (L40S, A5000) | **3.2e-10 [2.5, 4.1]** | 6.0e-10 [3.7, 11] | A5000 microbenchmark at full clocks: GEMV 2.7-3.6e-10, and serving costs 1.04-1.14× GEMV per byte. Confounded with process node (Samsung 8N) and the V/f point. **"microbench prior"** |
+| HBM2/2e (A100) | **1.36e-10 [1.05, 1.60]** | 3.67e-10 [2.4, 4.9] | **EnergAIzer DB-derived, boost-clock point:** A100-PCIe streaming is ≈113 pJ/B at locked SM 510-900 MHz and 136 pJ/B at 1410 MHz. Serving runs at boost clocks, the same principle as for GDDR6. Replaces v2.2's 1.75e-10, which was read off our A100 runs, where J/byte is not identifiable (§3) |
+| GDDR6 (L40S, A5000) | **2.3e-10 [1.3, 3.1]** | 4.4e-10 [2.5, 9.0] | **Clock-dependent; matched-clock comparison pending.** A5000 steady capped streaming at SM 210-460 MHz: ~1.3e-10. EnergAIzer A10 at 900 MHz: ~1.5e-10 (approximate, idle unknown). A5000 full-clock (1.9 GHz) bursts: 2.6-3.1e-10. Serving runs at boost clocks, so the center sits toward the boost regime |
 
 - **e_gemm priors:**
 
@@ -160,7 +170,7 @@ power and J/token, compared against `results.json`. MAPE in %:
 | B200 72B | 6 | 3.5 | 2.7 | 19.0 | 1.5 | 1.7 | 29.9 | **3.7** | 3.5 | 41.0 |
 | **all H200** | 110 | 3.6 | 14.5 | 206 | 4.0 | 8.9 | 80.2 | **4.1** | 6.0 | 34.1 |
 | **all B200** | 27 | 3.7 | 3.7 | 90.3 | 1.8 | 2.0 | 19.4 | **3.7** | 3.6 | 47.9 |
-| A100-PCIe (capped) | 40 | 5.3 | – | 35.8 | 3.0 | – | 3.0 | 5.6 | – | 62.5 |
+| A100-PCIe (at 300 W TDP) | 40 | 11.7 | – | 35.8 | 4.5 | – | 3.0 | **13.3** | – | 62.5 |
 
 **Old vs new (prefix-cache fix).** J/token MAPE, v2.0 → v2.1. v2.0 = uncorrected
 coefficients, logged prefill FLOPs, v2.0 time fit. v2.1 = corrected coefficients,
@@ -190,16 +200,31 @@ and J/token (power in parentheses):
 - **Energy coefficients are partly in-sample:** the H200 dense and B200 7B runs are the
   fit sets. B200 32B and 72B are out-of-sample for energy and land at 4.9% and 3.7%.
   The ladder is out-of-sample for H200 energy.
-- **A100 is not a clean zero-shot test.** Its HBM2e prior was set from these same runs,
-  and at the cap, power ≈ P_cap by construction. With the HBM3e band instead (a truly
-  zero-shot case), J/token is **−19%** biased. Older HBM2e parts cost measurably more
-  per byte, so "invariant J/byte" holds within HBM3/3e, not across generations.
+- **A100-PCIe is a zero-shot test of the HBM2 prior.**
+  - **300 W is this SKU's default TDP.** The runs are "at TDP", not artificially capped,
+    so their J/token is valid for the A100-PCIe. But because power sits at the limit
+    (DVFS), **J/byte is not identifiable** from them. That is why v2.2's 1.75e-10,
+    read off these runs, was dropped.
+  - J/token MAPE by HBM2 prior:
+
+    | HBM2 prior | J/tok MAPE (bias) | power MAPE | runs predicted at TDP | J/tok MAPE with **measured** tok/s |
+    |---|---|---|---|---|
+    | 1.13e-10 (EnergAIzer, locked low clocks) | 20.4% (−20%) | 11.3% | 9/40 | 18.3% (−18%) |
+    | **1.36e-10 (EnergAIzer, 1410 MHz boost; adopted)** | **13.3% (−11%)** | 4.5% | 16/40 | 10.5% (−10%) |
+
+    Measured: all 40 runs are at TDP.
+  - **The time model accounts for only about 3 points of the remaining miss:** the
+    pooled H200/B200 time model over-predicts A100 throughput by about 10%. Even with
+    the measured tok/s, predicted demand stays about 10% below the 300 W TDP. So a
+    real A100 serving run either costs more per byte than EnergAIzer's streaming
+    number, or carries KV/compute energy the prior under-counts.
+  - **A100 rankings remain somewhat optimistic.**
 - Closed-loop vs Poisson (H200+B200): J/token 4.1% vs 3.7%.
 - Signed J/token bias is −2 to −5% on most groups: v2 slightly under-predicts.
 - Worst cases:
   - gemma-7b on H200 runs at 41% MBU against 50% predicted (architecture-specific
     slowness);
-  - A100 c=64 runs are +20 to +38% (throttled time; cache hits not removed);
+  - A100 c=64 runs are the largest A100 misses (TDP-bound time; cache hits not removed);
   - 32B Poisson on H200 is −18%.
 
 ## 4. Recomputed recommendations
@@ -244,17 +269,22 @@ token; bold = P(winner) ≥ 0.9; cached_frac = 0):
 
   | phase | E(L40S)/E(A100-SXM) | P(A100 wins) | driven by |
   |---|---|---|---|
-  | decode | **1.72-1.76** (vs PCIe 1.56-1.58) | ≈1.00 | robust |
-  | prefill | 1.19 (central) | P(L40S wins) = 0.32-0.42 | unmeasured Ada e_gemm |
+  | decode | **1.64-1.70** (vs PCIe 1.54-1.58) | ≈1.00 | robust |
+  | prefill | 1.18 (central; PCIe 1.08) | P(L40S wins) = 0.32-0.42 | unmeasured Ada e_gemm |
 
-  - **Decode:** A100 now wins **confidently**. In v2.1 this was a coin flip; it
-    changed because L40S's GDDR6 bytes cost about 1.8× the HBM2e prior (about 2.7×
-    HBM3e) and L40S streams 2.3× slower. The result is robust to L40S idle (35-70 W)
-    and to e_gemm: the ratio stays 1.44-1.82× across the sensitivity sweep.
-  - **Prefill:** the answer is set entirely by the unmeasured Ada e_gemm. The ratio
-    is 0.58× at 0.8 pJ, 1.06-1.19× at 1.6 pJ, and 1.95-2.2× at 3 pJ; at a
-    GA102-like 3 pJ it is ≈2×.
+  - **Decode:** A100 wins **confidently**. GDDR6 costs 2.3e-10 J/B against HBM2's
+    1.36e-10 (about 1.7×), and L40S streams 2.3× slower. The ratio was 1.85-1.93× at
+    the v2.3 HBM2 value of 1.13 and is 1.64-1.70× at 1.36. It stays above 1.3× even at
+    the low GDDR6 value.
+  - **Prefill:** unchanged. It is compute-bound, so e_byte barely matters, and the
+    answer is set entirely by the unmeasured Ada e_gemm. Against A100-SXM the ratio is
+    0.65× at 0.8 pJ, 1.18× at 1.6 pJ and 2.2× at 3 pJ (A100-PCIe: 0.60 / 1.08 / 2.0).
   - **Joint P(reversal)** is 32-42%.
+  - **Other ranking change (7B, prompt 2048 / gen 256 / batch 32 decode):**
+    - With the boost-clock HBM2 prior, A100-SXM is 1.15× H200 (157 vs 136 mJ/token)
+      and about level with B200 (155). In v2.3, at 1.13e-10, it was within 2% of H200.
+    - P(best): H200 0.75, H100 0.24, A100-SXM 0.01. For 14B: H200 0.65, H100 0.28.
+    - The H200-vs-H100 split is driven by priors (H100 is unmeasured).
   - **Verdict:** the decode half of the old story (A100 over L40S) now holds firmly,
     though for the opposite reason from v1: technology-class energy per byte, not
     1/bandwidth. The prefill half ("L40S wins prefill") is **unsupported**; it needs
