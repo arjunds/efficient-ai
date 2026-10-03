@@ -605,6 +605,93 @@ def test_gemm(b, results):
     results["gemm"] = out
 
 
+# --- Steady-state calibration ops (2026-10-03; PI notes + EnergAIzer protocol) ---
+# Qwen2-7B (the cross-GPU anchor model) layer shapes, K -> N, fp16 weights.
+LLM_SHAPES = {"qkv": (3584, 4608), "o": (3584, 3584), "mlp_up": (3584, 18944),
+              "mlp_down": (18944, 3584)}
+LLM_TOKENS = (1, 8, 32, 64, 128, 512, 2048, 8192)   # decode batch ... prefill chunk
+
+
+def test_llmgemm(b, results):
+    """Model-shaped linear layers at decode (M = batch) and prefill (M = chunk)
+    token counts, each looped >= steady_s. Weights are cycled across enough copies
+    to exceed 4x L2, so every call streams its weight from DRAM (as in serving).
+    The spread in arithmetic intensity across M makes a steady-state 2-feature fit
+    p_dyn = e_byte*BW + e_flop*FLOP/s identifiable without per-bin power."""
+    out = []
+    for name, (K, N) in LLM_SHAPES.items():
+        wbytes = 2 * K * N
+        ncopy = max(2, int(math.ceil(4 * _l2() / wbytes)))
+        for M in LLM_TOKENS:
+            def mk(K=K, N=N, M=M, ncopy=ncopy):
+                Ws = [torch.randn(N, K, device="cuda", dtype=torch.float16) * 0.01
+                      for _ in range(ncopy)]
+                x = torch.randn(M, K, device="cuda", dtype=torch.float16)
+                y = torch.empty(M, N, device="cuda", dtype=torch.float16)
+                idx = [0]
+
+                def fn():
+                    torch.matmul(x, Ws[idx[0]].t(), out=y)
+                    idx[0] = (idx[0] + 1) % ncopy
+                return TorchOp(fn, 2.0 * (K * N + M * K + M * N), 2.0 * M * K * N)
+            out.append(b.repeat(f"llm_{name}_M{M}", mk,
+                                {"test": "llmgemm", "shape": name, "K": K, "N": N, "M": M,
+                                 "weight_bytes": wbytes, "weight_copies": ncopy,
+                                 "arith_intensity": (2.0 * M * K * N) / (2.0 * (K * N + M * K + M * N))}))
+    results["llmgemm"] = out
+
+
+def test_square_multi(b, results, trace_path, periods=(0.1, 0.25, 0.5, 1.0, 2.0), cycles=6):
+    """Square-wave DRAM streaming at several on/off periods (50% duty). With known
+    on/off edges, fitting each power signal (POWER_INSTANT, GetPowerUsage avg) as a
+    boxcar-smoothed, time-shifted copy of the on/off signal separates the smoothing
+    WINDOW from a timestamp LAG -- settling the ~0.4 s smear question."""
+    op = StreamOp(1 * 2**30)
+    op.tune(0.01)
+    for _ in range(20):
+        op()
+    torch.cuda.synchronize()
+    time.sleep(2.0)
+    t0 = time.time()
+    marks = []
+    for per in periods:
+        half = per / 2
+        for _ in range(cycles):
+            a = time.time()
+            while time.time() < a + half:
+                op(); torch.cuda.synchronize()
+            m = time.time()
+            time.sleep(half)
+            marks.append((a, m, per))
+        time.sleep(1.5)
+    rows = b.sampler.window(t0 - 1.0, time.time())
+    with open(trace_path, "w") as f:
+        f.write("t,energy_mj,p_inst_w,p_avg_w,sm_mhz,mem_mhz,temp_c,reasons,on,period_s\n")
+        for r in rows:
+            hit = [p for a, m, p in marks if a <= r[0] < m]
+            per = next((p for a, m, p in marks if a - 0.05 <= r[0] < m + p / 2 + 0.05), "")
+            f.write(",".join("" if v is None else str(v) for v in r) + f",{int(bool(hit))},{per}\n")
+    results["square_multi"] = {"trace": os.path.basename(trace_path), "periods_s": list(periods),
+                               "cycles": cycles, "edges": marks,
+                               "note": "analyze with microbench/steady_calib_analysis.py (window/lag fit)"}
+
+
+def test_launch(b, results):
+    """Launch-overhead power: back-to-back near-empty kernels keep the GPU clocked up
+    but do ~no work, i.e. the energy of vLLM's ~1.4-2.2 ms/step host/launch overhead.
+    Convention: bytes_per_s field = kernel launches per second, so j_per_byte_dyn =
+    joules per kernel launch."""
+    out = []
+    for nelem in (1, 4096):
+        def mk(nelem=nelem):
+            t = torch.zeros(nelem, device="cuda", dtype=torch.float32)
+            return TorchOp(lambda: t.add_(1.0), 1.0, 0.0)   # 1 "byte" == 1 launch
+        out.append(b.repeat(f"launch_{nelem}elem", mk,
+                            {"test": "launch", "nelem": nelem,
+                             "note": "bytes_per_s = launches/s; j_per_byte_dyn = J/launch"}))
+    results["launch"] = out
+
+
 def _linfit(xs, ys):
     n = len(xs)
     mx, my = sum(xs) / n, sum(ys) / n
@@ -1053,6 +1140,12 @@ def main():
                 test_gemv(b, results)
             elif t == "gemm":
                 test_gemm(b, results)
+            elif t == "llmgemm":
+                test_llmgemm(b, results)
+            elif t == "launch":
+                test_launch(b, results)
+            elif t == "square_multi":
+                test_square_multi(b, results, out_path.replace(".json", "_square_multi_trace.csv"))
             elif t == "square":
                 test_square(b, results, out_path.replace(".json", "_square_trace.csv"))
         except Exception as e:
