@@ -1,0 +1,236 @@
+==== B200 steady calibration Wed Oct  7 02:19:00 PM EDT 2026 node=dgx020 stages=steady,analyze ====
+index, name, pci.bus_id, power.limit [W], enforced.power.limit [W], power.default_limit [W], clocks.current.sm [MHz], clocks.max.sm [MHz], clocks.max.memory [MHz], driver_version
+0, NVIDIA B200, 00000000:43:00.0, 1000.00 W, 1000.00 W, 1000.00 W, 120 MHz, 1965 MHz, 3996 MHz, 580.95.05
+=== [steady] stream,grid,vendor,gemv,llmgemm,launch,square_multi (>=10 s per point, 3 repeats) ===
+GPU: {"name": "NVIDIA B200", "driver": "580.95.05", "power_limit_enforced_w": 1000.0, "power_limit_default_w": 1000.0, "power_limit_range_w": [200.0, 1000.0], "max_sm_mhz": 1965.0, "max_mem_mhz": 3996.0, "mem_bus_width_bits": 7680.0, "sm_count": 148, "l2_bytes": 132644864, "total_mem_bytes": 191503138816, "cc": "10.0", "have_power_instant_field": true, "have_energy_counter": true, "torch": "2.8.0+cu128", "triton": "3.4.0"}
+idle_deep(pre): {"n_samples": 999, "p_energy_w": 235.2303093134411, "energy_counter_updates": 99, "energy_counter_period_s": 0.10001296899756607, "p_inst_w": 235.3425145145145, "p_avg_w": 235.35720689655173, "sm_mhz": 1965.0, "mem_mhz": 3996.0, "temp_c": 32.005005005005, "frac_sw_power_cap": 0.0, "frac_thermal": 0.0, "frac_hw_slowdown": 0.0, "p_w": 235.3425145145145, "energy_counter_over_inst": 0.9995232259615103, "duration_s": 10.000067234039307, "waited_s": 32.00544285774231}
+idle_p0(pre): {"n_samples": 989, "p_energy_w": 235.0477839750943, "energy_counter_updates": 99, "energy_counter_period_s": 0.09997407027653285, "p_inst_w": 235.0248169868554, "p_avg_w": 235.0754544431946, "sm_mhz": 1965.0, "mem_mhz": 3996.0, "temp_c": 32.0, "frac_sw_power_cap": 0.0, "frac_thermal": 0.0, "frac_hw_slowdown": 0.0, "p_w": 235.0248169868554, "energy_counter_over_inst": 1.0000977215450408, "duration_s": 10.001325368881226}
+=== stream ===
+  [stream_L1ca_9.2MB r0] P=575.1 W (inst 575.1, avg 574.8)  dyn=339.8 W  BW=30895.5 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=42C  cap=0.00  J/B=1.100e-11
+  [stream_L1ca_9.2MB r1] P=577.4 W (inst 577.4, avg 577.2)  dyn=342.1 W  BW=30925.2 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=43C  cap=0.00  J/B=1.106e-11
+  [stream_L1ca_9.2MB r2] P=581.0 W (inst 581.0, avg 580.3)  dyn=345.7 W  BW=31088.8 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=44C  cap=0.00  J/B=1.112e-11
+  [stream_L1ca_18.5MB r0] P=625.5 W (inst 625.5, avg 625.4)  dyn=390.2 W  BW=34565.8 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=46C  cap=0.00  J/B=1.129e-11
+  [stream_L1ca_18.5MB r1] P=626.2 W (inst 626.2, avg 626.2)  dyn=390.9 W  BW=34580.4 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=46C  cap=0.00  J/B=1.130e-11
+  [stream_L1ca_18.5MB r2] P=627.8 W (inst 627.8, avg 627.8)  dyn=392.5 W  BW=34602.0 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=47C  cap=0.00  J/B=1.134e-11
+  [stream_cg_0.25MB r0] P=280.8 W (inst 280.8, avg 280.8)  dyn=45.4 W  BW=1182.7 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=37C  cap=0.00  J/B=3.841e-11
+  [stream_cg_0.25MB r1] P=279.4 W (inst 279.4, avg 279.3)  dyn=44.1 W  BW=1181.3 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=35C  cap=0.00  J/B=3.729e-11
+  [stream_cg_0.25MB r2] P=278.6 W (inst 278.6, avg 278.6)  dyn=43.3 W  BW=1183.7 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=34C  cap=0.00  J/B=3.655e-11
+  [stream_cg_1.00MB r0] P=393.8 W (inst 393.8, avg 393.8)  dyn=158.5 W  BW=4471.0 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=37C  cap=0.00  J/B=3.545e-11
+  [stream_cg_1.00MB r1] P=395.1 W (inst 395.1, avg 394.9)  dyn=159.7 W  BW=4491.4 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=37C  cap=0.00  J/B=3.556e-11
+  [stream_cg_1.00MB r2] P=394.8 W (inst 394.8, avg 394.6)  dyn=159.4 W  BW=4486.1 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=37C  cap=0.00  J/B=3.553e-11
+  [stream_cg_2.00MB r0] P=540.1 W (inst 540.1, avg 539.9)  dyn=304.7 W  BW=8798.9 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=41C  cap=0.00  J/B=3.463e-11
+  [stream_cg_2.00MB r1] P=539.8 W (inst 539.8, avg 539.6)  dyn=304.5 W  BW=8773.5 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=41C  cap=0.00  J/B=3.470e-11
+  [stream_cg_2.00MB r2] P=540.7 W (inst 540.7, avg 540.8)  dyn=305.4 W  BW=8788.1 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=42C  cap=0.00  J/B=3.475e-11
+  [stream_cg_63.25MB r0] P=909.0 W (inst 909.0, avg 909.2)  dyn=673.6 W  BW=19419.2 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=50C  cap=0.00  J/B=3.469e-11
+  [stream_cg_63.25MB r1] P=913.2 W (inst 913.2, avg 912.4)  dyn=677.8 W  BW=19422.9 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=51C  cap=0.00  J/B=3.490e-11
+  [stream_cg_63.25MB r2] P=914.2 W (inst 914.2, avg 913.9)  dyn=678.8 W  BW=19422.5 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=52C  cap=0.00  J/B=3.495e-11
+  [stream_cg_64.00MB r0] P=923.6 W (inst 923.6, avg 923.7)  dyn=688.3 W  BW=19656.1 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=52C  cap=0.00  J/B=3.502e-11
+  [stream_cg_64.00MB r1] P=924.3 W (inst 924.3, avg 924.1)  dyn=688.9 W  BW=19654.1 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=53C  cap=0.00  J/B=3.505e-11
+  [stream_cg_64.00MB r2] P=936.5 W (inst 936.5, avg 925.4)  dyn=701.1 W  BW=19656.8 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=53C  cap=0.00  J/B=3.567e-11
+  [stream_cg_94.88MB r0] P=991.8 W (inst 991.8, avg 992.1)  dyn=756.4 W  BW=18456.2 GB/s  TF=0.00  sm=1883 mem=3996 MHz  T=53C  cap=1.00  J/B=4.099e-11
+  [stream_cg_94.88MB r1] P=994.5 W (inst 994.5, avg 992.4)  dyn=759.1 W  BW=18498.3 GB/s  TF=0.00  sm=1885 mem=3996 MHz  T=54C  cap=1.00  J/B=4.104e-11
+  [stream_cg_94.88MB r2] P=991.6 W (inst 991.6, avg 993.7)  dyn=756.2 W  BW=18486.5 GB/s  TF=0.00  sm=1882 mem=3996 MHz  T=54C  cap=1.00  J/B=4.091e-11
+  [stream_cg_126.50MB r0] P=994.8 W (inst 994.8, avg 994.8)  dyn=759.5 W  BW=7672.9 GB/s  TF=0.00  sm=1611 mem=3996 MHz  T=50C  cap=1.00  J/B=9.898e-11
+  [stream_cg_126.50MB r1] P=994.9 W (inst 994.9, avg 995.9)  dyn=759.5 W  BW=7671.2 GB/s  TF=0.00  sm=1624 mem=3996 MHz  T=51C  cap=1.00  J/B=9.901e-11
+  [stream_cg_126.50MB r2] P=994.5 W (inst 994.5, avg 994.4)  dyn=759.1 W  BW=7668.1 GB/s  TF=0.00  sm=1615 mem=3996 MHz  T=51C  cap=1.00  J/B=9.900e-11
+  [stream_cg_253.00MB r0] P=995.8 W (inst 995.8, avg 996.1)  dyn=760.4 W  BW=7460.4 GB/s  TF=0.00  sm=1557 mem=3996 MHz  T=51C  cap=1.00  J/B=1.019e-10
+  [stream_cg_253.00MB r1] P=996.9 W (inst 996.9, avg 996.4)  dyn=761.5 W  BW=7460.5 GB/s  TF=0.00  sm=1572 mem=3996 MHz  T=51C  cap=1.00  J/B=1.021e-10
+  [stream_cg_253.00MB r2] P=997.7 W (inst 997.7, avg 996.8)  dyn=762.3 W  BW=7425.6 GB/s  TF=0.00  sm=1563 mem=3996 MHz  T=50C  cap=1.00  J/B=1.027e-10
+  [stream_cg_256.00MB r0] P=995.7 W (inst 995.7, avg 995.9)  dyn=760.4 W  BW=7462.9 GB/s  TF=0.00  sm=1556 mem=3996 MHz  T=50C  cap=1.00  J/B=1.019e-10
+  [stream_cg_256.00MB r1] P=996.1 W (inst 996.1, avg 995.8)  dyn=760.8 W  BW=7460.6 GB/s  TF=0.00  sm=1556 mem=3996 MHz  T=49C  cap=1.00  J/B=1.020e-10
+  [stream_cg_256.00MB r2] P=996.0 W (inst 996.0, avg 996.0)  dyn=760.7 W  BW=7460.1 GB/s  TF=0.00  sm=1557 mem=3996 MHz  T=49C  cap=1.00  J/B=1.020e-10
+  [stream_cg_506.00MB r0] P=995.3 W (inst 995.3, avg 996.3)  dyn=760.0 W  BW=7437.2 GB/s  TF=0.00  sm=1556 mem=3996 MHz  T=49C  cap=1.00  J/B=1.022e-10
+  [stream_cg_506.00MB r1] P=997.1 W (inst 997.1, avg 996.2)  dyn=761.7 W  BW=7437.6 GB/s  TF=0.00  sm=1558 mem=3996 MHz  T=49C  cap=1.00  J/B=1.024e-10
+  [stream_cg_506.00MB r2] P=995.7 W (inst 995.7, avg 995.8)  dyn=760.4 W  BW=7436.9 GB/s  TF=0.00  sm=1557 mem=3996 MHz  T=49C  cap=1.00  J/B=1.022e-10
+  [stream_cg_1024.00MB r0] P=996.1 W (inst 996.1, avg 996.3)  dyn=760.8 W  BW=7394.2 GB/s  TF=0.00  sm=1564 mem=3996 MHz  T=49C  cap=1.00  J/B=1.029e-10
+  [stream_cg_1024.00MB r1] P=995.8 W (inst 995.8, avg 995.9)  dyn=760.4 W  BW=7394.1 GB/s  TF=0.00  sm=1566 mem=3996 MHz  T=49C  cap=1.00  J/B=1.028e-10
+  [stream_cg_1024.00MB r2] P=997.0 W (inst 997.0, avg 996.4)  dyn=761.7 W  BW=7393.9 GB/s  TF=0.00  sm=1565 mem=3996 MHz  T=49C  cap=1.00  J/B=1.030e-10
+  [stream_cg_4096.00MB r0] P=995.3 W (inst 995.3, avg 995.3)  dyn=759.9 W  BW=7252.5 GB/s  TF=0.00  sm=1595 mem=3996 MHz  T=49C  cap=1.00  J/B=1.048e-10
+  [stream_cg_4096.00MB r1] P=994.6 W (inst 994.6, avg 995.4)  dyn=759.2 W  BW=7252.3 GB/s  TF=0.00  sm=1598 mem=3996 MHz  T=49C  cap=1.00  J/B=1.047e-10
+  [stream_cg_4096.00MB r2] P=995.8 W (inst 995.8, avg 995.0)  dyn=760.4 W  BW=7252.5 GB/s  TF=0.00  sm=1596 mem=3996 MHz  T=49C  cap=1.00  J/B=1.048e-10
+=== grid ===
+  [grid_18prog r0] P=299.7 W (inst 299.7, avg 299.7)  dyn=64.4 W  BW=268.0 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=39C  cap=0.00  J/B=2.403e-10
+  [grid_37prog r0] P=342.0 W (inst 342.0, avg 342.0)  dyn=106.7 W  BW=549.0 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=37C  cap=0.00  J/B=1.943e-10
+  [grid_74prog r0] P=415.5 W (inst 415.5, avg 415.5)  dyn=180.2 W  BW=1084.9 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=37C  cap=0.00  J/B=1.661e-10
+  [grid_148prog r0] P=551.2 W (inst 551.2, avg 551.4)  dyn=315.9 W  BW=2152.6 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=39C  cap=0.00  J/B=1.467e-10
+  [grid_296prog r0] P=782.3 W (inst 782.3, avg 782.3)  dyn=547.0 W  BW=4103.5 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=43C  cap=0.00  J/B=1.333e-10
+  [grid_592prog r0] P=995.7 W (inst 995.7, avg 995.5)  dyn=760.4 W  BW=6567.3 GB/s  TF=0.00  sm=1771 mem=3996 MHz  T=47C  cap=1.00  J/B=1.158e-10
+  [grid_1184prog r0] P=996.3 W (inst 996.3, avg 996.5)  dyn=761.0 W  BW=7393.0 GB/s  TF=0.00  sm=1578 mem=3996 MHz  T=48C  cap=1.00  J/B=1.029e-10
+=== vendor ===
+  [torch_sum_1GB r0] P=996.6 W (inst 996.6, avg 996.7)  dyn=761.3 W  BW=6001.0 GB/s  TF=0.00  sm=1935 mem=3996 MHz  T=50C  cap=1.00  J/B=1.269e-10
+  [torch_sum_1GB r1] P=996.8 W (inst 996.8, avg 996.8)  dyn=761.5 W  BW=6000.4 GB/s  TF=0.00  sm=1934 mem=3996 MHz  T=51C  cap=1.00  J/B=1.269e-10
+  [torch_sum_1GB r2] P=996.7 W (inst 996.7, avg 996.7)  dyn=761.4 W  BW=5998.7 GB/s  TF=0.00  sm=1931 mem=3996 MHz  T=51C  cap=1.00  J/B=1.269e-10
+  [torch_copy_512MB r0] P=995.4 W (inst 995.4, avg 995.4)  dyn=760.0 W  BW=6349.9 GB/s  TF=0.00  sm=1911 mem=3996 MHz  T=51C  cap=1.00  J/B=1.197e-10
+  [torch_copy_512MB r1] P=995.5 W (inst 995.5, avg 995.5)  dyn=760.1 W  BW=6349.1 GB/s  TF=0.00  sm=1911 mem=3996 MHz  T=51C  cap=1.00  J/B=1.197e-10
+  [torch_copy_512MB r2] P=995.7 W (inst 995.7, avg 995.5)  dyn=760.3 W  BW=6348.4 GB/s  TF=0.00  sm=1912 mem=3996 MHz  T=51C  cap=1.00  J/B=1.198e-10
+=== gemv ===
+  [gemv_b1_512MB r0] P=996.7 W (inst 996.7, avg 996.4)  dyn=761.4 W  BW=6145.0 GB/s  TF=6.14  sm=1863 mem=3996 MHz  T=51C  cap=1.00  J/B=1.239e-10  pJ/flop=123.918
+  [gemv_b1_512MB r1] P=996.6 W (inst 996.6, avg 996.8)  dyn=761.3 W  BW=6146.2 GB/s  TF=6.15  sm=1864 mem=3996 MHz  T=51C  cap=1.00  J/B=1.239e-10  pJ/flop=123.876
+  [gemv_b1_512MB r2] P=997.5 W (inst 997.5, avg 996.9)  dyn=762.2 W  BW=6145.3 GB/s  TF=6.14  sm=1862 mem=3996 MHz  T=51C  cap=1.00  J/B=1.240e-10  pJ/flop=124.038
+  [gemv_b16_512MB r0] P=997.2 W (inst 997.2, avg 997.1)  dyn=761.9 W  BW=6195.0 GB/s  TF=98.93  sm=1714 mem=3996 MHz  T=51C  cap=1.00  J/B=1.230e-10  pJ/flop=7.701
+  [gemv_b16_512MB r1] P=997.2 W (inst 997.2, avg 997.1)  dyn=761.8 W  BW=6194.7 GB/s  TF=98.92  sm=1713 mem=3996 MHz  T=51C  cap=1.00  J/B=1.230e-10  pJ/flop=7.701
+  [gemv_b16_512MB r2] P=997.2 W (inst 997.2, avg 997.2)  dyn=761.9 W  BW=6194.3 GB/s  TF=98.92  sm=1713 mem=3996 MHz  T=51C  cap=1.00  J/B=1.230e-10  pJ/flop=7.702
+=== llmgemm ===
+  [llm_qkv_M1 r0] P=659.8 W (inst 659.8, avg 660.0)  dyn=424.5 W  BW=3224.0 GB/s  TF=3.22  sm=1965 mem=3996 MHz  T=46C  cap=0.00  J/B=1.317e-10  pJ/flop=131.724
+  [llm_qkv_M1 r1] P=653.7 W (inst 653.7, avg 653.7)  dyn=418.3 W  BW=3225.0 GB/s  TF=3.22  sm=1965 mem=3996 MHz  T=44C  cap=0.00  J/B=1.297e-10  pJ/flop=129.785
+  [llm_qkv_M1 r2] P=651.3 W (inst 651.3, avg 651.2)  dyn=415.9 W  BW=3225.0 GB/s  TF=3.22  sm=1965 mem=3996 MHz  T=43C  cap=0.00  J/B=1.290e-10  pJ/flop=129.036
+  [llm_qkv_M8 r0] P=660.8 W (inst 660.8, avg 660.8)  dyn=425.5 W  BW=3235.6 GB/s  TF=25.78  sm=1965 mem=3996 MHz  T=43C  cap=0.00  J/B=1.315e-10  pJ/flop=16.503
+  [llm_qkv_M8 r1] P=660.7 W (inst 660.7, avg 660.7)  dyn=425.3 W  BW=3236.1 GB/s  TF=25.79  sm=1965 mem=3996 MHz  T=43C  cap=0.00  J/B=1.314e-10  pJ/flop=16.495
+  [llm_qkv_M8 r2] P=661.6 W (inst 661.6, avg 661.7)  dyn=426.3 W  BW=3235.6 GB/s  TF=25.78  sm=1965 mem=3996 MHz  T=43C  cap=0.00  J/B=1.317e-10  pJ/flop=16.534
+  [llm_qkv_M32 r0] P=772.0 W (inst 772.0, avg 772.1)  dyn=536.6 W  BW=3274.1 GB/s  TF=103.14  sm=1965 mem=3996 MHz  T=45C  cap=0.00  J/B=1.639e-10  pJ/flop=5.203
+  [llm_qkv_M32 r1] P=773.3 W (inst 773.3, avg 773.3)  dyn=538.0 W  BW=3274.0 GB/s  TF=103.13  sm=1965 mem=3996 MHz  T=46C  cap=0.00  J/B=1.643e-10  pJ/flop=5.216
+  [llm_qkv_M32 r2] P=773.2 W (inst 773.2, avg 773.1)  dyn=537.9 W  BW=3275.0 GB/s  TF=103.16  sm=1965 mem=3996 MHz  T=46C  cap=0.00  J/B=1.642e-10  pJ/flop=5.214
+  [llm_qkv_M64 r0] P=947.0 W (inst 947.0, avg 947.0)  dyn=711.7 W  BW=3320.6 GB/s  TF=205.98  sm=1965 mem=3996 MHz  T=50C  cap=0.00  J/B=2.143e-10  pJ/flop=3.455
+  [llm_qkv_M64 r1] P=948.1 W (inst 948.1, avg 948.3)  dyn=712.8 W  BW=3321.6 GB/s  TF=206.04  sm=1965 mem=3996 MHz  T=51C  cap=0.00  J/B=2.146e-10  pJ/flop=3.459
+  [llm_qkv_M64 r2] P=949.2 W (inst 949.2, avg 949.0)  dyn=713.8 W  BW=3319.9 GB/s  TF=205.93  sm=1965 mem=3996 MHz  T=51C  cap=0.00  J/B=2.150e-10  pJ/flop=3.466
+  [llm_qkv_M128 r0] P=980.7 W (inst 980.7, avg 981.2)  dyn=745.3 W  BW=3073.8 GB/s  TF=369.96  sm=1877 mem=3996 MHz  T=53C  cap=1.00  J/B=2.425e-10  pJ/flop=2.015
+  [llm_qkv_M128 r1] P=980.7 W (inst 980.7, avg 981.4)  dyn=745.3 W  BW=3072.7 GB/s  TF=369.83  sm=1878 mem=3996 MHz  T=53C  cap=1.00  J/B=2.426e-10  pJ/flop=2.015
+  [llm_qkv_M128 r2] P=981.7 W (inst 981.7, avg 981.3)  dyn=746.4 W  BW=3071.6 GB/s  TF=369.69  sm=1878 mem=3996 MHz  T=53C  cap=1.00  J/B=2.430e-10  pJ/flop=2.019
+  [llm_qkv_M512 r0] P=980.9 W (inst 980.9, avg 980.6)  dyn=745.6 W  BW=2137.1 GB/s  TF=872.61  sm=1568 mem=3996 MHz  T=55C  cap=1.00  J/B=3.489e-10  pJ/flop=0.854
+  [llm_qkv_M512 r1] P=980.4 W (inst 980.4, avg 980.3)  dyn=745.1 W  BW=2136.6 GB/s  TF=872.37  sm=1568 mem=3996 MHz  T=55C  cap=1.00  J/B=3.487e-10  pJ/flop=0.854
+  [llm_qkv_M512 r2] P=979.3 W (inst 979.3, avg 979.3)  dyn=744.0 W  BW=2124.4 GB/s  TF=867.42  sm=1569 mem=3996 MHz  T=55C  cap=1.00  J/B=3.502e-10  pJ/flop=0.858
+  [llm_qkv_M2048 r0] P=985.0 W (inst 985.0, avg 984.5)  dyn=749.6 W  BW=1204.9 GB/s  TF=1224.08  sm=1444 mem=3996 MHz  T=56C  cap=1.00  J/B=6.222e-10  pJ/flop=0.612
+  [llm_qkv_M2048 r1] P=984.3 W (inst 984.3, avg 984.0)  dyn=749.0 W  BW=1205.5 GB/s  TF=1224.69  sm=1446 mem=3996 MHz  T=56C  cap=1.00  J/B=6.213e-10  pJ/flop=0.612
+  [llm_qkv_M2048 r2] P=984.2 W (inst 984.2, avg 984.2)  dyn=748.9 W  BW=1205.9 GB/s  TF=1225.13  sm=1447 mem=3996 MHz  T=56C  cap=1.00  J/B=6.210e-10  pJ/flop=0.611
+  [llm_qkv_M8192 r0] P=986.8 W (inst 986.8, avg 987.0)  dyn=751.4 W  BW=786.4 GB/s  TF=1272.26  sm=1347 mem=3996 MHz  T=56C  cap=1.00  J/B=9.556e-10  pJ/flop=0.591
+  [llm_qkv_M8192 r1] P=984.4 W (inst 984.4, avg 986.8)  dyn=749.1 W  BW=786.3 GB/s  TF=1272.19  sm=1346 mem=3996 MHz  T=56C  cap=1.00  J/B=9.526e-10  pJ/flop=0.589
+  [llm_qkv_M8192 r2] P=986.3 W (inst 986.3, avg 986.9)  dyn=751.0 W  BW=786.3 GB/s  TF=1272.10  sm=1341 mem=3996 MHz  T=56C  cap=1.00  J/B=9.551e-10  pJ/flop=0.590
+  [llm_o_M1 r0] P=632.0 W (inst 632.0, avg 631.9)  dyn=396.7 W  BW=2091.0 GB/s  TF=2.09  sm=1965 mem=3996 MHz  T=45C  cap=0.00  J/B=1.897e-10  pJ/flop=189.822
+  [llm_o_M1 r1] P=627.4 W (inst 627.4, avg 627.6)  dyn=392.0 W  BW=2091.6 GB/s  TF=2.09  sm=1965 mem=3996 MHz  T=44C  cap=0.00  J/B=1.874e-10  pJ/flop=187.541
+  [llm_o_M1 r2] P=626.8 W (inst 626.8, avg 626.7)  dyn=391.5 W  BW=2091.5 GB/s  TF=2.09  sm=1965 mem=3996 MHz  T=43C  cap=0.00  J/B=1.872e-10  pJ/flop=187.296
+  [llm_o_M8 r0] P=637.7 W (inst 637.7, avg 637.9)  dyn=402.3 W  BW=2150.8 GB/s  TF=17.13  sm=1965 mem=3996 MHz  T=43C  cap=0.00  J/B=1.871e-10  pJ/flop=23.486
+  [llm_o_M8 r1] P=635.8 W (inst 635.8, avg 636.0)  dyn=400.5 W  BW=2142.2 GB/s  TF=17.06  sm=1965 mem=3996 MHz  T=43C  cap=0.00  J/B=1.870e-10  pJ/flop=23.473
+  [llm_o_M8 r2] P=635.6 W (inst 635.6, avg 635.6)  dyn=400.3 W  BW=2140.3 GB/s  TF=17.05  sm=1965 mem=3996 MHz  T=43C  cap=0.00  J/B=1.870e-10  pJ/flop=23.482
+  [llm_o_M32 r0] P=660.6 W (inst 660.6, avg 660.5)  dyn=425.3 W  BW=2552.7 GB/s  TF=80.25  sm=1965 mem=3996 MHz  T=43C  cap=0.00  J/B=1.666e-10  pJ/flop=5.300
+  [llm_o_M32 r1] P=660.6 W (inst 660.6, avg 660.5)  dyn=425.3 W  BW=2553.1 GB/s  TF=80.26  sm=1965 mem=3996 MHz  T=43C  cap=0.00  J/B=1.666e-10  pJ/flop=5.298
+  [llm_o_M32 r2] P=661.2 W (inst 661.2, avg 661.2)  dyn=425.9 W  BW=2553.2 GB/s  TF=80.27  sm=1965 mem=3996 MHz  T=43C  cap=0.00  J/B=1.668e-10  pJ/flop=5.305
+  [llm_o_M64 r0] P=725.9 W (inst 725.9, avg 726.0)  dyn=490.5 W  BW=2597.3 GB/s  TF=160.49  sm=1965 mem=3996 MHz  T=45C  cap=0.00  J/B=1.889e-10  pJ/flop=3.056
+  [llm_o_M64 r1] P=727.0 W (inst 727.0, avg 727.1)  dyn=491.7 W  BW=2597.9 GB/s  TF=160.53  sm=1965 mem=3996 MHz  T=45C  cap=0.00  J/B=1.893e-10  pJ/flop=3.063
+  [llm_o_M64 r2] P=726.5 W (inst 726.5, avg 726.4)  dyn=491.2 W  BW=2597.9 GB/s  TF=160.53  sm=1965 mem=3996 MHz  T=45C  cap=0.00  J/B=1.891e-10  pJ/flop=3.060
+  [llm_o_M128 r0] P=858.6 W (inst 858.6, avg 858.7)  dyn=623.3 W  BW=2686.3 GB/s  TF=320.93  sm=1965 mem=3996 MHz  T=49C  cap=0.00  J/B=2.320e-10  pJ/flop=1.942
+  [llm_o_M128 r1] P=859.1 W (inst 859.1, avg 859.2)  dyn=623.8 W  BW=2686.8 GB/s  TF=320.98  sm=1965 mem=3996 MHz  T=49C  cap=0.00  J/B=2.322e-10  pJ/flop=1.943
+  [llm_o_M128 r2] P=859.6 W (inst 859.6, avg 859.7)  dyn=624.3 W  BW=2687.4 GB/s  TF=321.05  sm=1965 mem=3996 MHz  T=50C  cap=0.00  J/B=2.323e-10  pJ/flop=1.945
+  [llm_o_M512 r0] P=977.8 W (inst 977.8, avg 977.6)  dyn=742.5 W  BW=2015.5 GB/s  TF=802.61  sm=1647 mem=3996 MHz  T=53C  cap=1.00  J/B=3.684e-10  pJ/flop=0.925
+  [llm_o_M512 r1] P=976.8 W (inst 976.8, avg 976.8)  dyn=741.5 W  BW=2015.7 GB/s  TF=802.70  sm=1646 mem=3996 MHz  T=54C  cap=1.00  J/B=3.679e-10  pJ/flop=0.924
+  [llm_o_M512 r2] P=976.6 W (inst 976.6, avg 976.8)  dyn=741.2 W  BW=2015.5 GB/s  TF=802.63  sm=1644 mem=3996 MHz  T=54C  cap=1.00  J/B=3.678e-10  pJ/flop=0.923
+  [llm_o_M2048 r0] P=983.7 W (inst 983.7, avg 983.7)  dyn=748.4 W  BW=1168.2 GB/s  TF=1116.48  sm=1664 mem=3996 MHz  T=57C  cap=1.00  J/B=6.406e-10  pJ/flop=0.670
+  [llm_o_M2048 r1] P=983.3 W (inst 983.3, avg 983.1)  dyn=747.9 W  BW=1168.3 GB/s  TF=1116.60  sm=1661 mem=3996 MHz  T=57C  cap=1.00  J/B=6.402e-10  pJ/flop=0.670
+  [llm_o_M2048 r2] P=986.8 W (inst 986.8, avg 986.6)  dyn=751.4 W  BW=1167.7 GB/s  TF=1116.00  sm=1651 mem=3996 MHz  T=57C  cap=1.00  J/B=6.435e-10  pJ/flop=0.673
+  [llm_o_M8192 r0] P=988.2 W (inst 988.2, avg 987.8)  dyn=752.8 W  BW=776.6 GB/s  TF=1141.94  sm=1462 mem=3996 MHz  T=57C  cap=1.00  J/B=9.693e-10  pJ/flop=0.659
+  [llm_o_M8192 r1] P=988.0 W (inst 988.0, avg 988.3)  dyn=752.6 W  BW=776.7 GB/s  TF=1142.06  sm=1462 mem=3996 MHz  T=57C  cap=1.00  J/B=9.690e-10  pJ/flop=0.659
+  [llm_o_M8192 r2] P=988.2 W (inst 988.2, avg 988.2)  dyn=752.9 W  BW=776.8 GB/s  TF=1142.17  sm=1462 mem=3996 MHz  T=56C  cap=1.00  J/B=9.692e-10  pJ/flop=0.659
+  [llm_mlp_up_M1 r0] P=961.9 W (inst 961.9, avg 961.9)  dyn=726.5 W  BW=5516.9 GB/s  TF=5.52  sm=1965 mem=3996 MHz  T=49C  cap=0.00  J/B=1.317e-10  pJ/flop=131.733
+  [llm_mlp_up_M1 r1] P=961.9 W (inst 961.9, avg 961.7)  dyn=726.6 W  BW=5517.7 GB/s  TF=5.52  sm=1965 mem=3996 MHz  T=49C  cap=0.00  J/B=1.317e-10  pJ/flop=131.730
+  [llm_mlp_up_M1 r2] P=962.6 W (inst 962.6, avg 962.4)  dyn=727.2 W  BW=5517.4 GB/s  TF=5.52  sm=1965 mem=3996 MHz  T=49C  cap=0.00  J/B=1.318e-10  pJ/flop=131.851
+  [llm_mlp_up_M8 r0] P=972.7 W (inst 972.7, avg 972.6)  dyn=737.3 W  BW=5472.6 GB/s  TF=43.66  sm=1965 mem=3996 MHz  T=49C  cap=0.00  J/B=1.347e-10  pJ/flop=16.886
+  [llm_mlp_up_M8 r1] P=972.8 W (inst 972.8, avg 972.8)  dyn=737.5 W  BW=5472.7 GB/s  TF=43.67  sm=1965 mem=3996 MHz  T=49C  cap=0.00  J/B=1.348e-10  pJ/flop=16.889
+  [llm_mlp_up_M8 r2] P=973.0 W (inst 973.0, avg 972.8)  dyn=737.7 W  BW=5472.7 GB/s  TF=43.67  sm=1965 mem=3996 MHz  T=49C  cap=0.00  J/B=1.348e-10  pJ/flop=16.894
+  [llm_mlp_up_M32 r0] P=992.9 W (inst 992.9, avg 992.6)  dyn=757.6 W  BW=5155.0 GB/s  TF=163.23  sm=1916 mem=3996 MHz  T=50C  cap=1.00  J/B=1.470e-10  pJ/flop=4.641
+  [llm_mlp_up_M32 r1] P=992.3 W (inst 992.3, avg 992.1)  dyn=756.9 W  BW=5155.7 GB/s  TF=163.25  sm=1915 mem=3996 MHz  T=50C  cap=1.00  J/B=1.468e-10  pJ/flop=4.637
+  [llm_mlp_up_M32 r2] P=992.4 W (inst 992.4, avg 992.4)  dyn=757.1 W  BW=5155.8 GB/s  TF=163.25  sm=1915 mem=3996 MHz  T=50C  cap=1.00  J/B=1.468e-10  pJ/flop=4.638
+  [llm_mlp_up_M64 r0] P=992.8 W (inst 992.8, avg 993.1)  dyn=757.5 W  BW=4834.3 GB/s  TF=302.96  sm=1697 mem=3996 MHz  T=51C  cap=1.00  J/B=1.567e-10  pJ/flop=2.500
+  [llm_mlp_up_M64 r1] P=993.6 W (inst 993.6, avg 993.3)  dyn=758.2 W  BW=4834.4 GB/s  TF=302.97  sm=1698 mem=3996 MHz  T=51C  cap=1.00  J/B=1.568e-10  pJ/flop=2.503
+  [llm_mlp_up_M64 r2] P=992.9 W (inst 992.9, avg 993.3)  dyn=757.6 W  BW=4834.7 GB/s  TF=302.99  sm=1698 mem=3996 MHz  T=51C  cap=1.00  J/B=1.567e-10  pJ/flop=2.500
+  [llm_mlp_up_M128 r0] P=989.6 W (inst 989.6, avg 989.2)  dyn=754.2 W  BW=4540.5 GB/s  TF=557.50  sm=1439 mem=3996 MHz  T=52C  cap=1.00  J/B=1.661e-10  pJ/flop=1.353
+  [llm_mlp_up_M128 r1] P=989.2 W (inst 989.2, avg 989.6)  dyn=753.9 W  BW=4539.6 GB/s  TF=557.39  sm=1437 mem=3996 MHz  T=52C  cap=1.00  J/B=1.661e-10  pJ/flop=1.352
+  [llm_mlp_up_M128 r2] P=989.8 W (inst 989.8, avg 989.8)  dyn=754.4 W  BW=4540.7 GB/s  TF=557.53  sm=1436 mem=3996 MHz  T=52C  cap=1.00  J/B=1.661e-10  pJ/flop=1.353
+  [llm_mlp_up_M512 r0] P=980.0 W (inst 980.0, avg 979.7)  dyn=744.6 W  BW=2473.6 GB/s  TF=1082.58  sm=1181 mem=3996 MHz  T=54C  cap=1.00  J/B=3.010e-10  pJ/flop=0.688
+  [llm_mlp_up_M512 r1] P=979.7 W (inst 979.7, avg 979.3)  dyn=744.3 W  BW=2471.8 GB/s  TF=1081.78  sm=1180 mem=3996 MHz  T=54C  cap=1.00  J/B=3.011e-10  pJ/flop=0.688
+  [llm_mlp_up_M512 r2] P=979.7 W (inst 979.7, avg 979.7)  dyn=744.3 W  BW=2472.7 GB/s  TF=1082.18  sm=1181 mem=3996 MHz  T=54C  cap=1.00  J/B=3.010e-10  pJ/flop=0.688
+  [llm_mlp_up_M2048 r0] P=989.9 W (inst 989.9, avg 989.8)  dyn=754.6 W  BW=1054.2 GB/s  TF=1285.48  sm=1325 mem=3996 MHz  T=56C  cap=1.00  J/B=7.158e-10  pJ/flop=0.587
+  [llm_mlp_up_M2048 r1] P=989.7 W (inst 989.7, avg 989.9)  dyn=754.3 W  BW=1054.5 GB/s  TF=1285.85  sm=1324 mem=3996 MHz  T=56C  cap=1.00  J/B=7.153e-10  pJ/flop=0.587
+  [llm_mlp_up_M2048 r2] P=990.3 W (inst 990.3, avg 989.8)  dyn=755.0 W  BW=1054.4 GB/s  TF=1285.76  sm=1324 mem=3996 MHz  T=56C  cap=1.00  J/B=7.160e-10  pJ/flop=0.587
+  [llm_mlp_up_M8192 r0] P=986.5 W (inst 986.5, avg 986.5)  dyn=751.1 W  BW=591.4 GB/s  TF=1303.06  sm=1297 mem=3996 MHz  T=56C  cap=1.00  J/B=1.270e-09  pJ/flop=0.576
+  [llm_mlp_up_M8192 r1] P=983.7 W (inst 983.7, avg 988.3)  dyn=748.3 W  BW=593.1 GB/s  TF=1306.78  sm=1305 mem=3996 MHz  T=56C  cap=1.00  J/B=1.262e-09  pJ/flop=0.573
+  [llm_mlp_up_M8192 r2] P=986.3 W (inst 986.3, avg 987.3)  dyn=750.9 W  BW=593.3 GB/s  TF=1307.21  sm=1301 mem=3996 MHz  T=56C  cap=1.00  J/B=1.266e-09  pJ/flop=0.574
+  [llm_mlp_down_M1 r0] P=823.1 W (inst 823.1, avg 823.1)  dyn=587.8 W  BW=4402.7 GB/s  TF=4.40  sm=1965 mem=3996 MHz  T=47C  cap=0.00  J/B=1.335e-10  pJ/flop=133.554
+  [llm_mlp_down_M1 r1] P=822.2 W (inst 822.2, avg 821.9)  dyn=586.9 W  BW=4403.5 GB/s  TF=4.40  sm=1965 mem=3996 MHz  T=46C  cap=0.00  J/B=1.333e-10  pJ/flop=133.314
+  [llm_mlp_down_M1 r2] P=817.1 W (inst 817.1, avg 817.4)  dyn=581.8 W  BW=4403.3 GB/s  TF=4.40  sm=1965 mem=3996 MHz  T=46C  cap=0.00  J/B=1.321e-10  pJ/flop=132.175
+  [llm_mlp_down_M8 r0] P=828.5 W (inst 828.5, avg 828.6)  dyn=593.2 W  BW=4369.4 GB/s  TF=34.86  sm=1965 mem=3996 MHz  T=46C  cap=0.00  J/B=1.358e-10  pJ/flop=17.015
+  [llm_mlp_down_M8 r1] P=829.1 W (inst 829.1, avg 829.1)  dyn=593.8 W  BW=4369.7 GB/s  TF=34.86  sm=1965 mem=3996 MHz  T=47C  cap=0.00  J/B=1.359e-10  pJ/flop=17.031
+  [llm_mlp_down_M8 r2] P=832.0 W (inst 832.0, avg 832.0)  dyn=596.7 W  BW=4370.5 GB/s  TF=34.87  sm=1965 mem=3996 MHz  T=47C  cap=0.00  J/B=1.365e-10  pJ/flop=17.111
+  [llm_mlp_down_M32 r0] P=909.0 W (inst 909.0, avg 908.9)  dyn=673.7 W  BW=4213.2 GB/s  TF=133.41  sm=1965 mem=3996 MHz  T=49C  cap=0.00  J/B=1.599e-10  pJ/flop=5.050
+  [llm_mlp_down_M32 r1] P=910.0 W (inst 910.0, avg 909.9)  dyn=674.6 W  BW=4214.2 GB/s  TF=133.44  sm=1965 mem=3996 MHz  T=49C  cap=0.00  J/B=1.601e-10  pJ/flop=5.056
+  [llm_mlp_down_M32 r2] P=910.4 W (inst 910.4, avg 910.5)  dyn=675.1 W  BW=4214.9 GB/s  TF=133.46  sm=1965 mem=3996 MHz  T=50C  cap=0.00  J/B=1.602e-10  pJ/flop=5.059
+  [llm_mlp_down_M64 r0] P=992.0 W (inst 992.0, avg 992.2)  dyn=756.7 W  BW=4181.9 GB/s  TF=262.08  sm=1807 mem=3996 MHz  T=52C  cap=1.00  J/B=1.809e-10  pJ/flop=2.887
+  [llm_mlp_down_M64 r1] P=993.2 W (inst 993.2, avg 993.0)  dyn=757.9 W  BW=4181.1 GB/s  TF=262.02  sm=1807 mem=3996 MHz  T=52C  cap=1.00  J/B=1.813e-10  pJ/flop=2.892
+  [llm_mlp_down_M64 r2] P=993.2 W (inst 993.2, avg 993.6)  dyn=757.9 W  BW=4181.7 GB/s  TF=262.06  sm=1807 mem=3996 MHz  T=53C  cap=1.00  J/B=1.812e-10  pJ/flop=2.892
+  [llm_mlp_down_M128 r0] P=993.1 W (inst 993.1, avg 992.8)  dyn=757.8 W  BW=3874.7 GB/s  TF=475.75  sm=1602 mem=3996 MHz  T=53C  cap=1.00  J/B=1.956e-10  pJ/flop=1.593
+  [llm_mlp_down_M128 r1] P=992.2 W (inst 992.2, avg 992.6)  dyn=756.9 W  BW=3873.0 GB/s  TF=475.54  sm=1601 mem=3996 MHz  T=53C  cap=1.00  J/B=1.954e-10  pJ/flop=1.592
+  [llm_mlp_down_M128 r2] P=991.0 W (inst 991.0, avg 990.9)  dyn=755.7 W  BW=3870.0 GB/s  TF=475.18  sm=1601 mem=3996 MHz  T=53C  cap=1.00  J/B=1.953e-10  pJ/flop=1.590
+  [llm_mlp_down_M512 r0] P=988.5 W (inst 988.5, avg 988.4)  dyn=753.2 W  BW=2155.2 GB/s  TF=943.23  sm=1091 mem=3996 MHz  T=54C  cap=1.00  J/B=3.495e-10  pJ/flop=0.798
+  [llm_mlp_down_M512 r1] P=988.7 W (inst 988.7, avg 988.4)  dyn=753.4 W  BW=2156.2 GB/s  TF=943.66  sm=1094 mem=3996 MHz  T=54C  cap=1.00  J/B=3.494e-10  pJ/flop=0.798
+  [llm_mlp_down_M512 r2] P=988.4 W (inst 988.4, avg 988.4)  dyn=753.0 W  BW=2156.3 GB/s  TF=943.69  sm=1094 mem=3996 MHz  T=54C  cap=1.00  J/B=3.492e-10  pJ/flop=0.798
+  [llm_mlp_down_M2048 r0] P=992.4 W (inst 992.4, avg 993.0)  dyn=757.0 W  BW=984.3 GB/s  TF=1200.27  sm=1495 mem=3996 MHz  T=56C  cap=1.00  J/B=7.691e-10  pJ/flop=0.631
+  [llm_mlp_down_M2048 r1] P=992.4 W (inst 992.4, avg 993.6)  dyn=757.0 W  BW=992.2 GB/s  TF=1209.86  sm=1498 mem=3996 MHz  T=56C  cap=1.00  J/B=7.630e-10  pJ/flop=0.626
+  [llm_mlp_down_M2048 r2] P=994.4 W (inst 994.4, avg 993.4)  dyn=759.1 W  BW=984.5 GB/s  TF=1200.49  sm=1496 mem=3996 MHz  T=56C  cap=1.00  J/B=7.710e-10  pJ/flop=0.632
+  [llm_mlp_down_M8192 r0] P=990.2 W (inst 990.2, avg 990.6)  dyn=754.8 W  BW=533.5 GB/s  TF=1175.47  sm=1356 mem=3996 MHz  T=56C  cap=1.00  J/B=1.415e-09  pJ/flop=0.642
+  [llm_mlp_down_M8192 r1] P=990.6 W (inst 990.6, avg 990.5)  dyn=755.3 W  BW=533.3 GB/s  TF=1175.08  sm=1356 mem=3996 MHz  T=56C  cap=1.00  J/B=1.416e-09  pJ/flop=0.643
+  [llm_mlp_down_M8192 r2] P=990.8 W (inst 990.8, avg 990.7)  dyn=755.5 W  BW=533.4 GB/s  TF=1175.27  sm=1355 mem=3996 MHz  T=56C  cap=1.00  J/B=1.416e-09  pJ/flop=0.643
+=== launch ===
+  [launch_1elem r0] P=242.8 W (inst 242.8, avg 242.7)  dyn=7.4 W  BW=0.0 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=38C  cap=0.00  J/B=2.641e-05
+  [launch_1elem r1] P=239.4 W (inst 239.4, avg 239.4)  dyn=4.0 W  BW=0.0 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=35C  cap=0.00  J/B=1.427e-05
+  [launch_1elem r2] P=238.0 W (inst 238.0, avg 238.0)  dyn=2.7 W  BW=0.0 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=33C  cap=0.00  J/B=9.503e-06
+  [launch_4096elem r0] P=237.0 W (inst 237.0, avg 237.0)  dyn=1.7 W  BW=0.0 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=32C  cap=0.00  J/B=5.865e-06
+  [launch_4096elem r1] P=236.5 W (inst 236.5, avg 236.6)  dyn=1.2 W  BW=0.0 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=32C  cap=0.00  J/B=4.268e-06
+  [launch_4096elem r2] P=236.5 W (inst 236.5, avg 236.5)  dyn=1.2 W  BW=0.0 GB/s  TF=0.00  sm=1965 mem=3996 MHz  T=32C  cap=0.00  J/B=4.220e-06
+=== square_multi ===
+idle_post: {"n_samples": 982, "p_energy_w": 235.19402677522112, "energy_counter_updates": 100, "energy_counter_period_s": 0.09999407903112546, "p_inst_w": 235.22430651731162, "p_avg_w": 235.3045289443814, "sm_mhz": 1965.0, "mem_mhz": 3996.0, "temp_c": 32.0, "frac_sw_power_cap": 0.0, "frac_thermal": 0.0, "frac_hw_slowdown": 0.0, "p_w": 235.22430651731162, "energy_counter_over_inst": 0.9998712729031332, "duration_s": 10.000077486038208, "waited_s": 32.26345753669739}
+
+point                        BW GB/s   TFLOPS      P W   dyn W  SMMHz   cap   J/byte dyn    pJ/flop
+stream_L1ca_9.2MB            30969.8     0.00    577.9   342.5   1965  0.00 1.106e-11±5.0e-14          -
+stream_L1ca_18.5MB           34582.7     0.00    626.5   391.2   1965  0.00 1.131e-11±2.3e-14          -
+stream_cg_0.25MB              1182.6     0.00    279.6    44.3   1965  0.00 3.742e-11±7.7e-13          -
+stream_cg_1.00MB              4482.8     0.00    394.5   159.2   1965  0.00 3.551e-11±4.8e-14          -
+stream_cg_2.00MB              8786.8     0.00    540.2   304.9   1965  0.00 3.470e-11±4.8e-14          -
+stream_cg_63.25MB            19421.6     0.00    912.1   676.8   1965  0.00 3.485e-11±1.1e-13          -
+stream_cg_64.00MB            19655.7     0.00    928.1   692.8   1965  0.00 3.525e-11±3.0e-13          -
+stream_cg_94.88MB            18480.4     0.00    992.6   757.3   1883  1.00 4.098e-11±5.4e-14          -
+stream_cg_126.50MB            7670.7     0.00    994.7   759.4   1616  1.00 9.900e-11±1.3e-14          -
+stream_cg_253.00MB            7448.9     0.00    996.8   761.4   1564  1.00 1.022e-10±3.2e-13          -
+stream_cg_256.00MB            7461.2     0.00    996.0   760.6   1556  1.00 1.019e-10±3.8e-14          -
+stream_cg_506.00MB            7437.2     0.00    996.0   760.7   1557  1.00 1.023e-10±9.9e-14          -
+stream_cg_1024.00MB           7394.1     0.00    996.3   761.0   1565  1.00 1.029e-10±7.2e-14          -
+stream_cg_4096.00MB           7252.5     0.00    995.2   759.9   1596  1.00 1.048e-10±6.8e-14          -
+torch_sum_1GB                 6000.0     0.00    996.7   761.4   1933  1.00 1.269e-10±2.8e-14          -
+torch_copy_512MB              6349.1     0.00    995.5   760.2   1911  1.00 1.197e-10±3.0e-14          -
+gemv_b1_512MB                 6145.5     6.14    996.9   761.6   1863  1.00 1.239e-10±6.9e-14    123.944
+gemv_b16_512MB                6194.7    98.92    997.2   761.8   1713  1.00 1.230e-10±8.2e-15      7.702
+grid_18prog                    268.0     0.00    299.7    64.4   1965  0.00 2.403e-10±0.0e+00          -
+grid_37prog                    549.0     0.00    342.0   106.7   1965  0.00 1.943e-10±0.0e+00          -
+grid_74prog                   1084.9     0.00    415.5   180.2   1965  0.00 1.661e-10±0.0e+00          -
+grid_148prog                  2152.6     0.00    551.2   315.9   1965  0.00 1.467e-10±0.0e+00          -
+grid_296prog                  4103.5     0.00    782.3   547.0   1965  0.00 1.333e-10±0.0e+00          -
+grid_592prog                  6567.3     0.00    995.7   760.4   1771  1.00 1.158e-10±0.0e+00          -
+grid_1184prog                 7393.0     0.00    996.3   761.0   1578  1.00 1.029e-10±0.0e+00          -
+
+grid fit: e_marginal=1.251e-10 ± 2.5e-12 J/B, P0=274.1 W over 5 pts
+wrote microbench/results_B200_steady.json
+=== [analyze] ===
+== B200: idle(deep) 235.3425145145145 W, idle(clocks-up) 235.0248169868554 W, peak BW 8.00 TB/s, enforced limit 1000.0 W
+-- DRAM streaming ('blast HBM'): J/B median 1.122e-10; max sustained BW 7.39 TB/s = 92% of peak
+   stream_cg_1024.00MB      BW   7.39 TB/s ( 92%)  J/B 1.029e-10  sm 1565 MHz  capfrac 1.00
+   stream_cg_4096.00MB      BW   7.25 TB/s ( 91%)  J/B 1.048e-10  sm 1596 MHz  capfrac 1.00
+   torch_sum_1GB            BW   6.00 TB/s ( 75%)  J/B 1.269e-10  sm 1933 MHz  capfrac 1.00
+   torch_copy_512MB         BW   6.35 TB/s ( 79%)  J/B 1.197e-10  sm 1911 MHz  capfrac 1.00
+-- L2-resident stream J/B 3.518e-11 -> on-chip share of a DRAM-streamed byte ~31%
+-- grid (occupancy sweep): P_dyn = 69.8 W + 1.016e-10 J/B * BW  (R2 0.981); BW frac 3%..92%
+   !! 56% of points ran at the power cap -> constant-power regime; this fit is NOT a valid calibration
+-- LLM-shaped GEMM loops (steady, n=32): e_byte 1.374e-10 [1.299e-10,1.451e-10] J/B, e_flop 0.509 [0.477,0.537] pJ/flop, R2 0.709
+   llm_qkv_M1             AI     1.0  BW  3.22 TB/s  TF     3.2  P_dyn  419.6 W
+   llm_qkv_M8192          AI  1617.9  BW  0.79 TB/s  TF  1272.2  P_dyn  750.5 W
+   llm_o_M1               AI     1.0  BW  2.09 TB/s  TF     2.1  P_dyn  393.4 W
+   llm_o_M8192            AI  1470.4  BW  0.78 TB/s  TF  1142.1  P_dyn  752.8 W
+   llm_mlp_up_M1          AI     1.0  BW  5.52 TB/s  TF     5.5  P_dyn  726.8 W
+   llm_mlp_up_M8192       AI  2203.2  BW  0.59 TB/s  TF  1305.7  P_dyn  750.1 W
+   llm_mlp_down_M1        AI     1.0  BW  4.40 TB/s  TF     4.4  P_dyn  585.5 W
+   llm_mlp_down_M8192     AI  2203.2  BW  0.53 TB/s  TF  1175.3  P_dyn  755.2 W
+-- launch-only launch_1elem: 281 k launches/s, P_dyn 4.7 W, 16.73 uJ/launch
+-- launch-only launch_4096elem: 281 k launches/s, P_dyn 1.3 W, 4.78 uJ/launch
+-- square_multi p_inst_w: boxcar window 0.10 s, lag +0.00 s, R2 0.880
+-- square_multi p_avg_w: boxcar window 0.85 s, lag +0.02 s, R2 0.965
+-- balance: energy ridge e_byte/e_flop = 270 FLOP/B; performance ridge peak/BW = 281 FLOP/B
+-- vs serving fit: {"e_wbyte_serving": 1.2430181022220586e-10, "e_kvbyte_serving": 2.8520355521413956e-10, "e_gemm_serving": 6.416076289265256e-13, "stream_over_serving_wbyte": 0.903, "steady_over_serving_egemm": 0.7927}
+-- serving refit (e_gemm fixed 0.509 pJ): e_wbyte 1.253e-10, e_kvbyte 3.632e-10 (free 3-term: 1.243e-10 / 2.852e-10 / 0.642 pJ, R2 0.690)
+wrote microbench/steady_calib_B200.json
+==== done Wed Oct  7 02:57:02 PM EDT 2026 ====

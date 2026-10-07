@@ -1,0 +1,9 @@
+{
+ "op": "l1_stream_8KBperprog",
+ "unit": "byte",
+ "launches": 3,
+ "analytic_bytes_total": 1949564928.0,
+ "analytic_flops_total": 0.0,
+ "gpu": "NVIDIA B200",
+ "l2_bytes": 132644864
+}

@@ -1,0 +1,9 @@
+{
+ "op": "gemm_fp16_4096",
+ "unit": "flop",
+ "launches": 3,
+ "analytic_bytes_total": 4831838208.0,
+ "analytic_flops_total": 6597069766656.0,
+ "gpu": "NVIDIA B200",
+ "l2_bytes": 132644864
+}

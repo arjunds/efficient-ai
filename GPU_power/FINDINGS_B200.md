@@ -456,3 +456,125 @@ than B200's (e.g., NV-HBI die-to-die traffic on B200). The same NCU capture on H
 settle it (not possible — H200 access revoked). What is established: the lumped
 coefficient is DRAM + on-chip hierarchy energy, and the lumped number is what serving
 actually costs.
+
+---
+
+# UPDATE 4: steady-state calibration + microbench (2026-10-07, B200)
+
+Ran both outstanding handoffs: `microbench/b200_microbench.sbatch` (probe, energy,
+ncu_micro, ncu_serve; 1h02) and `microbench/b200_steady_calib.sbatch`
+(steady+analyze; 38 min). Artifacts committed alongside.
+
+## My "the law holds for the DRAM channel" was WRONG — now settled with our own numbers
+
+The H200-side REVIEW NOTE was right, and this run confirms it without borrowing
+anyone's coefficients. We can now split a streamed byte ourselves:
+L2-resident stream J/B = 3.518e-11 against DRAM-streamed J/B, i.e. **on-chip is
+~31% of a DRAM-streamed byte**.
+
+| | B200 streamed J/B | → e_DRAM (69%) | law needs e_DRAM(H200) | H200 **total** |
+|---|---|---|---|---|
+| full-clock (duty-cycle fit) | 1.282e-10 | 0.885e-10 | 1.475e-10 | 1.076e-10 |
+| saturated (power-capped) | 1.122e-10 | 0.774e-10 | 1.290e-10 | 1.076e-10 |
+
+Either way the law needs **120–137% of H200's entire per-byte budget to be DRAM
+alone**. Impossible. My `+3%` was wrong twice: it compared B200 DRAM-only against
+H200 *lumped*-scaled, and it used a borrowed DRAM coefficient rather than a
+measured one. **Status: `e_byte ∝ 1/BW` is falsified for the DRAM channel too.**
+
+## Headline measurements
+
+| quantity | value |
+|---|---|
+| DRAM stream, full clock (duty-cycle, R²=0.993) | **1.2825e-10 ± 3.3e-12 J/B** |
+| DRAM stream, saturated | 1.122e-10 J/B at **7.39 TB/s = 92% of peak** |
+| L2-resident stream | 3.518e-11 J/B (≈31% on-chip share) |
+| `llmgemm` steady 2-feature fit (n=32, R²=0.709) | e_byte **1.374e-10** [1.299, 1.451], e_flop **0.509 pJ** [0.477, 0.537] |
+| kernel launch energy | 16.7 µJ/launch (1-elem), 4.8 µJ (4096-elem) |
+| idle | 235.3 W |
+
+**B200 reaches 92% of peak bandwidth** — EnergAIzer's A100 managed only 82%.
+
+## The PI's "200 ms sampling is a lot" — answered
+
+Fitted NVML smoothing from the `square_multi` on/off test:
+
+| field | boxcar window | lag | R² |
+|---|---|---|---|
+| `POWER_INSTANT` (`p_inst`) | **0.10 s** | +0.00 s | 0.880 |
+| `GetPowerUsage` (`p_avg`) | **0.85 s** | +0.02 s | 0.965 |
+
+So the per-bin "~0.4 s smear" **is** NVML averaging, as suspected. `GetPowerUsage`
+averages over 0.85 s — more than 4× our 200 ms bin, so it cannot resolve them.
+`POWER_INSTANT` at 0.10 s can. Matches the A5000 (1.0 s / ~0.1 s). **Use
+POWER_INSTANT and long windows from here on.**
+
+## Compute coefficient: serving OVER-estimated it
+
+Steady `e_flop` = **0.509 pJ** vs serving `e_gemm` = 0.642 pJ — ratio **0.79**.
+Note this is the *opposite* direction from the A5000 hint (which suggested
+smoothing made per-bin fits too low). Refitting serving with `e_gemm` held at the
+steady value gives `e_wbyte` 1.253e-10, `e_kvbyte` 3.632e-10 (free 3-term:
+1.243e-10 / 2.852e-10 / 0.642 pJ, R² 0.690).
+
+Streaming J/B is **0.903×** the serving `e_wbyte`, so the serving weight-byte
+coefficient is close to pure weight-streaming energy, with ~10% extra from
+attention/KV/overhead.
+
+## Balanced, not overprovisioned
+
+Energy ridge `e_byte/e_flop` = **270 FLOP/B**; performance ridge `peak/BW` =
+**281 FLOP/B**. Within 4% — on B200 the energy balance point and the performance
+balance point essentially coincide.
+
+## Power capping is pervasive at saturation — read this before trusting any J/B
+
+Large-working-set DRAM streams **sit at the 1000 W cap** (`capfrac` 1.00, SM clock
+throttled 1965 → 1556 MHz). The analysis correctly refuses the occupancy-sweep
+fit: *"56% of points ran at the power cap → constant-power regime; this fit is NOT
+a valid calibration."* That is also why two DRAM numbers appear above: the
+duty-cycle fit keeps bursts short enough to stay at full clock (1.2825e-10), while
+saturated streaming is capped and throttled (1.122e-10). The ~14% gap is a
+clock/voltage effect, the same phenomenon the A5000 showed at ~2×.
+
+**Clock locking is not permitted on this cluster** (`nvidia-smi -lgc` denied,
+established in the smoke test), so the `clocks` stage was not run; per-point
+`sm_mhz` is recorded in the json for stratification instead.
+
+## NCU cross-check of UPDATE 3, with 3× more data
+
+`ncu_serve` (24 tokens, 9120 kernels) independently reproduces the UPDATE 3
+capture (8 tokens, 3004 kernels):
+
+| | UPDATE 3 | this run |
+|---|---|---|
+| DRAM/analytic | 1.004 | **1.008** |
+| L2/analytic | 1.86 | 1.57 |
+| L1/analytic | 0.002 | 0.0013 |
+
+Gate #1 holds at 1.00 across two independent captures. (The L2 difference is the
+prefill share: 1/8 of passes here vs 1/24, and prefill is more L2-dense.)
+
+Per-op validation — every microbench op does what its name says:
+
+| op | DRAM/an | L2/an | L1/an |
+|---|---|---|---|
+| `dram_stream` | 1.001 | 1.503 | 1.001 |
+| `l2_stream_half` | 0.001 | 1.004 | 1.002 |
+| `l1_stream_8KBperprog` | 0.000 | 0.039 | 1.015 |
+| `gemv_b1` | 1.002 | **1.565** | 0.000 |
+| `gemm_fp16_4096` | 0.927 | 6.207 | 0.000 |
+
+`gemv_b1`'s L2/analytic of 1.565 matches the serving decode's 1.567 — the
+microbenchmark is a faithful stand-in for decode traffic.
+
+## Method note for the other server
+
+`--replay-mode kernel` (as `b200_microbench.sbatch` originally specified) is not
+viable on a vLLM decode: ~20 s/kernel × thousands of launches. I switched
+`ncu_serve` to `--replay-mode application`, which captured 9120 kernels in 7m53s.
+`--cache-control all` requires kernel replay, so the cold-L2 serving variant was
+dropped (kept for `ncu_micro`, where ops are single cheap kernels); B200's L2 is
+132 MB against 14.1 GB of weights per pass, so warm-vs-cold moves DRAM bytes
+<1%. Also: both scripts specified `--cpus-per-task=8`, which PARCC's `dgx-b200`
+rejects (`DefCpuPerGPU=28`, `cli_filter` error) — fixed in both.

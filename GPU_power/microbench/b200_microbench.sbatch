@@ -4,7 +4,8 @@
 #SBATCH --qos=dgx
 #SBATCH --account=leebcc-systems-architecture-int
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=28   # PARCC dgx-b200 enforces DefCpuPerGPU=28;
+#                              anything else is rejected by the cli_filter plugin
 #SBATCH --time=02:00:00
 #SBATCH --output=slurm_out/%x-%j.out
 #
@@ -73,9 +74,19 @@ case ",$STAGES," in *,ncu_micro,*)
 
 case ",$STAGES," in *,ncu_serve,*)
   echo "=== [ncu_serve] Qwen2-7B batch-1 decode under ncu ==="
-  for cc in none all; do
+  # B200 NOTE (2026-10-07): --replay-mode kernel is NOT viable on a vLLM decode.
+  # Measured here: ~20 s per kernel x ~2500 kernel launches for 8 generated tokens
+  # => ~14 h; two attempts (jobs 8698729, 8699556) timed out with partial captures
+  # that silently look like a real result (DRAM/analytic 0.03). --replay-mode
+  # application re-runs the process once per metric pass-group instead and
+  # finished the same capture in 10.5 min.
+  # cache-control=all requires kernel replay, so the cold-L2 variant is dropped
+  # for SERVING only (it is kept for ncu_micro, where ops are single cheap
+  # kernels). Little is lost: B200 L2 is ~126 MB against 14.1 GB of weights per
+  # pass, so warm vs cold L2 moves DRAM bytes by well under 1%.
+  for cc in none; do
     RD=microbench/ncu_B200/serve_$cc; mkdir -p $RD
-    RUN "$NCU --target-processes all --profile-from-start off --replay-mode kernel --cache-control $cc --clock-control none \
+    RUN "$NCU --target-processes all --profile-from-start off --replay-mode application --cache-control $cc --clock-control none \
            --metrics $METRICS --csv --page raw --log-file $RD/prof.csv \
            python3 ncu_dram_check.py --mode generate --profile_range --model Qwen/Qwen2-7B-Instruct \
              --run_dir $RD --prompt_len 8 --gen_tokens 24 --max_model_len 2048 \

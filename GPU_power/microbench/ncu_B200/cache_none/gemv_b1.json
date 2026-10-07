@@ -1,0 +1,9 @@
+{
+ "op": "gemv_b1",
+ "unit": "byte",
+ "launches": 3,
+ "analytic_bytes_total": 34883042304.0,
+ "analytic_flops_total": 34879832064.0,
+ "gpu": "NVIDIA B200",
+ "l2_bytes": 132644864
+}

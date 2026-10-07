@@ -1,0 +1,17 @@
+NVIDIA (R) Nsight Compute Command Line Profiler
+Copyright (c) 2018-2025 NVIDIA Corporation
+    Section: Command line profiler metrics
+    -------------------- ----------- ------------
+    Metric Name          Metric Unit Metric Value
+    -------------------- ----------- ------------
+    dram__bytes_read.sum       Mbyte         4.20
+    -------------------- ----------- ------------
+
+  void reduce_kernel<512, 1, ReduceOp<float, func_wrapper_t<float, sum_functor<float, float, float>::operator ()(TensorIterator &)::[lambda(float, float) (instance 1)]>, unsigned int, float, 4, 4>>(T3) (1, 128, 1)x(512, 1, 1), Context 1, Stream 7, Device 0, CC 10.0
+    Section: Command line profiler metrics
+    -------------------- ----------- ------------
+    Metric Name          Metric Unit Metric Value
+    -------------------- ----------- ------------
+    dram__bytes_read.sum       Mbyte         4.26
+    -------------------- ----------- ------------
+

@@ -4,7 +4,8 @@
 #SBATCH --qos=dgx
 #SBATCH --account=leebcc-systems-architecture-int
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=28   # PARCC dgx-b200 enforces DefCpuPerGPU=28;
+#                              anything else is rejected by the cli_filter plugin
 #SBATCH --time=02:00:00
 #SBATCH --output=slurm_out/%x-%j.out
 #

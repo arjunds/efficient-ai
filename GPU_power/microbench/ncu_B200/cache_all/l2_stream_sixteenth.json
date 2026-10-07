@@ -1,0 +1,9 @@
+{
+ "op": "l2_stream_sixteenth",
+ "unit": "byte",
+ "launches": 3,
+ "analytic_bytes_total": 1616609280.0,
+ "analytic_flops_total": 0.0,
+ "gpu": "NVIDIA B200",
+ "l2_bytes": 132644864
+}
