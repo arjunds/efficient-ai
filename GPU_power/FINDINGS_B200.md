@@ -578,3 +578,40 @@ dropped (kept for `ncu_micro`, where ops are single cheap kernels); B200's L2 is
 132 MB against 14.1 GB of weights per pass, so warm-vs-cold moves DRAM bytes
 <1%. Also: both scripts specified `--cpus-per-task=8`, which PARCC's `dgx-b200`
 rejects (`DefCpuPerGPU=28`, `cli_filter` error) — fixed in both.
+
+## UPDATE 4b: per-channel energies, measured here (PI next-step #1 closed)
+
+No new GPU time — a linear solve over data already collected. Three single-channel
+ops give three equations in three unknowns: per-op **energy** from the duty-cycle
+fits (full clock, R² 0.979–0.998) and per-op **traffic** from `ncu_micro`.
+
+| op | e (J/B) | DRAM | L2 | L1 |
+|---|---|---|---|---|
+| `dram_stream` | 1.2825e-10 | 1.001 | 1.503 | 1.001 |
+| `l2_stream_half` | 3.3099e-11 | 0.001 | 1.004 | 1.002 |
+| `l1_stream_8KBperprog` | 1.1005e-11 | 0.000 | 0.039 | 1.015 |
+
+Solving:
+
+| channel | **measured here** | borrowed GEMM-microbench ref |
+|---|---|---|
+| `e_DRAM` | **8.37e-11 J/B** | 6.62e-11 |
+| `e_L2` | **2.29e-11 J/B** | 1.71e-11 |
+| `e_L1` | **1.00e-11 J/B** | 1.28e-11 |
+
+**Closure test.** Feeding these channels the *independently measured* serving
+traffic (`ncu_serve`: DRAM 1.008, L2 1.567, L1 0.0013) predicts
+`e_wbyte` = **1.203e-10** against the measured **1.243e-10** — **−3%**. With the
+borrowed coefficients this closed only to −16% (OLS) / −4% (WLS). The lumped
+serving coefficient is now reconstructed from first principles out of our own
+per-channel energies and our own per-channel traffic.
+
+**The law test is now fully self-contained.** `e_DRAM(B200) = 8.37e-11` requires
+`e_DRAM(H200) = 1.395e-10` for `e_byte ∝ 1/BW` to hold — **130% of H200's entire
+1.076e-10 per-byte budget**. Falsified without reference to any borrowed number.
+
+This closes PI next-step #1 ("per-channel energies measured on our own GPUs
+rather than borrowed"). Next-step #2 (`e_gemm` / NVML smoothing) was closed by
+UPDATE 4. Next-steps #3 and #4 are **not runnable on this cluster**: #3 needs
+power-limit control (`nvidia-smi -pl` denied here, `POWER_LIMIT_SET=no`) and #4
+needs a GDDR6/HBM2e part we do not have.
