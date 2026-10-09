@@ -63,6 +63,20 @@ power at which it would tie the alternative on J/token.
    runs at MBU 0.05, with **68–80% of energy static**. Qwen2.5-1.5B runs at MBU 0.13
    with 49–63% static. These belong on a smaller part, or consolidated.
 
+## B200 steady calibration (2026-10-07 run, reviewed 2026-10-08; FINDINGS_B200 "UPDATE 4 review")
+- **The energy ridge is confirmed well below the performance ridge.** Steady
+  full-clock e_byte 1.251e-10 / e_flop 0.943 pJ gives **133 FLOP/B, against 281**.
+  The "270 ≈ 281, balanced" figure in the raw run came from power-capped points.
+- **Power is the binding constraint on B200.**
+  - At full clock the 1000 W limit allows about 73% of peak BW and 36% of peak FLOPs.
+    Peak FLOPs alone would need about 2.1 kW dynamic.
+  - Every prefill-sized GEMM (M ≥ 512; 3 of 4 shapes from M = 128) runs at the cap,
+    with SM throttled to 1.1–1.7 GHz and 1.1–1.3 PFLOP/s delivered.
+  - So the B200's *compute* is overprovisioned relative to its power envelope, about
+    2.8×, while its *bandwidth* is what decode needs but doesn't fill (MBU ≤ 0.62).
+- The steady data confirms the run-level result below: e_gemm is under-estimated
+  per-bin (steady/serving 1.2–1.7×), and e_wbyte is pure streaming energy (1.006×).
+
 ## Tracking (bandwidth and inferences/s, as requested)
 `balance_runs.csv` records, per run: realized TB/s, MBU, MFU, arithmetic intensity,
 tok/s, **req/s**, J/token, **J/request**, median step time, and the five-way energy
@@ -94,9 +108,11 @@ averaging and lag) gives:
   model predicts whole-run energy without bias. So J/token predictions, and everything
   above, survive the sampling question.
 - **The compute coefficient is 11–45% higher at run level.** The direction matches the
-  NVML smoothing bias seen on the A5000 (+26–30%). The exact size is not identified,
-  because KV bytes and FLOPs are correlated 0.69–0.87 across runs. The B200
-  steady-state `llmgemm` calibration (`HANDOFF_B200_STEADY.md`) will settle it.
+  NVML smoothing bias seen on the A5000 (+26–30%). **The B200 steady calibration
+  confirms it:** uncapped steady e_flop is 0.943 pJ. With e_gemm pinned there, the
+  serving refit (1.220e-10 / 1.09e-10 / 0.943) reproduces the KV-free run-level fit
+  (1.226e-10 / 1.025e-10 / 0.927). On B200 a KV byte costs about a weight byte; the
+  per-bin 2.3× is a smear artifact.
 - If e_gemm is 1.2–1.4× higher, the energy ridges fall to about 95–175. Serving is
   still memory-dominated. The B200/H200 e_gemm ratio stays 0.75–0.84, so the prefill
   ranking does not move.

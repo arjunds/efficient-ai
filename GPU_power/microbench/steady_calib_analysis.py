@@ -81,6 +81,12 @@ def smear_fit(trace_csv):
     return out
 
 
+CAPPED = 0.05   # frac of samples in SW power cap above which a point is "capped": the GPU
+                # throttles SM clock/voltage to hold the limit, so J/B and J/FLOP drop and
+                # power stops tracking work. Capped points are NEVER used in a calibration
+                # fit (B200 2026-10-07: including them gave e_flop 0.51 vs 0.94 pJ uncapped).
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--results", required=True)
@@ -118,51 +124,78 @@ def main():
                          jb_p0=m(v, "j_per_byte_dyn_vs_p0"), sm=m(v, "sm_mhz"),
                          cap=m(v, "frac_sw_power_cap")))
     if dram:
-        jb = [d["jb"] for d in dram if d["jb"]]
+        unc = [d["jb"] for d in dram if d["jb"] and (d["cap"] or 0) < CAPPED]
+        cap = [d["jb"] for d in dram if d["jb"] and (d["cap"] or 0) >= CAPPED]
         bwmax = max(d["bw"] for d in dram if d["bw"])
-        out["dram_stream"] = dict(points=dram, j_per_byte_median=float(np.median(jb)),
+        out["dram_stream"] = dict(points=dram,
+                                  j_per_byte_median=float(np.median(unc)) if unc else None,
+                                  j_per_byte_median_capped=float(np.median(cap)) if cap else None,
+                                  n_uncapped=len(unc), n_capped=len(cap),
                                   max_bw=bwmax, max_bw_frac=(bwmax / BWp if BWp else None))
-        print(f"-- DRAM streaming ('blast HBM'): J/B median {np.median(jb):.3e}; max sustained BW "
+        print(f"-- DRAM streaming ('blast HBM'): J/B median uncapped "
+              f"{np.median(unc) if unc else float('nan'):.3e} (n={len(unc)}), CAPPED/throttled "
+              f"{np.median(cap) if cap else float('nan'):.3e} (n={len(cap)}); max sustained BW "
               f"{bwmax/1e12:.2f} TB/s = {bwmax/BWp if BWp else float('nan'):.0%} of peak")
         for d in dram:
             print(f"   {d['label']:<24} BW {d['bw']/1e12:6.2f} TB/s ({d['bw']/BWp if BWp else 0:4.0%})  "
                   f"J/B {d['jb']:.3e}  sm {d['sm'] or 0:.0f} MHz  capfrac {d['cap'] or 0:.2f}")
-    if l2pts and dram:
-        jl2 = float(np.median([p["jb"] for p in l2pts if p["jb"]]))
-        out["l2_stream"] = dict(points=l2pts, j_per_byte_median=jl2,
-                                onchip_share=jl2 / out["dram_stream"]["j_per_byte_median"])
-        print(f"-- L2-resident stream J/B {jl2:.3e} -> on-chip share of a DRAM-streamed byte "
-              f"~{out['l2_stream']['onchip_share']:.0%}")
-
     # ---- 2. grid: J/B vs bandwidth fraction (is energy/byte flat up to saturation?) --
     gp = (R.get("grid") or {}).get("points") or []
-    if len(gp) >= 3:
-        bw = np.array([m(p, "bytes_per_s") for p in gp]); pd = np.array([m(p, "p_dyn_w") for p in gp])
+    gu = [p for p in gp if (m(p, "frac_sw_power_cap") or 0) < CAPPED]
+    if len(gu) >= 3:
+        bw = np.array([m(p, "bytes_per_s") for p in gu]); pd = np.array([m(p, "p_dyn_w") for p in gu])
         (a0, e), r2 = ols(bw[:, None], pd, origin=False)
         out["grid"] = dict(marginal_j_per_byte=float(e), intercept_w=float(a0), r2=r2,
+                           n_uncapped=len(gu), n_capped=len(gp) - len(gu),
                            points=[dict(nprog=p.get("nprog"), bw=m(p, "bytes_per_s"),
                                         bw_frac=(m(p, "bytes_per_s") / BWp if BWp else None),
-                                        jb=m(p, "j_per_byte_dyn")) for p in gp])
-        print(f"-- grid (occupancy sweep): P_dyn = {a0:.1f} W + {e:.3e} J/B * BW  (R2 {r2:.3f}); "
-              f"BW frac {min(bw)/BWp if BWp else 0:.0%}..{max(bw)/BWp if BWp else 0:.0%}")
+                                        jb=m(p, "j_per_byte_dyn"), sm=m(p, "sm_mhz"),
+                                        cap=m(p, "frac_sw_power_cap")) for p in gp])
+        print(f"-- grid (occupancy sweep, {len(gu)} uncapped of {len(gp)}): P_dyn = {a0:.1f} W + {e:.3e} J/B * BW "
+              f"(R2 {r2:.3f}); uncapped BW {min(bw)/BWp if BWp else 0:.0%}..{max(bw)/BWp if BWp else 0:.0%} of peak")
+    # full-clock DRAM e_byte: uncapped streams if any, else the uncapped grid slope
+    eb_full = ((out.get("dram_stream") or {}).get("j_per_byte_median")
+               or (out.get("grid") or {}).get("marginal_j_per_byte"))
+    out["e_byte_full_clock"] = eb_full
+    if l2pts and eb_full:
+        jl2 = float(np.median([p["jb"] for p in l2pts if p["jb"]]))
+        out["l2_stream"] = dict(points=l2pts, j_per_byte_median=jl2, onchip_share=jl2 / eb_full)
+        print(f"-- L2-resident stream J/B {jl2:.3e} -> on-chip share of a full-clock DRAM-streamed byte "
+              f"~{out['l2_stream']['onchip_share']:.0%} (per L2 crossing; DRAM streams cross L2 ~1.5x)")
 
     # ---- 3. LLM-shaped GEMMs: steady-state 2-feature fit ------------------------
-    lg = R.get("llmgemm") or []
+    lg_all = R.get("llmgemm") or []
+    lg = [p for p in lg_all if (m(p, "frac_sw_power_cap") or 0) < CAPPED]
+    lgc = [p for p in lg_all if (m(p, "frac_sw_power_cap") or 0) >= CAPPED]
+    if lgc:
+        jf = [m(p, "p_dyn_w") / m(p, "flops_per_s") for p in lgc if (p.get("M") or 0) >= 2048]
+        out["llmgemm_capped"] = dict(n=len(lgc), labels=[p["label"] for p in lgc],
+                                     tflops_range=[min(m(p, "flops_per_s") for p in lgc) / 1e12,
+                                                   max(m(p, "flops_per_s") for p in lgc) / 1e12],
+                                     sm_mhz_range=[min(m(p, "sm_mhz") for p in lgc), max(m(p, "sm_mhz") for p in lgc)],
+                                     total_j_per_flop_M2048plus=[min(jf), max(jf)] if jf else None)
+        print(f"   ({len(lgc)}/{len(lg_all)} GEMM points ran at the power cap, SM "
+              f"{out['llmgemm_capped']['sm_mhz_range'][0]:.0f}-{out['llmgemm_capped']['sm_mhz_range'][1]:.0f} MHz: "
+              "EXCLUDED from the fit"
+              + (f"; at M>=2048 they deliver P_dyn/FLOP {min(jf)*1e12:.2f}-{max(jf)*1e12:.2f} pJ (throttled V/f)" if jf else "") + ")")
     if len(lg) >= 4:
         X = np.array([[m(p, "bytes_per_s"), m(p, "flops_per_s")] for p in lg])
         y = np.array([m(p, "p_dyn_w") for p in lg])
         c, r2 = ols(X, y); lo, hi = boot(X, y)
         out["llmgemm_fit"] = dict(e_byte=float(c[0]), e_flop=float(c[1]),
                                   e_byte_ci=[float(lo[0]), float(hi[0])],
-                                  e_flop_ci=[float(lo[1]), float(hi[1])], r2=r2, n=len(y))
-        capfrac = np.mean([m(p, "frac_sw_power_cap") or 0 for p in lg])
-        out["llmgemm_fit"]["frac_points_power_capped"] = float(capfrac)
-        if capfrac > 0.5:
-            print(f"   !! {capfrac:.0%} of points ran at the power cap -> constant-power regime; "
-                  "this fit is NOT a valid calibration")
-        print(f"-- LLM-shaped GEMM loops (steady, n={len(y)}): e_byte {c[0]:.3e} [{lo[0]:.3e},{hi[0]:.3e}] J/B, "
-              f"e_flop {c[1]*1e12:.3f} [{lo[1]*1e12:.3f},{hi[1]*1e12:.3f}] pJ/flop, R2 {r2:.3f}")
-        for p in lg:
+                                  e_flop_ci=[float(lo[1]), float(hi[1])], r2=r2, n=len(y),
+                                  n_capped_excluded=len(lgc),
+                                  max_tflops=float(X[:, 1].max() / 1e12))
+        if eb_full:   # e_byte pinned at the full-clock streaming value
+            yf = y - eb_full * X[:, 0]
+            out["llmgemm_fit"]["e_flop_ebyte_pinned"] = float((X[:, 1] @ yf) / (X[:, 1] @ X[:, 1]))
+        print(f"-- LLM-shaped GEMM loops (steady, uncapped n={len(y)}): e_byte {c[0]:.3e} [{lo[0]:.3e},{hi[0]:.3e}] J/B, "
+              f"e_flop {c[1]*1e12:.3f} [{lo[1]*1e12:.3f},{hi[1]*1e12:.3f}] pJ/flop, R2 {r2:.3f}"
+              + (f"; e_byte pinned -> e_flop {out['llmgemm_fit']['e_flop_ebyte_pinned']*1e12:.3f} pJ" if eb_full else ""))
+    elif lg_all:
+        print(f"   !! only {len(lg)} uncapped GEMM points -> no valid steady e_flop")
+        for p in lg_all:
             if p.get("M") in (1, 8192):
                 print(f"   {p['label']:<22} AI {p.get('arith_intensity',0):7.1f}  BW {m(p,'bytes_per_s')/1e12:5.2f} TB/s  "
                       f"TF {m(p,'flops_per_s')/1e12:7.1f}  P_dyn {m(p,'p_dyn_w'):6.1f} W")
@@ -185,14 +218,28 @@ def main():
                 print(f"-- {key} {col}: boxcar window {f['window_s']:.2f} s, lag {f['lag_s']:+.2f} s, R2 {f['r2']:.3f}")
 
     # ---- 6. balance: energy ridge vs performance ridge --------------------------
-    eb = (out.get("llmgemm_fit") or {}).get("e_byte") or (out.get("dram_stream") or {}).get("j_per_byte_median")
+    eb = eb_full or (out.get("llmgemm_fit") or {}).get("e_byte")
     ef = (out.get("llmgemm_fit") or {}).get("e_flop") or C.get("e_gemm")
     pk = C.get("peak_flops") or G.get("peak_flops")
     if eb and ef:
-        out["balance"] = dict(energy_ridge_flop_per_byte=eb / ef,
+        out["balance"] = dict(energy_ridge_flop_per_byte=eb / ef, e_byte=eb, e_flop=ef,
                               perf_ridge_flop_per_byte=(pk / BWp if pk and BWp else None))
-        print(f"-- balance: energy ridge e_byte/e_flop = {eb/ef:.0f} FLOP/B"
+        print(f"-- balance (full-clock, uncapped coefficients): energy ridge e_byte/e_flop = {eb/ef:.0f} FLOP/B"
               + (f"; performance ridge peak/BW = {pk/BWp:.0f} FLOP/B" if pk and BWp else ""))
+        # power roofline: what the power limit lets you sustain at full clock
+        lim = G.get("power_limit_enforced_w"); idl = idle.get("p_w")
+        if lim and idl and pk and BWp:
+            a0 = (out.get("grid") or {}).get("intercept_w") or 0.0
+            budget = lim - idl
+            out["power_roofline"] = dict(budget_w=budget,
+                                         p_dyn_at_peak_bw_w=a0 + eb * BWp, p_dyn_at_peak_flops_w=ef * pk,
+                                         bw_frac_within_tdp_full_clock=min(1.0, (budget - a0) / (eb * BWp)),
+                                         flops_frac_within_tdp_full_clock=min(1.0, budget / (ef * pk)))
+            pr = out["power_roofline"]
+            print(f"-- power roofline: budget {budget:.0f} W above idle; full-clock P_dyn at peak BW "
+                  f"{pr['p_dyn_at_peak_bw_w']:.0f} W, at peak FLOPs {pr['p_dyn_at_peak_flops_w']:.0f} W -> at full clock "
+                  f"the limit allows {pr['bw_frac_within_tdp_full_clock']:.0%} of peak BW, "
+                  f"{pr['flops_frac_within_tdp_full_clock']:.0%} of peak FLOPs")
 
     # ---- 7. serving: compare + refit with e_gemm held at steady-state value -----
     if C:
@@ -200,8 +247,10 @@ def main():
         for k in ("e_wbyte", "e_kvbyte", "e_gemm"):
             if C.get(k) is not None:
                 cmp[k + "_serving"] = C[k]
-        if "dram_stream" in out and C.get("e_wbyte"):
-            cmp["stream_over_serving_wbyte"] = out["dram_stream"]["j_per_byte_median"] / C["e_wbyte"]
+        if eb_full and C.get("e_wbyte"):
+            cmp["fullclock_stream_over_serving_wbyte"] = eb_full / C["e_wbyte"]
+        if (out.get("dram_stream") or {}).get("j_per_byte_median_capped") and C.get("e_wbyte"):
+            cmp["capped_stream_over_serving_wbyte"] = out["dram_stream"]["j_per_byte_median_capped"] / C["e_wbyte"]
         if "llmgemm_fit" in out and C.get("e_gemm"):
             cmp["steady_over_serving_egemm"] = out["llmgemm_fit"]["e_flop"] / C["e_gemm"]
         out["vs_serving"] = cmp
@@ -226,7 +275,9 @@ def main():
         if len(Y) > 50:
             W, K, Gf, Y = map(np.array, (W, K, Gf, Y))
             efix = out["llmgemm_fit"]["e_flop"]
-            c2, r2f = ols(np.c_[W, K], Y - efix * Gf)
+            c2, _ = ols(np.c_[W, K], Y - efix * Gf)
+            yh = c2[0] * W + c2[1] * K + efix * Gf          # R2 on Y, comparable to the free fit
+            r2f = float(1 - ((Y - yh) ** 2).sum() / ((Y - Y.mean()) ** 2).sum())
             c3, r23 = ols(np.c_[W, K, Gf], Y)
             out["serving_refit_fixed_egemm"] = dict(e_gemm_fixed=efix, e_wbyte=float(c2[0]),
                                                     e_kvbyte=float(c2[1]), r2=r2f, n_bins=int(len(Y)),

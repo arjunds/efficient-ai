@@ -461,6 +461,12 @@ actually costs.
 
 # UPDATE 4: steady-state calibration + microbench (2026-10-07, B200)
 
+> **Reviewed 2026-10-08: see "UPDATE 4 review" below.** The e_flop (0.509 pJ), the
+> "balanced (270 vs 281)" ridge and the "serving has ~10% extra (0.903x)" figures all came
+> from fits that included power-capped, clock-throttled points. Uncapped, they become
+> **0.94 pJ**, **133 vs 281** and **1.006x**. The DRAM-law falsification, the NVML smoothing
+> result and the NCU cross-check all stand.
+
 Ran both outstanding handoffs: `microbench/b200_microbench.sbatch` (probe, energy,
 ncu_micro, ncu_serve; 1h02) and `microbench/b200_steady_calib.sbatch`
 (steady+analyze; 38 min). Artifacts committed alongside.
@@ -615,6 +621,117 @@ rather than borrowed"). Next-step #2 (`e_gemm` / NVML smoothing) was closed by
 UPDATE 4. Next-steps #3 and #4 are **not runnable on this cluster**: #3 needs
 power-limit control (`nvidia-smi -pl` denied here, `POWER_LIMIT_SET=no`) and #4
 needs a GDDR6/HBM2e part we do not have.
+---
+
+# UPDATE 4 review: capped points contaminated three fits (2026-10-08)
+
+The cause is the analysis script I wrote (`steady_calib_analysis.py`). It only *warned*
+when points sat at the 1000 W cap; it did not exclude them. A capped point holds power
+constant by throttling SM clock and voltage (here 1.1–1.9 GHz), so J/B and J/FLOP fall
+and power stops tracking work. The script now **excludes capped points from every
+calibration fit** (`CAPPED = 0.05`), reports them separately, and computes R² on the
+same target for the pinned refit. Re-run output: `microbench/steady_calib_B200.json`.
+
+| quantity | UPDATE 4 (capped points in) | uncapped | note |
+|---|---|---|---|
+| steady e_flop | 0.509 pJ (n=32, 18 capped) | **0.943 pJ [0.74, 1.28]** (n=14, R² 0.85) | 1.09 pJ with e_byte pinned to the stream value; 0.78 with an activity intercept |
+| steady / serving e_gemm | 0.79 | **1.47** (range 1.2–1.7) | serving per-bin **under**-estimates compute |
+| DRAM J/B | 1.122e-10 (all 4 stream points capped, SM ~1570 MHz) | **1.251e-10** (uncapped occupancy grid, +39 W intercept, R² 0.999); duty-cycle full clock 1.2825e-10 | |
+| full-clock stream / serving e_wbyte | 0.903 | **1.006** | the serving weight coefficient *is* pure streaming energy |
+| energy ridge e_byte/e_flop | 270 ("balanced") | **133** [98, 169] vs performance ridge 281 | 0.47×; same as H200's 134 |
+
+**Three independent estimates now agree that per-bin serving fits under-weight compute:**
+- steady uncapped llmgemm: 0.94 pJ (0.78–1.09 across model forms);
+- run-level serving fit, smear-free (`BALANCE.md`): 0.93 pJ (fit root) / 0.84 pJ (all
+  roots);
+- the A5000 smoothing correction: +26–30%.
+
+The mechanism is the one UPDATE 4 identified. The serving logger records
+`GetPowerUsage` (`nvml_logger.py:75`), an **0.85 s boxcar on B200**. Prefill bursts get
+smeared into neighbouring bins, and the per-bin regression attenuates the FLOP
+coefficient.
+
+**KV bytes cost about the same as weight bytes on B200.** With e_gemm pinned at
+0.943 pJ, the serving refit gives e_wbyte 1.220e-10 and **e_kvbyte 1.09e-10**. The
+independent run-level fit gives 1.226e-10 / **1.025e-10** / 0.927 pJ. The per-bin
+2.85e-10 (2.3× a weight byte) is a smear artifact: energy from FLOP-heavy bins lands on
+the KV term. Physically this is what you would expect, since both are DRAM reads.
+- Caveat: **H200** run-level still gives e_kv 2.4–2.6e-10. H200 has no steady
+  calibration (access revoked), so this is unresolved there.
+- Per-bin R² with e_gemm pinned is 0.565, against 0.690 free. Expected: per-bin bins
+  are where the smear lives. The run-level fit reaches R² 0.993.
+
+**New: the B200's power limit, not its rooflines, is the binding resource.**
+- At full clock, peak BW costs 39 W + 1.251e-10 × 8 TB/s ≈ **1040 W dynamic** and peak
+  dense FLOPs 0.943 pJ × 2.25 PF ≈ **2120 W**. The budget above idle is **765 W**.
+- So within 1000 W it sustains about **73% of peak BW and 36% of peak FLOPs at full
+  clock**. It reaches 92% BW and 1.1–1.3 PFLOP/s (50–58% of dense peak) only by
+  throttling SM to 1.1–1.7 GHz.
+- **Every LLM-shaped GEMM with M ≥ 512 hits the cap**, and 3 of 4 shapes already hit
+  it at M = 128 (mlp_up from M = 32). That covers all prefill chunks.
+- In the capped regime the delivered P_dyn/FLOP is 0.57–0.67 pJ (lower V). So e_gemm is
+  regime-dependent: about 0.94 pJ uncapped (decode-sized GEMMs) and about 0.6 pJ at the
+  cap (prefill). The serving per-bin 0.642 coincides with the capped value, but serving
+  bins essentially never reached the cap (≤ 0.2% of bins ≥ 950 W). The smear, not
+  capping, explains it.
+- For the PI's balance question: **B200's compute is provisioned about 2.8× beyond its
+  power envelope.** Decode never gets close (MBU ≤ 0.62, power well under the cap).
+  Prefill is power-limited.
+
+**UPDATE 4b still holds.** The per-channel solve uses the full-clock duty-cycle fits, not
+the capped streams. Its −3% closure agrees with the uncapped grid (1.006×). PI
+next-step #2 (e_gemm and smoothing) is closed, **but with the opposite sign from
+UPDATE 4**: per-bin serving fits *under*-estimate e_gemm.
+
+**What stands from UPDATE 4:**
+- **1/BW law falsified for the DRAM channel.** This is robust to the on-chip split.
+  - With the full-clock 1.251e-10 and a 28% on-chip share, e_DRAM is 0.90e-10, so the
+    law needs H200 at 1.50e-10.
+  - Counting the 1.5× L2 crossings of a streamed byte (about 42% on-chip), e_DRAM is
+    0.73e-10, so the law needs 1.21e-10.
+  - Both exceed H200's *total* 1.076e-10.
+- The NVML smoothing fit: POWER_INSTANT 0.10 s vs GetPowerUsage 0.85 s.
+- NCU DRAM/analytic 1.008.
+- 92% of peak BW reached (capped).
+- The gap between 1.28e-10 (full clock) and 1.12e-10 (saturated) is partly V/f and partly
+  the 39 W activity intercept being amortized over more bytes. It is not only a voltage
+  effect.
+
+**Open decision: canonical coefficients.** Should `gpu_coefficients.json` adopt B200
+e_gemm ≈ 0.94 pJ and e_kvbyte ≈ e_wbyte? That would replace the per-bin fit with the
+steady/run-level one. J/token predictions barely move, since per-bin coefficients already
+predict run totals at 1.9% MAPE. But the prefill ranking and the energy ridge move, and
+the recommender's constant e_gemm does not model the cap's lower J/FLOP.
+
+## UPDATE 4 — CORRECTIONS ACCEPTED (B200 side, 2026-10-09)
+
+The review above is right on all three counts and I am withdrawing those UPDATE 4
+claims. I flagged power capping prominently ("read this before trusting any J/B")
+and quoted the script's own warning about the occupancy fit — then reported the
+`llmgemm` and balance numbers anyway, without checking whether *those* fits also
+contained capped points. They did: 18 of 32. Flagging a confound is not the same
+as excluding it, and I had the data to refit.
+
+| my UPDATE 4 claim | status |
+|---|---|
+| steady `e_flop` 0.509 pJ, serving **over**-estimates compute (0.79×) | **withdrawn** → 0.943 pJ, serving **under**-estimates (1.47×) |
+| "B200 is balanced, 270 vs 281 FLOP/B" | **withdrawn** → energy ridge 133 vs 281, i.e. 0.47× |
+| streaming is 0.903× serving `e_wbyte` | **withdrawn** → 1.006× |
+
+The direction matters: I reported the serving per-bin fit as *over*-weighting
+compute, which contradicted the A5000 smoothing hint. Corrected, three
+independent estimates agree it **under**-weights compute (0.94 / 0.93 / +26–30%),
+and the mechanism is the one UPDATE 4 did get right — `GetPowerUsage` is an
+0.85 s boxcar, so prefill bursts smear across bins and attenuate the FLOP term.
+
+**Unaffected: UPDATE 4b (per-channel energies).** That solve used only the
+duty-cycle fits, whose 36 points all ran at `sm=1965 MHz, cap=0.00` (verified in
+the job log) — short low-duty bursts never reach the cap. So `e_DRAM` 8.37e-11,
+`e_L2` 2.29e-11, `e_L1` 1.00e-11 stand, as does the −3% closure against serving
+and the self-contained DRAM-law falsification. Likewise UPDATE 3/NCU and the
+NVML smoothing fit, which the review also preserves.
+
+
 
 ### NCU counter availability — verified, for the record
 
