@@ -615,3 +615,23 @@ rather than borrowed"). Next-step #2 (`e_gemm` / NVML smoothing) was closed by
 UPDATE 4. Next-steps #3 and #4 are **not runnable on this cluster**: #3 needs
 power-limit control (`nvidia-smi -pl` denied here, `POWER_LIMIT_SET=no`) and #4
 needs a GDDR6/HBM2e part we do not have.
+
+### NCU counter availability — verified, for the record
+
+Counters are readable on PARCC `dgx-b200` (contrast `FINDINGS_A5000.md`, where
+node-d1 returns `ERR_NVGPUCTRPERM`). Verified four ways:
+
+* `/usr/local/cuda/bin/ncu` ships **inside the vLLM container**. An early probe
+  wrongly reported it missing by checking only the host PATH.
+* Zero `ERR_NVGPUCTRPERM` across every job log.
+* Confirmed on **dgx009, dgx011, dgx020**, and re-probed on dgx009 on 2026-10-09,
+  14 days after the first success — same value, so not transient or node-specific.
+* Strongest check: the counters **discriminate by op design**. `l2_stream_half`
+  reads DRAM/an 0.001, `l1_stream_8KBperprog` reads DRAM 0.000 / L2 0.039, and
+  `gemm_fp16_4096` reads L2/an 6.207. A denied or stubbed counter returns zeros
+  or a constant; it cannot reproduce each op's intended level, and these values
+  matched the handoff's predictions made before the run.
+
+**Still denied here** (do not conflate with the above): clock locking
+(`nvidia-smi -lgc`) and power-limit setting (`nvidia-smi -pl`). Hence the skipped
+`clocks` stage and the blocked PI next-step #3.
