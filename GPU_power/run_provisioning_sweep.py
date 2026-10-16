@@ -38,6 +38,7 @@ DURATION_S = float(os.environ.get("PROV_DURATION_S", 45))
 IDLE_S = float(os.environ.get("PROV_IDLE_S", 15))
 OUTPUT_CAP = 256
 Q05 = "Qwen/Qwen2.5-0.5B-Instruct"
+Q14 = "Qwen/Qwen2.5-14B-Instruct"
 Q7, Q32, Q72 = "Qwen/Qwen2-7B-Instruct", "Qwen/Qwen2.5-32B-Instruct", "Qwen/Qwen2-72B-Instruct"
 GRAPHS = {"no_enforce_eager": None}
 
@@ -74,6 +75,14 @@ ARMS = {
     # Logger-overhead A/B: same as relog alpaca c=1/c=64 but with NVML_LOGGER_SLIM=1
     # (power, POWER_INSTANT and energy counter only). Compare tok/s with relog.
     "loggerab": [(Q7, {}, _ragged(["alpaca"], [1, 64]))],
+    # A100 80GB PCIe via RunAI/KAI (runai/a100_job.sh). Same grids as the B200
+    # graphs/relog arms so the GPUs compare directly; 14B instead of 32B (32B fp16
+    # leaves ~no KV room on 80 GB). The A100-PCIe sits at its 300 W TDP under load,
+    # so these runs test the power roofline as much as the coefficients.
+    "a100_graphs": [(Q7, GRAPHS, _ragged(["alpaca", "sharegpt"], [1, 4, 16, 64])),
+                    (Q14, GRAPHS, _ragged(["alpaca"], [1, 16, 64]))],
+    "a100_eager": [(Q7, {}, _ragged(["alpaca"], [1, 16, 64]))],
+    "a100_highconc": [(Q7, dict(GRAPHS, max_num_seqs=256), _ragged(["alpaca", "sharegpt"], [128, 256]))],
     # pipeline smoke tests (A5000, 0.5B): every code path in ~5 min
     "smoke": [(Q05, dict(GRAPHS, max_num_seqs=512), _ragged(["alpaca"], [4])
                + [("in1024_c4", {"input_len": 1024, "output_len": 16, "concurrency": 4,
