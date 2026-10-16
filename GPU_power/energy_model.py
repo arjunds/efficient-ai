@@ -56,6 +56,100 @@ def load_power_samples(power_csv: str) -> Tuple[List[float], List[float]]:
     return [ts[i] for i in order], [ps[i] for i in order]
 
 
+POWER_SOURCES = ("energy", "inst", "avg")
+
+
+def window_energy_fn(power_csv: str, source: str = "auto"):
+    """Return (energy(t0, t1) -> J or None, source_used).
+
+    Sources, best first (auto picks the first that is present on >=80% of rows):
+      energy  cumulative NVML energy counter (energy_mj): E(t1) - E(t0) from the
+              counter's change points, linearly interpolated. True energy, no
+              smoothing; resolution ~ the counter update period (~100 ms on B200).
+      inst    POWER_INSTANT (power_inst_w), trapezoid-integrated (0.10 s window).
+      avg     GetPowerUsage (power_w), trapezoid-integrated. A 0.85 s moving
+              average on B200 / 1.0 s on A5000: smears 200 ms bins. Every run
+              logged before 2026-10-16 only has this, so old runs bin unchanged.
+    Override with env ENERGY_POWER_SOURCE or --power_source."""
+    source = os.environ.get("ENERGY_POWER_SOURCE", source) or "auto"
+    rows = []
+    with open(power_csv) as f:
+        for row in csv.DictReader(f):
+            rows.append(row)
+    n = len(rows)
+
+    def frac(col):
+        return sum(1 for r in rows if (r.get(col) or "").strip() not in ("",)) / n if n else 0.0
+
+    order = list(POWER_SOURCES) if source == "auto" else [source]
+    for src in order:
+        if src == "energy" and frac("energy_mj") >= 0.8:
+            pts = []
+            for r in rows:
+                try:
+                    t = float(r["t_wall"]); e = float(r["energy_mj"])
+                except (ValueError, KeyError, TypeError):
+                    continue
+                pts.append((t, e))
+            pts.sort()
+            chg = [pts[0]] if pts else []
+            for t, e in pts[1:]:
+                if e != chg[-1][1]:
+                    chg.append((t, e))
+            if len(chg) >= 5:
+                ct = [c[0] for c in chg]; ce = [c[1] for c in chg]
+                # Validate against POWER_INSTANT over the whole trace: the counter
+                # is exact on B200 (counter/instant 0.9998, steady microbench) but
+                # reads ~0.30x on the A5000 (GA102). Reject it if off by >5%.
+                if frac("power_inst_w") >= 0.8:
+                    ti, pi = [], []
+                    for r in rows:
+                        try:
+                            ti.append(float(r["t_wall"])); pi.append(float(r["power_inst_w"]))
+                        except (ValueError, KeyError, TypeError):
+                            pass
+                    o = sorted(range(len(ti)), key=lambda i: ti[i])
+                    ti = [ti[i] for i in o]; pi = [pi[i] for i in o]
+                    e_inst = integrate_window(ti, pi, ct[0], ct[-1])
+                    ratio = ((ce[-1] - ce[0]) * 1e-3 / e_inst) if e_inst else None
+                    if ratio is None or abs(ratio - 1.0) > 0.05:
+                        print(f"[energy_model] energy counter rejected for {power_csv}: "
+                              f"counter/POWER_INSTANT = {ratio}; using POWER_INSTANT", flush=True)
+                        continue
+
+                def energy(t0, t1, ct=ct, ce=ce, tl=pts[-1][0]):
+                    # Up to 0.5 s past the first/last counter update (and within
+                    # 0.1 s of the last sample: the logger stops just after the window) extrapolate with the edge segment's power; a
+                    # window ending between updates would otherwise return None.
+                    if t1 <= t0 or t0 < ct[0] - 0.5 or t1 > min(ct[-1] + 0.5, tl + 0.1):
+                        return None
+
+                    def E(t):
+                        if t > ct[-1]:
+                            return ce[-1] + (ce[-1] - ce[-2]) / (ct[-1] - ct[-2]) * (t - ct[-1])
+                        if t < ct[0]:
+                            return ce[0] - (ce[1] - ce[0]) / (ct[1] - ct[0]) * (ct[0] - t)
+                        return _interp(ct, ce, t)
+                    return (E(t1) - E(t0)) * 1e-3
+                return energy, "energy"
+        if src in ("inst", "avg"):
+            col = "power_inst_w" if src == "inst" else "power_w"
+            if src == "inst" and frac(col) < 0.8:
+                continue
+            ts, ps = [], []
+            for r in rows:
+                try:
+                    t = float(r["t_wall"]); p = float(r[col])
+                except (ValueError, KeyError, TypeError):
+                    continue
+                ts.append(t); ps.append(p)
+            o = sorted(range(len(ts)), key=lambda i: ts[i])
+            ts = [ts[i] for i in o]; ps = [ps[i] for i in o]
+            if len(ts) >= 2:
+                return (lambda t0, t1, ts=ts, ps=ps: integrate_window(ts, ps, t0, t1)), src
+    return (lambda t0, t1: None), None
+
+
 def _interp(ts, ps, t):
     i = bisect.bisect_left(ts, t)
     if i <= 0:
@@ -171,19 +265,22 @@ def _f(x):
 
 
 def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
-            include_empty: bool = False):
+            include_empty: bool = False, power_source: str = "auto"):
     """Bin a run into fixed-width time bins. phase=None includes ALL phases
     (needed for the two-term fit: prefill bins are the high-arithmetic-intensity
     points that pin e_flop). Each bin: {b0,b1,dt,E,bytes,flops,n,prefill,decode}."""
     meta = json.load(open(os.path.join(run_dir, "run_meta.json")))
     ts, ps = load_power_samples(os.path.join(run_dir, "power_trace.csv"))
+    efn, psrc = window_energy_fn(os.path.join(run_dir, "power_trace.csv"),
+                                 power_source)
     rows = iter_rows(os.path.join(run_dir, "iter_log.csv"))
+    have_hits = bool(rows) and "prefix_hits" in rows[0]
     weight_bytes, kv_bpt, byte_src = model_byte_constants(meta)  # t=1 reference
     matmul_per_tok, attn_per_resident, active_params = model_flop_constants(meta)
     m_obj, _key = get_model_obj(meta)
     dtype_b = DTYPE_BYTES.get(meta.get("dtype", "float16"), 2)
 
-    tms, byts, flps, flps1, prefs, decs = [], [], [], [], [], []
+    tms, byts, flps, flps1, prefs, decs, hits = [], [], [], [], [], [], []
     wbyt_l, kvbyt_l, gemm_l, attn_l = [], [], [], []   # physical channels
     for r in rows:
         if phase and (r.get("phase") or "").strip() != phase:
@@ -210,6 +307,7 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
         flps1.append(matmul + attn)
         flps.append(matmul + attn_per_resident * (pref + dec) * kv / max(nr, 1.0))
         prefs.append(pref); decs.append(dec)
+        hits.append((_f(r.get("prefix_hits")) or 0.0) if have_hits else 0.0)
         wbyt_l.append(wbytes); kvbyt_l.append(kvbytes)
         gemm_l.append(matmul); attn_l.append(attn)
 
@@ -218,7 +316,8 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
             "attn_flops_per_resident_token": attn_per_resident,
             "active_params": active_params, "byte_source": byte_src,
             "idle_power_w": meta.get("idle_power_w"), "meta": meta,
-            "n_iters_total": len(tms), "bin_s": bin_s, "phase": phase}
+            "n_iters_total": len(tms), "bin_s": bin_s, "phase": phase,
+            "power_source": psrc, "prefix_hits_logged": have_hits}
     if not ts or not tms:
         return [], info
 
@@ -226,6 +325,7 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
     tms = [tms[i] for i in order]; byts = [byts[i] for i in order]
     flps = [flps[i] for i in order]; flps1 = [flps1[i] for i in order]
     prefs = [prefs[i] for i in order]; decs = [decs[i] for i in order]
+    hits = [hits[i] for i in order]
     wbyt_l = [wbyt_l[i] for i in order]; kvbyt_l = [kvbyt_l[i] for i in order]
     gemm_l = [gemm_l[i] for i in order]; attn_l = [attn_l[i] for i in order]
 
@@ -237,16 +337,21 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
     b0 = w0
     while b0 < w1:
         b1 = min(b0 + bin_s, w1)
-        E = integrate_window(ts, ps, b0, b1)
+        E = efn(b0, b1)
         lo = bisect.bisect_left(tms, b0); hi = bisect.bisect_left(tms, b1)
         n = hi - lo
         if E is not None and (n > 0 or include_empty):
+            # prefix-cache hits are never computed: per-bin computed prefill
+            pref_b = sum(prefs[lo:hi]); pref_c = max(0.0, pref_b - sum(hits[lo:hi]))
             bins.append({"b0": b0, "b1": b1, "dt": b1 - b0, "E": E, "n": n,
                          "bytes": sum(byts[lo:hi]), "flops": sum(flps[lo:hi]),
                          "flops_v1": sum(flps1[lo:hi]),
                          "weight_bytes": sum(wbyt_l[lo:hi]), "kv_bytes": sum(kvbyt_l[lo:hi]),
                          "gemm_flops": sum(gemm_l[lo:hi]), "attn_flops": sum(attn_l[lo:hi]),
-                         "prefill": sum(prefs[lo:hi]), "decode": sum(decs[lo:hi])})
+                         "prefill": pref_b, "decode": sum(decs[lo:hi]),
+                         "prefill_computed": pref_c if have_hits else None,
+                         "gemm_flops_computed": (matmul_per_tok * (pref_c + sum(decs[lo:hi]))
+                                                 if have_hits else None)})
         b0 = b1
     return bins, info
 
@@ -350,10 +455,11 @@ def calibrate_two_term(run_dir: str, bin_s: float = DEFAULT_BIN_S) -> dict:
               "active_params": info["active_params"],
               "idle_power_w": info["idle_power_w"],
               "task": info["meta"].get("task"),
-              "concurrency_or_rate": info["meta"].get("concurrency_or_rate")}
+              "concurrency_or_rate": info["meta"].get("concurrency_or_rate"),
+              "power_source": info.get("power_source")}
 
     # always export the binned table (analysis side re-fits independently)
-    _export_binned_table(run_dir, bins)
+    _export_binned_table(run_dir, bins, info.get("power_source"))
 
     if len(bins) < 4:
         result["error"] = f"too few bins ({len(bins)})"
@@ -402,20 +508,29 @@ def calibrate_two_term(run_dir: str, bin_s: float = DEFAULT_BIN_S) -> dict:
     return result
 
 
-def _export_binned_table(run_dir, bins):
+def _export_binned_table(run_dir, bins, power_source=None):
+    """Columns are additive: prefill_tokens_computed / gemm_flops_bin_computed only
+    when prefix hits were logged (same names controls/prefix_cache_refit.py adds to
+    old runs), and power_source records which NVML reading produced energy_bin_j."""
+    have_c = bool(bins) and bins[0].get("prefill_computed") is not None
     with open(os.path.join(run_dir, "binned_table.csv"), "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["t_mid", "dt_s", "energy_bin_j", "bytes_bin", "flops_bin",
                     "flops_bin_v1", "weight_bytes_bin", "kv_bytes_bin",
                     "gemm_flops_bin", "attn_flops_bin",
-                    "prefill_tokens", "decode_tokens", "n_iters"])
+                    "prefill_tokens", "decode_tokens", "n_iters"]
+                   + (["prefill_tokens_computed", "gemm_flops_bin_computed"] if have_c else [])
+                   + (["power_source"] if power_source else []))
         for b in bins:
             w.writerow([f"{0.5*(b['b0']+b['b1']):.6f}", f"{b['dt']:.4f}",
                         f"{b['E']:.4f}", f"{b['bytes']:.6e}", f"{b['flops']:.6e}",
                         f"{b.get('flops_v1', b['flops']):.6e}",
                         f"{b.get('weight_bytes', 0):.6e}", f"{b.get('kv_bytes', 0):.6e}",
                         f"{b.get('gemm_flops', 0):.6e}", f"{b.get('attn_flops', 0):.6e}",
-                        int(b["prefill"]), int(b["decode"]), b["n"]])
+                        int(b["prefill"]), int(b["decode"]), b["n"]]
+                       + ([f"{b['prefill_computed']:.1f}", f"{b['gemm_flops_computed']:.6e}"]
+                          if have_c else [])
+                       + ([power_source] if power_source else []))
 
 
 def main():
@@ -423,9 +538,13 @@ def main():
     ap.add_argument("--run_dir", required=True)
     ap.add_argument("--phase", default="decode", choices=["decode", "prefill", "mixed"])
     ap.add_argument("--bin_s", type=float, default=DEFAULT_BIN_S)
+    ap.add_argument("--power_source", default="auto", choices=("auto",) + POWER_SOURCES,
+                    help="NVML reading used for bin energy (auto: energy counter > "
+                         "POWER_INSTANT > GetPowerUsage, whichever was logged)")
     ap.add_argument("--two_term", action="store_true",
                     help="fit E = e_bit·bytes + e_flop·flops + P_static·dt (all phases)")
     args = ap.parse_args()
+    os.environ.setdefault("ENERGY_POWER_SOURCE", args.power_source)
     if args.two_term:
         cal = calibrate_two_term(args.run_dir, args.bin_s)
         out = os.path.join(args.run_dir, "calibration_two_term.json")

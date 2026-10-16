@@ -93,6 +93,28 @@ def reconcile_dram_into_iter_log(iter_csv, dram: DramCounter):
     return filled
 
 
+def meter_gpus(args) -> List[int]:
+    """GPUs whose power is summed into power_trace.csv. Default: the tensor-parallel
+    group (0..tp-1) when tp > 1, else --gpu_id. Before 2026-10-16 only --gpu_id was
+    metered, which undercounts a TP>1 job."""
+    if getattr(args, "meter_gpus", None):
+        return [int(x) for x in str(args.meter_gpus).split(",") if x.strip()]
+    tp = int(getattr(args, "tensor_parallel_size", 1) or 1)
+    return list(range(tp)) if tp > 1 else [args.gpu_id]
+
+
+def energy_in_window(power_csv, t0, t1):
+    """(joules, source) between t0 and t1 from the best validated NVML reading:
+    the energy counter if it agrees with POWER_INSTANT, else POWER_INSTANT, else
+    GetPowerUsage (see energy_model.window_energy_fn). (None, None) on failure."""
+    try:
+        from energy_model import window_energy_fn
+        fn, src = window_energy_fn(power_csv, "auto")
+        return fn(t0, t1), src
+    except Exception:
+        return None, None
+
+
 def avg_power_in_window(power_csv, t0, t1) -> Optional[float]:
     if not os.path.exists(power_csv):
         return None
@@ -132,10 +154,18 @@ def make_prompt_fn(args, tokenizer):
     from engine_compat import build_prompt
     pool = getattr(args, "prompt_pool", None)
     rng = random.Random(1234)
+    vocab = getattr(tokenizer, "vocab_size", None) or 32000
 
     def prompt(k):
         if pool:
             return rng.choice(pool)
+        if getattr(args, "unique_prompts", False):
+            # Distinct random token ids per request: build_prompt repeats one
+            # phrase, so every synthetic request would be a prefix-cache HIT and
+            # prefill would never be computed. (Additive flag, 2026-10-16.)
+            r = random.Random(7919 * k + 17)
+            return {"prompt_token_ids": [r.randrange(1000, max(1001, vocab - 1000))
+                                         for _ in range(args.input_len)]}
         return build_prompt(tokenizer, args.input_len, text=f"s{k}")
     return prompt
 
@@ -256,7 +286,7 @@ def run_load(args):
     iter_csv = os.path.join(args.run_dir, "iter_log.csv")
     engine, emeta = build_async_engine(args, iter_log_csv=iter_csv)
 
-    nvml = NvmlPowerLogger(args.gpu_id,
+    nvml = NvmlPowerLogger(meter_gpus(args),
                            os.path.join(args.run_dir, "power_trace.csv"),
                            interval_ms=args.power_interval_ms).start()
     dram = DramCounter(args.gpu_id, os.path.join(args.run_dir, "dram_trace.csv"),
@@ -314,6 +344,14 @@ def run_load(args):
         "idle_power_w": baselines.get("idle_power_w"),
         "prefill_ceiling_power_w": baselines.get("prefill_ceiling_power_w"),
         "kv_cache_dtype": args.kv_cache_dtype,
+        "enforce_eager": args.enforce_eager,
+        "max_num_seqs_resolved": emeta.get("max_num_seqs_resolved"),
+        "max_num_batched_tokens_resolved": emeta.get("max_num_batched_tokens_resolved"),
+        "chunked_prefill": emeta.get("chunked_prefill"),
+        "prefix_caching": emeta.get("prefix_caching"),
+        "unique_prompts": bool(getattr(args, "unique_prompts", False)),
+        "metered_gpus": meter_gpus(args),
+        "power_limit_total_w": nvml.power_limit_total_w,
         "window_wall_t0": win_t0,
         "window_wall_t1": win_t1,
     }
@@ -329,12 +367,16 @@ def run_load(args):
         "aggregate_tokens_per_sec": gen / dur if dur > 0 else None,
         "avg_power_window_w": avg_power_in_window(
             os.path.join(args.run_dir, "power_trace.csv"), win_t0, win_t1),
+        # From the cumulative energy counter (unsmoothed); None if not logged.
+        "energy_window_j": None, "energy_window_source": None,
         "dram_rows_filled": filled,
         "nvml_summary": nvml.summary(),
         "dram_backend": dram.backend,
         "dram_total_bytes": dram.total_bytes(),
         "peak_hbm_bw_bytes_per_s": dram.peak_bw,
     }
+    results["energy_window_j"], results["energy_window_source"] = energy_in_window(
+        os.path.join(args.run_dir, "power_trace.csv"), win_t0, win_t1)
     write_json(os.path.join(args.run_dir, "results.json"), results)
     write_requests_csv(os.path.join(args.run_dir, "requests.csv"), completions)
     print(f"[saved] {args.run_dir} "
@@ -367,7 +409,7 @@ def run_idle(args):
     """Model loaded, zero traffic -> idle/static power."""
     from engine_compat import build_async_engine
     engine, emeta = build_async_engine(args)
-    nvml = NvmlPowerLogger(args.gpu_id,
+    nvml = NvmlPowerLogger(meter_gpus(args),
                            os.path.join(args.run_dir, "power_trace.csv"),
                            interval_ms=args.power_interval_ms).start()
     time.sleep(args.duration_s)
@@ -393,7 +435,7 @@ def run_prefill_ceiling(args):
         args.model, use_fast=True, token=token, trust_remote_code=True)
     engine, emeta = build_async_engine(args)
 
-    nvml = NvmlPowerLogger(args.gpu_id,
+    nvml = NvmlPowerLogger(meter_gpus(args),
                            os.path.join(args.run_dir, "power_trace.csv"),
                            interval_ms=args.power_interval_ms).start()
 
@@ -553,6 +595,16 @@ def build_arg_parser():
     ap.add_argument("--dram_interval_ms", type=int, default=100)
 
     ap.add_argument("--tensor_parallel_size", type=int, default=1)
+    ap.add_argument("--meter_gpus", default=None,
+                    help="comma list of GPU indices whose power is summed (default: "
+                         "0..tp-1 if tp>1 else --gpu_id)")
+    ap.add_argument("--max_num_seqs", type=int, default=None,
+                    help="vLLM scheduler cap on running requests (default: vLLM's)")
+    ap.add_argument("--max_num_batched_tokens", type=int, default=None,
+                    help="vLLM per-step token budget (default: vLLM's; 2048 logged)")
+    ap.add_argument("--unique_prompts", action="store_true",
+                    help="synthetic prompts get distinct random token ids (no "
+                         "prefix-cache hits); only used without --task")
     ap.add_argument("--gpu_memory_utilization", type=float, default=0.90)
     ap.add_argument("--max_model_len", type=int, default=4096)
     ap.add_argument("--enforce_eager", action="store_true", default=True)

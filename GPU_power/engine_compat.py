@@ -15,8 +15,13 @@ import os
 # NOTE: do NOT set VLLM_ENABLE_V1_MULTIPROCESSING=0 — the V1 AsyncLLM requires the
 # multiprocessing engine-core client and setting that var makes core init fail.
 os.environ.setdefault("VLLM_USE_FLASHINFER_SAMPLER", "0")
-os.environ.setdefault("TORCH_COMPILE_DISABLE", "1")
-os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
+# torch.compile is disabled for the eager-mode runs (every run before 2026-10-16).
+# vLLM V1's piecewise CUDA graphs are built THROUGH torch.compile, so with these
+# set a --no_enforce_eager run captures graphs that never execute the model (A5000
+# smoke: 2x SLOWER than eager). CUDA-graph runs set VLLM_ALLOW_TORCH_COMPILE=1.
+if os.environ.get("VLLM_ALLOW_TORCH_COMPILE") != "1":
+    os.environ.setdefault("TORCH_COMPILE_DISABLE", "1")
+    os.environ.setdefault("TORCHDYNAMO_DISABLE", "1")
 
 
 def _install_transformers_tokenizer_compat():
@@ -48,6 +53,12 @@ def vllm_engine_kwargs(args) -> dict:
     kwargs = {}
     if getattr(args, "model", None) and "gemma" in args.model.lower():
         kwargs["hf_overrides"] = {"rope_theta": 10000.0}
+    # Scheduler limits (additive, 2026-10-16). None => vLLM's own default, which is
+    # what every run before this date used (logged: 2048-token step budget).
+    for k in ("max_num_seqs", "max_num_batched_tokens"):
+        v = getattr(args, k, None)
+        if v:
+            kwargs[k] = int(v)
     return kwargs
 
 
@@ -97,7 +108,20 @@ def build_async_engine(args, iter_log_csv=None):
 
     meta = {"vllm_version": vllm_version, "engine_api": api,
             "max_num_seqs": getattr(engine_args, "max_num_seqs", None),
-            "block_size": getattr(engine_args, "block_size", None)}
+            "block_size": getattr(engine_args, "block_size", None),
+            "enforce_eager": bool(args.enforce_eager)}
+    # Resolved scheduler settings (engine_args holds None when left to defaults).
+    try:
+        sc = engine.vllm_config.scheduler_config
+        meta["max_num_seqs_resolved"] = sc.max_num_seqs
+        meta["max_num_batched_tokens_resolved"] = sc.max_num_batched_tokens
+        meta["chunked_prefill"] = getattr(sc, "chunked_prefill_enabled", None)
+    except Exception:
+        pass
+    try:
+        meta["prefix_caching"] = engine.vllm_config.cache_config.enable_prefix_caching
+    except Exception:
+        pass
     return engine, meta
 
 

@@ -13,6 +13,13 @@ Emits iter_log.csv (PROFILING_HANDOFF.md schema):
     t_start, t_end, phase, n_running, n_waiting, kv_tokens_resident,
     kv_cache_pct, prefill_tokens, decode_tokens, dram_bytes
 
+  + trailing (additive, 2026-10-16): prefix_queries, prefix_hits — this step's
+    prefix-cache token queries / hits from SchedulerStats.prefix_cache_stats.
+    prefill_tokens (IterationStats.num_prompt_tokens) counts the FULL prompt,
+    cache hits included, which vLLM never computes; energy_model.py subtracts the
+    hits per bin (replaces the RNG-replay reconstruction in
+    controls/prefix_cache_refit.py for new runs).
+
 kv_tokens_resident (= Σ_seq ctx) is derived exactly from the fraction:
     kv_cache_usage · num_gpu_blocks · block_size
 (confirmed against vLLM's own "GPU KV cache size" log). dram_bytes is filled later
@@ -48,7 +55,7 @@ def make_iter_logger_factory(out_csv):
                 self._writer.writerow([
                     "t_start", "t_end", "phase", "n_running", "n_waiting",
                     "kv_tokens_resident", "kv_cache_pct", "prefill_tokens",
-                    "decode_tokens", "dram_bytes"])
+                    "decode_tokens", "dram_bytes", "prefix_queries", "prefix_hits"])
                 self._f.flush()
 
         @staticmethod
@@ -92,6 +99,9 @@ def make_iter_logger_factory(out_csv):
             pref = _getattr_num(iteration_stats, "num_prompt_tokens")
             dec = _getattr_num(iteration_stats, "num_generation_tokens")
             phase = _phase_tag(pref, dec)
+            pcs = getattr(scheduler_stats, "prefix_cache_stats", None)
+            pq = _getattr_num(pcs, "queries")
+            ph = _getattr_num(pcs, "hits")
 
             self._writer.writerow([
                 f"{t_start:.6f}", f"{t:.6f}", phase, nr, nw,
@@ -99,7 +109,9 @@ def make_iter_logger_factory(out_csv):
                 "" if kv_usage is None else f"{kv_usage:.4f}",
                 "" if pref is None else int(pref),
                 "" if dec is None else int(dec),
-                ""])  # dram_bytes filled by reconciliation
+                "",  # dram_bytes filled by reconciliation
+                "" if pq is None else int(pq),
+                "" if ph is None else int(ph)])
             self.n_rows += 1
             self._f.flush()
 
