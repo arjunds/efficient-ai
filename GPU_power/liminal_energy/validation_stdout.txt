@@ -1,0 +1,107 @@
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+runs: 148
+
+[graphs] dtau 34.5 us/layer (rmsle 0.037) | dt0 0.97 ms/step (rmsle 0.037)
+   graphs/Qwen2.5-32B-Instruct/alpaca_c1            L=64 n=  1.0 meas  13.96  eager  15.74  per-layer  13.54  per-step  14.78 ms
+   graphs/Qwen2.5-32B-Instruct/alpaca_c16           L=64 n= 15.2 meas  14.81  eager  16.60  per-layer  14.39  per-step  15.63 ms
+   graphs/Qwen2.5-32B-Instruct/alpaca_c64           L=64 n= 60.8 meas  16.31  eager  19.30  per-layer  17.09  per-step  18.34 ms
+   highconc/Qwen2-7B-Instruct/alpaca_c128           L=28 n=124.2 meas   6.63  eager   7.21  per-layer   6.24  per-step   6.24 ms
+   highconc/Qwen2-7B-Instruct/alpaca_c256           L=28 n=247.7 meas   9.03  eager   8.73  per-layer   7.76  per-step   7.76 ms
+   highconc/Qwen2-7B-Instruct/alpaca_c512           L=28 n=493.0 meas  15.08  eager  11.74  per-layer  10.78  per-step  10.78 ms
+   highconc/Qwen2-7B-Instruct/sharegpt_c128         L=28 n=124.1 meas   7.89  eager   8.10  per-layer   7.14  per-step   7.14 ms
+   highconc/Qwen2-7B-Instruct/sharegpt_c256         L=28 n=247.0 meas  10.68  eager  10.26  per-layer   9.29  per-step   9.29 ms
+   highconc/Qwen2-7B-Instruct/sharegpt_c512         L=28 n=487.8 meas  16.83  eager  14.46  per-layer  13.50  per-step  13.50 ms
+   highconc/Qwen2.5-32B-Instruct/alpaca_c128        L=64 n=121.0 meas  19.37  eager  22.84  per-layer  20.63  per-step  21.87 ms
+   highconc/Qwen2.5-32B-Instruct/alpaca_c256        L=64 n=240.6 meas  26.32  eager  29.83  per-layer  27.62  per-step  28.86 ms
+   highconc/Qwen2.5-32B-Instruct/alpaca_c512        L=64 n=474.4 meas  42.36  eager  43.44  per-layer  41.23  per-step  42.48 ms
+   tp1ref/Qwen2-72B-Instruct/alpaca_c1              L=80 n=  1.0 meas  26.58  eager  28.48  per-layer  25.72  per-step  27.52 ms
+   tp1ref/Qwen2-72B-Instruct/alpaca_c16             L=80 n= 15.2 meas  26.60  eager  30.23  per-layer  27.47  per-step  29.27 ms
+   held-out time MAPE: eager 10.9%  per-layer 8.7%  per-step 10.8%
+   c<=64 held-out: eager 12.8%  per-layer 3.5%  per-step 7.5%
+   Sept eager - graphs at c=1: {'Qwen/Qwen2-7B-Instruct': '0.88 ms (31.6 us/layer, L=28)', 'Qwen/Qwen2.5-32B-Instruct': '1.89 ms (29.6 us/layer, L=64)', 'Qwen/Qwen2-72B-Instruct': '2.45 ms (30.7 us/layer, L=80)'}
+
+[tp2] tau_ar 15.5 us/layer (rmsle 0.002 on 72B); 32B held-out time MAPE: fit 1.3%, prior(25us,x1.15) 20.5%, no sync 10.2%
+   tp2/Qwen2-72B-Instruct/alpaca_c1         meas  16.60 fit  16.56 prior  19.92 nosync  15.32
+   tp2/Qwen2-72B-Instruct/alpaca_c16        meas  17.44 fit  17.44 prior  20.93 nosync  16.20
+   tp2/Qwen2-72B-Instruct/alpaca_c64        meas  20.17 fit  20.22 prior  24.12 nosync  18.98
+   tp2/Qwen2.5-32B-Instruct/alpaca_c1       meas   9.86 fit   9.87 prior  12.05 nosync   8.88
+   tp2/Qwen2.5-32B-Instruct/alpaca_c16      meas  10.25 fit  10.30 prior  12.55 nosync   9.31
+   tp2/Qwen2.5-32B-Instruct/alpaca_c64      meas  12.08 fit  11.67 prior  14.12 nosync  10.68
+
+J/token MAPE %% (bias %%)
+group                                  n            mode           eager     energy_only         kv_high          kv_low            dvfs    liminal_time     liminal_tdp   t_mape(bias)  P_mape
+B200_prov graphs (c<=64)              11     5.3(  -5.3)     3.7(  +0.7)     3.5(  -3.5)     3.1(  -3.1)     2.8(  -2.7)     5.3(  -5.3)     5.3(  -5.0)    39.4( +38.2)     3.0( +0.1)    3.4  t_lim   7.4( +0.5)
+B200_prov highconc (c 128-512)         9    10.4(  -9.6)     8.8(  -7.3)     6.9(  -5.0)     8.2(  -1.2)     9.3(  +3.3)    11.0( -10.3)    13.5( -12.7)    12.2( -11.4)    12.1( -6.2)    5.0  t_lim  21.3(-17.2)
+B200_prov relog (eager)                8    13.4( -13.4)    13.4( -13.4)     3.7(  -3.7)    11.6( -11.6)    11.4( -11.4)    13.4( -13.4)    19.2( -19.2)    26.7( +25.2)    18.4(-18.4)    8.3  t_lim  32.1(-32.1)
+B200_prov tp1ref (72B)                 2     4.3(  -4.3)     1.8(  -1.8)     1.9(  -1.9)     2.8(  -2.8)     2.7(  -2.7)     4.3(  -4.3)     3.9(  -3.9)     5.2(  +3.4)     3.5( +0.2)    2.0  t_lim   1.7( +1.7)
+B200_prov tp2                          6     4.7(  -4.5)     4.0(  +1.2)     2.2(  -1.9)     2.9(  -2.4)     1.8(  -1.4)     4.7(  -4.5)     5.5(  -3.0)    37.2( +36.0)     0.9( -0.1)    1.8  t_lim   8.8( +3.8)
+B200_prov prefill (per gen token)      4    10.5( -10.5)     9.9(  -9.9)    13.4( -13.4)     5.1(  -1.5)    23.7( +23.7)    13.1( -13.1)    11.2( -11.2)    11.2( -11.2)     4.8( -4.8)    4.0  t_lim   7.5( -7.5)
+Sept H200 (eager)                     80     3.8(  -2.8)     3.8(  -2.8)     2.6(  -1.3)     3.8(  -2.8)     3.8(  -2.8)     3.8(  -2.8)     9.8(  -8.7)    87.5( +86.9)     4.1( -0.0)    3.5  t_lim  14.5(-11.5)
+Sept B200 (eager)                     28     3.9(  -3.3)     3.9(  -3.3)     1.6(  -0.6)     2.9(  -1.0)     2.3(  -1.5)     3.9(  -3.3)     7.6(  -7.6)    28.4( +25.5)     2.2( +0.2)    1.9  t_lim  12.2(-12.2)
+ALL decode-serving runs              144     4.9(  +0.0)     4.6(  +0.0)     2.8(  +0.0)     4.2(  +0.0)     4.1(  +0.0)     4.9(  +0.0)     9.5(  +0.0)    61.0(  +0.0)     0.0( +0.0)    0.0  t_lim   0.0( +0.0)
+
+prefill per prompt token: {'n': 4, 'mode_mape': 11.935589211776202, 'mode_bias': -11.935589211776202, 'dvfs_mape': 14.474811299505696, 'dvfs_bias': -14.474811299505696, 'energy_only_mape': 14.838747757487369}
+
+TP premium (J/tok TP2 / TP1): 
+   Qwen2-72B-Instruct     c=  1 meas 1.03 pred 1.07 | speedup meas 1.60 pred 1.55
+   Qwen2-72B-Instruct     c= 16 meas 1.07 pred 1.07 | speedup meas 1.54 pred 1.58
+   Qwen2.5-32B-Instruct   c=  1 meas 1.11 pred 1.13 | speedup meas 1.42 pred 1.37
+   Qwen2.5-32B-Instruct   c= 16 meas 1.09 pred 1.12 | speedup meas 1.46 pred 1.40
+   Qwen2.5-32B-Instruct   c= 64 meas 1.13 pred 1.10 | speedup meas 1.37 pred 1.47
+
+matched B200/H200 ratio: n=22 MAPE 2.5% (LIMINAL-TDP 13.8%); sign agree 22/22 (TDP 22/22)
+
+cap detection:
+    {'key': 'graphs/Qwen2.5-32B-Instruct/alpaca_c64', 'cap_frac_meas': 0.27125914711077465, 'capped_pred': False, 'p_meas': 969.1605383871829, 'p_pred': 899.5332360132015}
+    {'key': 'highconc/Qwen2-7B-Instruct/sharegpt_c512', 'cap_frac_meas': 0.21994134897360704, 'capped_pred': False, 'p_meas': 855.185323803381, 'p_pred': 948.4551543139371}
+    {'key': 'highconc/Qwen2.5-32B-Instruct/alpaca_c128', 'cap_frac_meas': 0.9469677080598582, 'capped_pred': False, 'p_meas': 976.6901156653755, 'p_pred': 944.7499060690295}
+    {'key': 'highconc/Qwen2.5-32B-Instruct/alpaca_c256', 'cap_frac_meas': 0.9752944556162022, 'capped_pred': False, 'p_meas': 966.7909683830464, 'p_pred': 998.9057119429632}
+    {'key': 'highconc/Qwen2.5-32B-Instruct/alpaca_c512', 'cap_frac_meas': 0.9863091842555619, 'capped_pred': True, 'p_meas': 960.3252895944532, 'p_pred': 1000.0}
+    {'key': 'prefill/Qwen2-7B-Instruct/in2048_c16', 'cap_frac_meas': 0.9974619289340102, 'capped_pred': True, 'p_meas': 960.8856260832741, 'p_pred': 1000.0}
+    {'key': 'prefill/Qwen2-7B-Instruct/in2048_c4', 'cap_frac_meas': 0.9969574036511156, 'capped_pred': False, 'p_meas': 878.8750695883591, 'p_pred': 914.6439926707155}
+    {'key': 'prefill/Qwen2-7B-Instruct/in8192_c16', 'cap_frac_meas': 1.0, 'capped_pred': True, 'p_meas': 973.1336562610682, 'p_pred': 1000.0}
+    {'key': 'prefill/Qwen2-7B-Instruct/in8192_c4', 'cap_frac_meas': 1.0, 'capped_pred': True, 'p_meas': 951.123964088038, 'p_pred': 1000.0}
+    {'key': 'tp1ref/Qwen2-72B-Instruct/alpaca_c16', 'cap_frac_meas': 0.7232776379034104, 'capped_pred': False, 'p_meas': 986.0447847349428, 'p_pred': 948.4426211650169}
+
+per-run (B200_prov):
+   graphs/Qwen2-7B-Instruct/alpaca_c1             n=  1.0 t   4.55/  4.70 ms  P  640/ 614 W  J   2.9345 / mode   2.8889 eo   2.8731 lim   4.9603  overhead
+   graphs/Qwen2-7B-Instruct/alpaca_c16            n= 15.6 t   4.92/  4.90 ms  P  654/ 636 W  J   0.2055 / mode   0.1947 eo   0.1989 lim   0.3107  overhead
+   graphs/Qwen2-7B-Instruct/alpaca_c4             n=  3.9 t   4.67/  4.74 ms  P  645/ 619 W  J   0.7678 / mode   0.7336 eo   0.7436 lim   1.2406  overhead
+   graphs/Qwen2-7B-Instruct/alpaca_c64            n= 61.9 t   5.99/  5.50 ms  P  706/ 693 W  J   0.0678 / mode   0.0596 eo   0.0626 lim   0.0782  overhead
+   graphs/Qwen2-7B-Instruct/sharegpt_c1           n=  1.0 t   4.59/  4.71 ms  P  641/ 615 W  J   2.9534 / mode   2.8969 eo   2.8792 lim   4.9614  overhead
+   graphs/Qwen2-7B-Instruct/sharegpt_c16          n= 15.6 t   4.99/  5.06 ms  P  674/ 650 W  J   0.2148 / mode   0.2053 eo   0.2084 lim   0.3122  overhead
+   graphs/Qwen2-7B-Instruct/sharegpt_c4           n=  3.9 t   4.71/  4.78 ms  P  649/ 622 W  J   0.7750 / mode   0.7439 eo   0.7499 lim   1.2419  overhead
+   graphs/Qwen2-7B-Instruct/sharegpt_c64          n= 62.3 t   6.11/  6.00 ms  P  755/ 725 W  J   0.0738 / mode   0.0681 eo   0.0695 lim   0.0796  overhead
+   graphs/Qwen2.5-32B-Instruct/alpaca_c1          n=  1.0 t  13.96/ 13.54 ms  P  821/ 829 W  J  11.5278 / mode  11.2264 eo  11.3899 lim  15.2959  bandwidth
+   graphs/Qwen2.5-32B-Instruct/alpaca_c16         n= 15.2 t  14.81/ 14.44 ms  P  853/ 850 W  J   0.8277 / mode   0.7665 eo   0.8060 lim   0.9596  bandwidth
+   graphs/Qwen2.5-32B-Instruct/alpaca_c64         n= 60.8 t  16.31/ 17.29 ms  P  969/ 900 W  J   0.2596 / mode   0.2430 eo   0.2487 lim   0.2428  bandwidth
+   highconc/Qwen2-7B-Instruct/alpaca_c128         n=124.2 t   6.63/  6.29 ms  P  791/ 751 W  J   0.0421 / mode   0.0369 eo   0.0383 lim   0.0394  overhead
+   highconc/Qwen2-7B-Instruct/alpaca_c256         n=247.7 t   9.03/  7.87 ms  P  852/ 833 W  J   0.0312 / mode   0.0256 eo   0.0273 lim   0.0240  overhead
+   highconc/Qwen2-7B-Instruct/alpaca_c512         n=493.0 t  15.08/ 11.01 ms  P  845/ 925 W  J   0.0263 / mode   0.0199 eo   0.0226 lim   0.0194  compute
+   highconc/Qwen2-7B-Instruct/sharegpt_c128       n=124.1 t   7.89/  7.22 ms  P  776/ 792 W  J   0.0493 / mode   0.0446 eo   0.0467 lim   0.0410  bandwidth
+   highconc/Qwen2-7B-Instruct/sharegpt_c256       n=247.0 t  10.68/  9.46 ms  P  835/ 869 W  J   0.0361 / mode   0.0321 eo   0.0339 lim   0.0306  bandwidth
+   highconc/Qwen2-7B-Instruct/sharegpt_c512       n=487.8 t  16.83/ 13.94 ms  P  855/ 948 W  J   0.0299 / mode   0.0258 eo   0.0281 lim   0.0254  compute
+   highconc/Qwen2.5-32B-Instruct/alpaca_c128      n=121.0 t  19.37/ 21.05 ms  P  977/ 945 W  J   0.1572 / mode   0.1553 eo   0.1588 lim   0.1525  bandwidth
+   highconc/Qwen2.5-32B-Instruct/alpaca_c256      n=240.6 t  26.32/ 28.52 ms  P  967/ 999 W  J   0.1076 / mode   0.1113 eo   0.1113 lim   0.1113  bandwidth
+   highconc/Qwen2.5-32B-Instruct/alpaca_c512      n=474.4 t  42.36/ 46.36 ms  P  960/1000 W  J   0.0908 / mode   0.0905 eo   0.0945 lim   0.0905  power/CAP
+   prefill/Qwen2-7B-Instruct/in2048_c16           n= 12.1 t  28.17/ 28.04 ms  P  961/1000 W  J   1.8153 / mode   1.7525 eo   1.5623 lim   1.7525  power/CAP
+   prefill/Qwen2-7B-Instruct/in2048_c4            n=  3.4 t  10.39/  9.89 ms  P  879/ 915 W  J   2.4264 / mode   2.2618 eo   2.2297 lim   2.1959  compute
+   prefill/Qwen2-7B-Instruct/in8192_c16           n= 13.9 t 113.38/109.39 ms  P  973/1000 W  J   8.0689 / mode   6.8366 eo   7.2941 lim   6.8366  power/CAP
+   prefill/Qwen2-7B-Instruct/in8192_c4            n=  2.9 t  33.50/ 30.00 ms  P  951/1000 W  J   8.9763 / mode   7.4998 eo   7.0160 lim   7.4998  power/CAP
+   relog/Qwen2-7B-Instruct/alpaca_c1              n=  1.0 t   6.72/  5.67 ms  P  511/ 550 W  J   3.4627 / mode   3.1184 eo   3.3933 lim   4.9602  overhead
+   relog/Qwen2-7B-Instruct/alpaca_c16             n= 15.5 t   7.27/  5.87 ms  P  522/ 570 W  J   0.2435 / mode   0.2091 eo   0.2358 lim   0.3107  overhead
+   relog/Qwen2-7B-Instruct/alpaca_c4              n=  3.9 t   6.95/  5.71 ms  P  511/ 554 W  J   0.9103 / mode   0.7910 eo   0.8865 lim   1.2406  overhead
+   relog/Qwen2-7B-Instruct/alpaca_c64             n= 61.4 t   8.26/  6.48 ms  P  581/ 626 W  J   0.0778 / mode   0.0633 eo   0.0720 lim   0.0782  overhead
+   relog/Qwen2-7B-Instruct/sharegpt_c1            n=  1.0 t   6.83/  5.68 ms  P  510/ 551 W  J   3.5001 / mode   3.1294 eo   3.4167 lim   4.9617  overhead
+   relog/Qwen2-7B-Instruct/sharegpt_c16           n= 15.5 t   7.59/  6.01 ms  P  527/ 583 W  J   0.2566 / mode   0.2190 eo   0.2485 lim   0.3120  overhead
+   relog/Qwen2-7B-Instruct/sharegpt_c4            n=  3.9 t   7.02/  5.74 ms  P  513/ 557 W  J   0.9071 / mode   0.7993 eo   0.8823 lim   1.2417  overhead
+   relog/Qwen2-7B-Instruct/sharegpt_c64           n= 61.8 t   8.46/  7.02 ms  P  622/ 661 W  J   0.0847 / mode   0.0725 eo   0.0795 lim   0.0796  overhead
+   tp1ref/Qwen2-72B-Instruct/alpaca_c1            n=  1.0 t  26.58/ 25.72 ms  P  931/ 933 W  J  24.8523 / mode  23.9998 eo  24.3065 lim  26.9907  bandwidth
+   tp1ref/Qwen2-72B-Instruct/alpaca_c16           n= 15.2 t  26.60/ 27.58 ms  P  986/ 948 W  J   1.7239 / mode   1.6347 eo   1.6976 lim   1.6925  bandwidth
+   tp2/Qwen2-72B-Instruct/alpaca_c1               n=  1.0 t  16.60/ 16.56 ms  P 1539/1555 W  J  25.6350 / mode  25.7596 eo  25.8757 lim  36.1107  bandwidth
+   tp2/Qwen2-72B-Instruct/alpaca_c16              n= 15.3 t  17.44/ 17.49 ms  P 1615/1597 W  J   1.8367 / mode   1.7448 eo   1.8139 lim   2.2625  bandwidth
+   tp2/Qwen2-72B-Instruct/alpaca_c64              n= 60.6 t  20.17/ 20.43 ms  P 1772/1703 W  J   0.5909 / mode   0.5436 eo   0.5666 lim   0.5702  bandwidth
+   tp2/Qwen2.5-32B-Instruct/alpaca_c1             n=  1.0 t   9.86/  9.87 ms  P 1295/1287 W  J  12.8398 / mode  12.7020 eo  12.7625 lim  22.5920  overhead
+   tp2/Qwen2.5-32B-Instruct/alpaca_c16            n= 15.3 t  10.25/ 10.32 ms  P 1350/1332 W  J   0.8982 / mode   0.8591 eo   0.8877 lim   1.4156  overhead
+   tp2/Qwen2.5-32B-Instruct/alpaca_c64            n= 61.5 t  12.08/ 11.74 ms  P 1493/1451 W  J   0.2925 / mode   0.2662 eo   0.2768 lim   0.3568  overhead

@@ -59,12 +59,30 @@ ARMS = {
     "tp2": [(Q32, dict(GRAPHS, tensor_parallel_size=2), _ragged(["alpaca"], [1, 16, 64])),
             (Q72, dict(GRAPHS, tensor_parallel_size=2, max_model_len=4096), _ragged(["alpaca"], [1, 16, 64]))],
     "tp1ref": [(Q72, dict(GRAPHS, max_model_len=4096), _ragged(["alpaca"], [1, 16]))],
+    # Long-context sweep (HANDOFF_B200_LONGCTX.md): context varies at FIXED concurrency,
+    # so KV bytes per token grow ~30x while weight bytes and GEMM FLOPs per token stay
+    # fixed. That breaks the KV-vs-FLOP collinearity of every concurrency sweep.
+    # Unique synthetic prompts (no prefix-cache hits), 512 decode tokens per request.
+    "longctx": [(Q7, dict(GRAPHS, max_model_len=32768),
+                 [(f"ctx{n}_c{c}", {"input_len": n, "output_len": 512, "concurrency": c,
+                                    "unique_prompts": None})
+                  for c in (4, 16) for n in (1024, 4096, 8192, 16384, 30720)])],
+    "longctx32": [(Q32, dict(GRAPHS, max_model_len=32768),
+                   [(f"ctx{n}_c4", {"input_len": n, "output_len": 512, "concurrency": 4,
+                                    "unique_prompts": None})
+                    for n in (1024, 8192, 30720)])],
+    # Logger-overhead A/B: same as relog alpaca c=1/c=64 but with NVML_LOGGER_SLIM=1
+    # (power, POWER_INSTANT and energy counter only). Compare tok/s with relog.
+    "loggerab": [(Q7, {}, _ragged(["alpaca"], [1, 64]))],
     # pipeline smoke tests (A5000, 0.5B): every code path in ~5 min
     "smoke": [(Q05, dict(GRAPHS, max_num_seqs=512), _ragged(["alpaca"], [4])
                + [("in1024_c4", {"input_len": 1024, "output_len": 16, "concurrency": 4,
                                  "unique_prompts": None})])],
     "smoke_eager": [(Q05, {}, _ragged(["alpaca"], [4]))],
     "smoke_tp2": [(Q05, dict(GRAPHS, tensor_parallel_size=2), _ragged(["alpaca"], [4]))],
+    "smoke_longctx": [(Q05, dict(GRAPHS, max_model_len=8192),
+                       [(f"ctx{n}_c2", {"input_len": n, "output_len": 64, "concurrency": 2,
+                                        "unique_prompts": None}) for n in (512, 4096)])],
 }
 
 
@@ -89,6 +107,10 @@ def do_model(arm, model, eng, runs):
         os.environ["VLLM_ALLOW_TORCH_COMPILE"] = "1"
     else:
         os.environ.pop("VLLM_ALLOW_TORCH_COMPILE", None)
+    if arm == "loggerab":
+        os.environ["NVML_LOGGER_SLIM"] = "1"
+    else:
+        os.environ.pop("NVML_LOGGER_SLIM", None)
     mdir = os.path.join(LOG_ROOT, arm, model.split("/")[-1])
     os.makedirs(mdir, exist_ok=True)
     print(f"[{ts()}] === {arm} / {model} engine={eng}", flush=True)
