@@ -1,0 +1,93 @@
+==== B200 provisioning  Fri Oct 16 01:28:34 AM EDT 2026  node=dgx026  arms=tp2,tp1ref ====
+name, power.limit [W], enforced.power.limit [W], power.default_limit [W], memory.total [MiB], clocks.max.sm [MHz], driver_version
+NVIDIA B200, 1000.00 W, 1000.00 W, 1000.00 W, 183359 MiB, 1965 MHz, 580.95.05
+NVIDIA B200, 1000.00 W, 1000.00 W, 1000.00 W, 183359 MiB, 1965 MHz, 580.95.05
+  cached: Qwen/Qwen2.5-32B-Instruct
+  cached: Qwen/Qwen2-72B-Instruct
+[2026-10-16 01:28:40] === tp2 / Qwen/Qwen2.5-32B-Instruct engine={'no_enforce_eager': None, 'tensor_parallel_size': 2}
+[2026-10-16 01:28:40] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/B200_prov/tp2/Qwen2.5-32B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --tensor_parallel_size 2 --duration_s 15.0
+[2026-10-16 01:31:14] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/B200_prov/tp2/Qwen2.5-32B-Instruct/alpaca_c1 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --tensor_parallel_size 2 --duration_s 45.0 --task alpaca --concurrency 1
+[2026-10-16 01:33:56] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/tp2/Qwen2.5-32B-Instruct/alpaca_c1
+[2026-10-16 01:34:00]   alpaca_c1: tok/s=100.9 reqs=24 P_avg=1295.5862437314638 E_counter=59949.228595947265
+[2026-10-16 01:34:00] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/B200_prov/tp2/Qwen2.5-32B-Instruct/alpaca_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --tensor_parallel_size 2 --duration_s 45.0 --task alpaca --concurrency 16
+[2026-10-16 01:36:10] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/tp2/Qwen2.5-32B-Instruct/alpaca_c16
+[2026-10-16 01:36:14]   alpaca_c16: tok/s=1502.9 reqs=379 P_avg=1350.0944584281021 E_counter=64159.01543212891
+[2026-10-16 01:36:14] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/B200_prov/tp2/Qwen2.5-32B-Instruct/alpaca_c64 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --tensor_parallel_size 2 --duration_s 45.0 --task alpaca --concurrency 64
+[2026-10-16 01:38:23] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/tp2/Qwen2.5-32B-Instruct/alpaca_c64
+[2026-10-16 01:38:26]   alpaca_c64: tok/s=5103.4 reqs=1307 P_avg=1495.7542029833285 E_counter=71341.36443701173
+[2026-10-16 01:38:26] === tp2 / Qwen/Qwen2-72B-Instruct engine={'no_enforce_eager': None, 'tensor_parallel_size': 2, 'max_model_len': 4096}
+[2026-10-16 01:38:26] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2-72B-Instruct --dtype float16 --run_dir logs/B200_prov/tp2/Qwen2-72B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --tensor_parallel_size 2 --max_model_len 4096 --duration_s 15.0
+[2026-10-16 01:41:37] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-72B-Instruct --dtype float16 --run_dir logs/B200_prov/tp2/Qwen2-72B-Instruct/alpaca_c1 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --tensor_parallel_size 2 --max_model_len 4096 --duration_s 45.0 --task alpaca --concurrency 1
+[2026-10-16 01:45:06] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/tp2/Qwen2-72B-Instruct/alpaca_c1
+[2026-10-16 01:45:10]   alpaca_c1: tok/s=60.0 reqs=12 P_avg=1538.8187951156813 E_counter=74649.0839921875
+[2026-10-16 01:45:10] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-72B-Instruct --dtype float16 --run_dir logs/B200_prov/tp2/Qwen2-72B-Instruct/alpaca_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --tensor_parallel_size 2 --max_model_len 4096 --duration_s 45.0 --task alpaca --concurrency 16
+[2026-10-16 01:47:57] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/tp2/Qwen2-72B-Instruct/alpaca_c16
+[2026-10-16 01:48:01]   alpaca_c16: tok/s=879.3 reqs=177 P_avg=1610.6193585014407 E_counter=79645.10042651367
+[2026-10-16 01:48:01] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-72B-Instruct --dtype float16 --run_dir logs/B200_prov/tp2/Qwen2-72B-Instruct/alpaca_c64 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --tensor_parallel_size 2 --max_model_len 4096 --duration_s 45.0 --task alpaca --concurrency 64
+[2026-10-16 01:50:49] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/tp2/Qwen2-72B-Instruct/alpaca_c64
+[2026-10-16 01:50:53]   alpaca_c64: tok/s=2998.7 reqs=605 P_avg=1769.9071725043784 E_counter=87953.5584362793
+[2026-10-16 01:50:53] === tp1ref / Qwen/Qwen2-72B-Instruct engine={'no_enforce_eager': None, 'max_model_len': 4096}
+[2026-10-16 01:50:53] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2-72B-Instruct --dtype float16 --run_dir logs/B200_prov/tp1ref/Qwen2-72B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 4096 --duration_s 15.0
+[2026-10-16 01:52:55] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-72B-Instruct --dtype float16 --run_dir logs/B200_prov/tp1ref/Qwen2-72B-Instruct/alpaca_c1 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 4096 --duration_s 45.0 --task alpaca --concurrency 1
+[2026-10-16 01:55:54] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/tp1ref/Qwen2-72B-Instruct/alpaca_c1
+[2026-10-16 01:55:58]   alpaca_c1: tok/s=37.5 reqs=8 P_avg=930.2606415134674 E_counter=46921.101634765626
+[2026-10-16 01:55:58] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-72B-Instruct --dtype float16 --run_dir logs/B200_prov/tp1ref/Qwen2-72B-Instruct/alpaca_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 4096 --duration_s 45.0 --task alpaca --concurrency 16
+[2026-10-16 01:58:14] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/tp1ref/Qwen2-72B-Instruct/alpaca_c16
+[2026-10-16 01:58:18]   alpaca_c16: tok/s=572.0 reqs=117 P_avg=986.3091902037079 E_counter=49149.081188476564
+[2026-10-16 01:58:18] PROVISIONING SWEEP DONE (tp2,tp1ref)
+
+==== analysis ====
+== 1. runs ==
+arm/model/tag                                  tok/s  req/s  mJ/tok     W   MBU  step  cap%   KV% wait%  TTFT50/99 s  TPOT50/99 ms  hit%
+graphs/Qwen2-7B-Instruct/alpaca_c1               218    1.6    2934   640  0.39   4.6     0     0     0    0.01/0.01       4.6/4.7     0
+graphs/Qwen2-7B-Instruct/alpaca_c16             3183   21.6     206   654  0.36   4.9     0     0     0    0.01/0.03       4.9/5.2    13
+graphs/Qwen2-7B-Instruct/alpaca_c4               840    5.8     768   645  0.38   4.7     0     0     0    0.01/0.01       4.7/4.9     4
+graphs/Qwen2-7B-Instruct/alpaca_c64            10408   70.5      68   706  0.31   5.9     0     0     0    0.01/0.21       6.0/6.6    34
+graphs/Qwen2-7B-Instruct/sharegpt_c1             217    0.9    2953   641  0.39   4.6     0     0     0    0.01/0.03       4.6/4.6     0
+graphs/Qwen2-7B-Instruct/sharegpt_c16           3136   13.6     215   674  0.36   4.8     3     1     0    0.01/0.07       4.9/5.6    18
+graphs/Qwen2-7B-Instruct/sharegpt_c4             838    3.7     775   649  0.38   4.7     0     0     0    0.01/0.06       4.7/5.0     3
+graphs/Qwen2-7B-Instruct/sharegpt_c64          10235   44.5      74   755  0.31   5.7     9     1     0    0.01/0.12       6.1/6.7    35
+graphs/Qwen2.5-32B-Instruct/alpaca_c1             71    0.4   11528   821  0.57  14.0     0     0     0    0.02/0.17     14.0/14.1     0
+relog/Qwen2-7B-Instruct/alpaca_c1                148    1.1    3463   511  0.26   6.8     0     0     0    0.01/0.02       6.8/6.9     0
+relog/Qwen2-7B-Instruct/alpaca_c16              2142   14.4     244   522  0.25   7.2     0     0     0    0.02/0.05       7.3/8.0     9
+relog/Qwen2-7B-Instruct/alpaca_c4                561    3.8     910   511  0.25   6.9     0     0     0    0.02/0.03       6.9/7.2     3
+relog/Qwen2-7B-Instruct/alpaca_c64              7474   50.4      78   581  0.22   8.0     0     0     0    0.02/0.04      8.2/10.4    27
+relog/Qwen2-7B-Instruct/sharegpt_c1              146    0.6    3500   510  0.26   6.8     0     0     0    0.02/0.03       6.8/7.2     0
+relog/Qwen2-7B-Instruct/sharegpt_c16            2053    8.9     257   527  0.24   7.3     1     1     0    0.02/0.08       7.6/8.1    10
+relog/Qwen2-7B-Instruct/sharegpt_c4              565    2.5     907   513  0.25   6.9     0     0     0    0.02/0.04       7.0/7.2     5
+relog/Qwen2-7B-Instruct/sharegpt_c64            7345   31.8      85   622  0.22   7.8     5     1     0    0.02/0.23       8.4/9.5    28
+tp1ref/Qwen2-72B-Instruct/alpaca_c1               37    0.2   24852   931  0.67  26.7     0     0     0    0.03/0.03     26.7/26.8     0
+tp1ref/Qwen2-72B-Instruct/alpaca_c16             572    2.3    1724   986  0.68  26.5    72     6     0    0.06/0.09     26.6/26.8     1
+tp2/Qwen2-72B-Instruct/alpaca_c1                  60    0.2   25635  1539  0.54  16.6     0     0     0    0.02/0.02     16.6/16.7     0
+tp2/Qwen2-72B-Instruct/alpaca_c16                879    3.6    1837  1615  0.52  17.3     0     1     0    0.04/0.06     17.3/17.9     3
+tp2/Qwen2-72B-Instruct/alpaca_c64               2999   12.2     591  1772  0.45  19.9     3     3     0    0.08/0.13     20.2/20.4    10
+tp2/Qwen2.5-32B-Instruct/alpaca_c1               101    0.5   12840  1295  0.41   9.9     0     0     0    0.01/0.01      9.9/10.0     0
+tp2/Qwen2.5-32B-Instruct/alpaca_c16             1503    8.0     898  1350  0.39  10.1     0     0     0    0.02/0.04     10.2/10.6     5
+tp2/Qwen2.5-32B-Instruct/alpaca_c64             5103   27.3     293  1493  0.34  11.8     0     1     0    0.03/0.06     12.1/12.5    18
+   bin energy source(s): ['energy']  ('energy' = NVML energy counter, validated against POWER_INSTANT; 'inst' = POWER_INSTANT; 'avg' = smoothed GetPowerUsage)
+
+== 2. eager vs CUDA graphs (same model, task, concurrency) ==
+  Qwen2-7B-Instruct/alpaca_c1      step 6.8 -> 4.6 ms  tok/s x1.48  J/tok x0.85  MBU 0.26 -> 0.39
+  Qwen2-7B-Instruct/alpaca_c16     step 7.2 -> 4.9 ms  tok/s x1.49  J/tok x0.84  MBU 0.25 -> 0.36
+  Qwen2-7B-Instruct/alpaca_c4      step 6.9 -> 4.7 ms  tok/s x1.50  J/tok x0.84  MBU 0.25 -> 0.38
+  Qwen2-7B-Instruct/alpaca_c64     step 8.0 -> 5.9 ms  tok/s x1.39  J/tok x0.87  MBU 0.22 -> 0.31
+  Qwen2-7B-Instruct/sharegpt_c1    step 6.8 -> 4.6 ms  tok/s x1.49  J/tok x0.84  MBU 0.26 -> 0.39
+  Qwen2-7B-Instruct/sharegpt_c16   step 7.3 -> 4.8 ms  tok/s x1.53  J/tok x0.84  MBU 0.24 -> 0.36
+  Qwen2-7B-Instruct/sharegpt_c4    step 6.9 -> 4.7 ms  tok/s x1.48  J/tok x0.85  MBU 0.25 -> 0.38
+  Qwen2-7B-Instruct/sharegpt_c64   step 7.8 -> 5.7 ms  tok/s x1.39  J/tok x0.87  MBU 0.22 -> 0.31
+
+== 3. smear-free per-bin refit (Qwen2-7B) vs earlier estimates ==
+  per-bin (GetPowerUsage, Sept): e_w 1.243e-10  e_kv 2.852e-10  e_g 0.642 pJ;  steady microbench e_g 0.943 pJ
+  relog   n= 1861: e_w 1.260e-10 [1.252e-10,1.270e-10]  e_kv 3.981e-10  e_g 0.713 pJ [0.655,0.793]  R2 0.594
+  graphs  n= 1839: e_w 1.257e-10 [1.243e-10,1.273e-10]  e_kv 3.342e-10  e_g 0.744 pJ [0.667,0.809]  R2 0.225
+
+== 6. TP=2 vs TP=1 (CUDA graphs; TP=2 meters both GPUs) ==
+  Qwen2-72B-Instruct/alpaca_c1    TP2 25635 mJ/tok, 60 tok/s   TP1 24852 mJ/tok, 37 tok/s   J/tok x1.03
+  Qwen2-72B-Instruct/alpaca_c16   TP2 1837 mJ/tok, 879 tok/s   TP1 1724 mJ/tok, 572 tok/s   J/tok x1.07
+  Qwen2-72B-Instruct/alpaca_c64   TP2 591 mJ/tok, 2999 tok/s   (no TP1 reference)
+  Qwen2.5-32B-Instruct/alpaca_c1    TP2 12840 mJ/tok, 101 tok/s   TP1 11528 mJ/tok, 71 tok/s   J/tok x1.11
+  Qwen2.5-32B-Instruct/alpaca_c16   TP2 898 mJ/tok, 1503 tok/s   (no TP1 reference)
+  Qwen2.5-32B-Instruct/alpaca_c64   TP2 293 mJ/tok, 5103 tok/s   (no TP1 reference)
+
+wrote logs/B200_prov/provisioning_summary.json
+==== done Fri Oct 16 01:58:21 AM EDT 2026 ====

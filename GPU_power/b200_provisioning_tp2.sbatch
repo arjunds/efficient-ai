@@ -4,7 +4,9 @@
 #SBATCH --qos=dgx
 #SBATCH --account=leebcc-systems-architecture-int
 #SBATCH --gres=gpu:2
-#SBATCH --cpus-per-task=56
+#SBATCH --cpus-per-task=28   # PARCC: cli_filter requires EXACTLY DefCpuPerGPU=28 here;
+#                              SLURM multiplies by --gres gpu count (-> 56 for gpu:2).
+#                              Passing 56 directly is rejected.
 #SBATCH --time=02:30:00
 #SBATCH --output=slurm_out/%x-%j.out
 #

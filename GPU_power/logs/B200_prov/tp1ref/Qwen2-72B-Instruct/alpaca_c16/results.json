@@ -1,0 +1,30 @@
+{
+  "mode": "load",
+  "completed_requests": 117,
+  "generated_tokens_window": 28510,
+  "window_duration_s": 49.84467434883118,
+  "aggregate_tokens_per_sec": 571.9768535446062,
+  "avg_power_window_w": 986.3091902037079,
+  "energy_window_j": 49149.081188476564,
+  "energy_window_source": "energy",
+  "dram_rows_filled": 0,
+  "nvml_summary": {
+    "gpu_name": "NVIDIA B200",
+    "power_limit_w": 1000.0,
+    "metered_gpus": [
+      0
+    ],
+    "power_limit_total_w": 1000.0,
+    "have_power_instant": true,
+    "have_energy_counter": true,
+    "n_samples": 4974,
+    "duration_s": 56.75758981704712,
+    "mean_power_w": 977.7887002412546,
+    "median_power_w": 987.815,
+    "max_power_w": 999.111,
+    "min_power_w": 287.421
+  },
+  "dram_backend": null,
+  "dram_total_bytes": null,
+  "peak_hbm_bw_bytes_per_s": 8000000000000.0
+}

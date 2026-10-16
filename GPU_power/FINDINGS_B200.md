@@ -752,3 +752,118 @@ node-d1 returns `ERR_NVGPUCTRPERM`). Verified four ways:
 **Still denied here** (do not conflate with the above): clock locking
 (`nvidia-smi -lgc`) and power-limit setting (`nvidia-smi -pl`). Hence the skipped
 `clocks` stage and the blocked PI next-step #3.
+
+---
+
+# UPDATE 5: provisioning runs (2026-10-16, B200)
+
+`logs/B200_prov/`. Both handoff jobs: `b200_provisioning` (1 GPU, 1h02 — relog,
+graphs, highconc, prefill) and `b200_provisioning_tp2` (2 GPUs, 30 min — tp2,
+tp1ref). All bins used the **NVML energy counter** (`bin energy source: ['energy']`),
+so these are smear-free. Decode arms were essentially uncapped (`cap%` 0–9%;
+32B c=64 at 27%); prefill was 100% capped by design.
+
+## The headline: a third of the "fixed per-step overhead" was eager mode
+
+Every H200/B200 serving run before this used `enforce_eager=True`. With CUDA
+graphs on, same model/task/concurrency:
+
+| | step time | tok/s | J/tok | MBU |
+|---|---|---|---|---|
+| 7B alpaca c=1 | 6.8 → **4.6 ms** | ×1.48 | ×0.85 | 0.26 → **0.39** |
+| 7B alpaca c=16 | 7.2 → 4.9 ms | ×1.49 | ×0.84 | 0.25 → 0.36 |
+| 7B alpaca c=64 | 8.0 → 5.9 ms | ×1.39 | ×0.87 | 0.22 → 0.31 |
+| 7B sharegpt c=16 | 7.3 → 4.8 ms | ×1.53 | ×0.84 | 0.24 → 0.36 |
+
+So ~2.2 ms of a 6.8 ms step was eager-mode launch cost, and **bandwidth
+utilization rises from 0.26 to 0.39 at c=1**. Part of the "B200 is badly
+underutilized" story was a software artifact, not the hardware.
+
+**But the per-byte coefficient barely moves: `e_wbyte` 1.260e-10 (eager) vs
+1.257e-10 (graphs).** Energy per byte is unchanged by a 48% throughput gain, so
+the invariance result is robust to launch overhead — exactly the right control
+to have run. J/tok improves only 13–16%, nowhere near the ~1.9× the 1/BW law
+would need.
+
+## Smear-free refit: one hypothesis confirmed, one refuted
+
+| | `e_wbyte` | `e_kvbyte` | `e_gemm` | R² |
+|---|---|---|---|---|
+| per-bin, GetPowerUsage (Sept) | 1.243e-10 | 2.852e-10 | 0.642 pJ | 0.690 |
+| **relog** (energy counter, n=1861) | **1.260e-10** [1.252, 1.270] | **3.981e-10** | **0.713 pJ** [0.655, 0.793] | 0.594 |
+| **graphs** (n=1839) | 1.257e-10 [1.243, 1.273] | 3.342e-10 | 0.744 pJ [0.667, 0.809] | 0.225 |
+| steady microbench (UPDATE 4 rev.) | — | — | 0.943 pJ | 0.85 |
+
+* **Confirmed:** removing the 0.85 s boxcar raises `e_gemm` (0.642 → 0.713–0.744),
+  the predicted direction. But it lands **short of the steady 0.943 pJ**, so
+  smoothing explains only part of the gap; the rest is still open.
+* **Refuted:** the UPDATE 4 review predicted `e_kv ≈ e_wbyte ≈ 1.0–1.1e-10` once
+  the smear was removed. Measured, `e_kvbyte` went the other way — **up** to
+  3.98e-10 (relog) / 3.34e-10 (graphs), i.e. 2.7–3.2× a weight byte. The
+  smear-artifact explanation for the large KV coefficient does not survive
+  smear-free logging.
+
+## Recommender validated on B200; B200 only wins at very high batch
+
+B200 predictions are accurate — measured vs predicted mJ/tok: 2934 vs 3118 (c=1),
+206 vs 209 (c=16), 68 vs 64 (c=64), 42 vs 40 (c=128). The cross-GPU ratio moves
+monotonically with load:
+
+| load | measured B200 / predicted H200 |
+|---|---|
+| 7B alpaca c=1 | 1.31 |
+| 7B alpaca c=64 | 1.33 |
+| 7B sharegpt c=256 | **0.96** |
+| 7B sharegpt c=512 | **0.87** |
+| 32B alpaca c=256 | 0.95 |
+| 32B alpaca c=512 | **0.93** |
+
+This **confirms the provisioning model's central claim**: B200 beats H200 per
+token only at very large batch (c ≳ 256), and is 1.2–1.3× worse at the
+concurrencies all our earlier sweeps used. Caveat: the H200 column is a
+prediction (access revoked 2026-09-24), and the time model was fitted on *eager*
+runs at c ≤ 64, so the `graphs` rows show its bias.
+
+## Prefill is power-capped, and that is the finding
+
+| run | J/prompt-token | P | at cap | effective pJ/FLOP |
+|---|---|---|---|---|
+| in2048_c4 | 0.0190 | 879 W | 100% | 0.685 |
+| in2048_c16 | 0.0143 | 961 W | 100% | 0.664 |
+| in8192_c4 | 0.0177 | 951 W | 100% | 0.838 |
+| in8192_c16 | 0.0165 | 973 W | 100% | 0.830 |
+
+Prefill-dominated serving sits at the 1000 W cap **100% of the time**, and the
+effective compute energy (0.66–0.84 pJ/FLOP) lands between the uncapped steady
+value (0.943) and the capped GEMM-loop range (0.57–0.67). So "is prefill cheaper
+on B200?" — it is cheaper *per FLOP*, but only because the part is throttling.
+
+## TP=2 costs 3–13% more energy per token, buys ~1.5× throughput
+
+First TP measurement with **both GPUs metered** (earlier TP runs would have
+metered one):
+
+| model | c | TP2 mJ/tok (tok/s) | TP1 mJ/tok (tok/s) | J/tok |
+|---|---|---|---|---|
+| 72B | 1 | 25635 (60) | 24852 (37) | ×1.03 |
+| 72B | 16 | 1837 (879) | 1724 (572) | ×1.07 |
+| 32B | 1 | 12840 (101) | 11528 (71) | ×1.11 |
+| 32B | 16 | 898 (1503) | 828 (1031) | ×1.09 |
+| 32B | 64 | 293 (5103) | 260 (3733) | ×1.13 |
+
+The all-reduce/sync overhead is a modest **3–13% energy premium** for ~1.4–1.6×
+throughput — the first direct measurement of LIMINAL's sync limit on this
+hardware.
+
+## Operational notes
+
+* `energy_model.py` was re-verified to bin **old** runs bit-identically
+  (`e_bit 1.2767467419697012e-10`, `power_source: avg` on `logs/B200`), so the
+  refactor does not disturb any earlier comparison.
+* The 32B/72B weights had been deleted in the earlier cleanup; re-prefetched on
+  CPU (212 GB, ~2 min) before submitting, otherwise `graphs`/`highconc` would
+  have silently lost their 32B arms and the TP job would have run 32B-only.
+* `b200_provisioning_tp2.sbatch` specified `--cpus-per-task=56` for `gpu:2`,
+  which PARCC's `cli_filter` rejects. The filter requires **exactly** 28
+  (`DefCpuPerGPU`) and SLURM multiplies by GPU count ("using 56 processors").
+  Fixed in the script with the reason recorded.
