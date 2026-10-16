@@ -867,3 +867,53 @@ hardware.
   which PARCC's `cli_filter` rejects. The filter requires **exactly** 28
   (`DefCpuPerGPU`) and SLURM multiplies by GPU count ("using 56 processors").
   Fixed in the script with the reason recorded.
+
+## UPDATE 5 review (2026-10-16)
+
+**The KV-vs-compute split is undetermined, neither refuted nor confirmed.** The free
+fit uses Qwen2-7B only, where per-bin KV bytes and GEMM FLOPs correlate at 0.74–0.76
+(both grow with concurrency). Moving compute energy to KV costs almost nothing in fit
+quality:
+
+| fit (smear-free bins, energy counter) | e_wbyte | e_kvbyte | e_gemm | R² |
+|---|---|---|---|---|
+| relog, free | 1.260e-10 | 3.98e-10 | 0.713 pJ | 0.594 |
+| relog, e_gemm pinned at steady 0.943 | 1.250e-10 | **1.22e-10** | 0.943 | 0.560 |
+| relog, whole-run (8 runs) | 1.252e-10 | 0.52e-10 | 0.990 | — |
+| graphs, free / pinned | 1.257 / 1.249e-10 | 3.34 / **0.97e-10** | 0.744 / 0.943 | 0.225 / 0.201 |
+
+- The 2.3× KV premium (September) is therefore *not shown to be* a smoothing artifact.
+- My UPDATE 4 review claim that a KV byte costs about the same as a weight byte was
+  equally unsupported: it rested on the same collinearity.
+- For 7B, KV is about 4% of dynamic energy, so it barely matters. It matters for long
+  context.
+- **Settling it needs KV varied independently of FLOPs:** a long-context sweep at
+  fixed concurrency (context 1k → 32k, as logs/longctx did on H200).
+
+**What is robust across every fit:**
+- e_wbyte = 1.25–1.26e-10 J/B (eager or graphs, free or pinned, per-bin or whole-run).
+- e_gemm lies between 0.71 and 0.99 pJ, depending on how KV is treated; the steady
+  uncapped value is 0.943.
+
+**Cross-GPU ratio at low concurrency is understated.** "Measured B200 / predicted H200"
+puts a CUDA-graphs B200 measurement against an H200 prediction from a time model
+fitted on *eager* runs. At c ≤ 16, graphs made B200 1.5× faster than eager, and the
+model under-predicts graphs B200 throughput by 15–24%. An H200 with graphs would gain
+similarly, so the true low-concurrency B200 penalty is probably larger than 1.3×. At
+c ≥ 256 the model matches graphs B200 throughput (within 4%) and the bias is small.
+
+**The crossover depends on the workload, not only on concurrency.**
+- B200 wins per token at c ≥ 256 for long-context traffic (sharegpt 7B: 0.87–0.96;
+  32B alpaca: 0.93–0.95).
+- It never wins for short-prompt 7B (alpaca: 1.23 at c = 512, where the model also
+  over-predicts B200 throughput by 28%).
+
+**New provisioning fact: at high load the B200 is power-limited.** 32B at c ≥ 128
+runs 95–99% of samples at the 1000 W cap, and prefill runs 100%.
+
+**Possible logger overhead.** The eager relog runs are ~20% slower than the September
+runs with the same config (7B c = 1: 6.8 vs 5.4 ms/step). The new logger makes more
+NVML calls per sample (sample p99 interval 19–21 ms vs 10 ms) in the client process.
+Energy per byte is unaffected (1.26 vs 1.24e-10), but absolute throughput and J/token
+of the new runs may be slightly pessimistic. To settle it: one relog c = 1 run with
+the new columns disabled.
