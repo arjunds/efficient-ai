@@ -1,0 +1,196 @@
+==== B200 long-context  Fri Oct 16 03:21:51 PM EDT 2026  node=dgx012  stages=probe_gpus,sweep,ncu,analyze ====
+name, power.limit [W], enforced.power.limit [W], memory.total [MiB], clocks.max.sm [MHz], driver_version
+NVIDIA B200, 1000.00 W, 1000.00 W, 183359 MiB, 1965 MHz, 580.95.05
+=== [probe_gpus] partitions with A100/H100/H200/L40S and whether we may submit ===
+(no A100/H100/H200/L40S GRES listed)
+leebcc-systems-architecture-int||dgx,genoa-lrg,genoa-std,mig,normal
+=== [sweep] arms=longctx,longctx32,loggerab (60 s windows) ===
+[2026-10-16 15:21:59] === longctx / Qwen/Qwen2-7B-Instruct engine={'no_enforce_eager': None, 'max_model_len': 32768}
+[2026-10-16 15:21:59] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 15.0
+[2026-10-16 15:23:38] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx1024_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 60.0 --input_len 1024 --output_len 512 --concurrency 4 --unique_prompts
+[2026-10-16 15:25:54] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx1024_c4
+[2026-10-16 15:25:54]   ctx1024_c4: tok/s=827.5 reqs=100 P_avg=655.5313669937556 E_counter=40573.89676379395
+[2026-10-16 15:25:54] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx4096_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 60.0 --input_len 4096 --output_len 512 --concurrency 4 --unique_prompts
+[2026-10-16 15:27:49] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx4096_c4
+[2026-10-16 15:27:49]   ctx4096_c4: tok/s=756.2 reqs=92 P_avg=691.5991220648862 E_counter=43236.24432617187
+[2026-10-16 15:27:49] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx8192_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 60.0 --input_len 8192 --output_len 512 --concurrency 4 --unique_prompts
+[2026-10-16 15:29:42] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx8192_c4
+[2026-10-16 15:29:42]   ctx8192_c4: tok/s=663.5 reqs=80 P_avg=731.5950551799745 E_counter=45466.94439611817
+[2026-10-16 15:29:42] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx16384_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 60.0 --input_len 16384 --output_len 512 --concurrency 4 --unique_prompts
+[2026-10-16 15:31:38] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx16384_c4
+[2026-10-16 15:31:38]   ctx16384_c4: tok/s=497.7 reqs=60 P_avg=783.0693658165208 E_counter=48622.070513793944
+[2026-10-16 15:31:38] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx30720_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 60.0 --input_len 30720 --output_len 512 --concurrency 4 --unique_prompts
+[2026-10-16 15:33:36] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx30720_c4
+[2026-10-16 15:33:36]   ctx30720_c4: tok/s=305.2 reqs=36 P_avg=805.0401302351212 E_counter=48672.62146325684
+[2026-10-16 15:33:36] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx1024_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 60.0 --input_len 1024 --output_len 512 --concurrency 16 --unique_prompts
+[2026-10-16 15:35:32] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx1024_c16
+[2026-10-16 15:35:32]   ctx1024_c16: tok/s=2992.9 reqs=352 P_avg=706.9249967086157 E_counter=42651.980965942385
+[2026-10-16 15:35:32] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx4096_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 60.0 --input_len 4096 --output_len 512 --concurrency 16 --unique_prompts
+[2026-10-16 15:37:29] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx4096_c16
+[2026-10-16 15:37:29]   ctx4096_c16: tok/s=2247.0 reqs=272 P_avg=789.7271795441914 E_counter=49356.53584265137
+[2026-10-16 15:37:29] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx8192_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 60.0 --input_len 8192 --output_len 512 --concurrency 16 --unique_prompts
+[2026-10-16 15:39:23] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx8192_c16
+[2026-10-16 15:39:23]   ctx8192_c16: tok/s=1610.2 reqs=192 P_avg=855.4009811988087 E_counter=52612.69272949219
+[2026-10-16 15:39:23] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx16384_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 60.0 --input_len 16384 --output_len 512 --concurrency 16 --unique_prompts
+[2026-10-16 15:41:20] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx16384_c16
+[2026-10-16 15:41:20]   ctx16384_c16: tok/s=937.8 reqs=112 P_avg=897.7910332669322 E_counter=55003.54024926758
+[2026-10-16 15:41:20] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx30720_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 60.0 --input_len 30720 --output_len 512 --concurrency 16 --unique_prompts
+[2026-10-16 15:43:38] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/longctx/Qwen2-7B-Instruct/ctx30720_c16
+[2026-10-16 15:43:38]   ctx30720_c16: tok/s=479.0 reqs=61 P_avg=872.2094111737752 E_counter=56797.88323022461
+[2026-10-16 15:43:38] === longctx32 / Qwen/Qwen2.5-32B-Instruct engine={'no_enforce_eager': None, 'max_model_len': 32768}
+[2026-10-16 15:43:38] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/B200_prov/longctx32/Qwen2.5-32B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 15.0
+[2026-10-16 15:46:00] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/B200_prov/longctx32/Qwen2.5-32B-Instruct/ctx1024_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 60.0 --input_len 1024 --output_len 512 --concurrency 4 --unique_prompts
+[2026-10-16 15:49:11] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/longctx32/Qwen2.5-32B-Instruct/ctx1024_c4
+[2026-10-16 15:49:15]   ctx1024_c4: tok/s=264.6 reqs=32 P_avg=830.2775579216353 E_counter=51467.603715332036
+[2026-10-16 15:49:15] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/B200_prov/longctx32/Qwen2.5-32B-Instruct/ctx8192_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 60.0 --input_len 8192 --output_len 512 --concurrency 4 --unique_prompts
+[2026-10-16 15:51:38] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/longctx32/Qwen2.5-32B-Instruct/ctx8192_c4
+[2026-10-16 15:51:42]   ctx8192_c4: tok/s=203.3 reqs=24 P_avg=881.5236560463433 E_counter=53555.52572436524
+[2026-10-16 15:51:42] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-32B-Instruct --dtype float16 --run_dir logs/B200_prov/longctx32/Qwen2.5-32B-Instruct/ctx30720_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 60.0 --input_len 30720 --output_len 512 --concurrency 4 --unique_prompts
+[2026-10-16 15:54:24] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/longctx32/Qwen2.5-32B-Instruct/ctx30720_c4
+[2026-10-16 15:54:29]   ctx30720_c4: tok/s=100.4 reqs=12 P_avg=940.5598998321208 E_counter=57539.626138061525
+[2026-10-16 15:54:29] === loggerab / Qwen/Qwen2-7B-Instruct engine={}
+[2026-10-16 15:54:29] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/B200_prov/loggerab/Qwen2-7B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 15.0
+[2026-10-16 15:55:16] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/B200_prov/loggerab/Qwen2-7B-Instruct/alpaca_c1 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 60.0 --task alpaca --concurrency 1
+[2026-10-16 15:56:48] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/loggerab/Qwen2-7B-Instruct/alpaca_c1
+[2026-10-16 15:56:48]   alpaca_c1: tok/s=177.9 reqs=80 P_avg=563.3020829846583 E_counter=33967.99158081055
+[2026-10-16 15:56:48] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/B200_prov/loggerab/Qwen2-7B-Instruct/alpaca_c64 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 60.0 --task alpaca --concurrency 64
+[2026-10-16 15:58:27] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/B200_prov/loggerab/Qwen2-7B-Instruct/alpaca_c64
+[2026-10-16 15:58:27]   alpaca_c64: tok/s=9244.1 reqs=3862 P_avg=656.5146845414847 E_counter=40370.88705322266
+[2026-10-16 15:58:27] PROVISIONING SWEEP DONE (longctx,longctx32,loggerab)
+=== [ncu] Qwen2-7B batch-1 decode at context 8192 ===
+Processed prompts:   0%|          | 0/1 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]Processed prompts: 100%|██████████| 1/1 [07:23<00:00, 443.45s/it, est. speed input: 18.47 toks/s, output: 0.04 toks/s]Processed prompts: 100%|██████████| 1/1 [07:23<00:00, 443.45s/it, est. speed input: 18.47 toks/s, output: 0.04 toks/s]Processed prompts: 100%|██████████| 1/1 [07:23<00:00, 443.45s/it, est. speed input: 18.47 toks/s, output: 0.04 toks/s]
+[generate] prompt_len=8192 generated=16 tokens
+[rank0]:[W1016 16:06:52.323409743 ProcessGroupNCCL.cpp:1538] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+{
+ "model": "Qwen/Qwen2-7B-Instruct",
+ "byte_source": "models.py:Qwen2-7B-Instruct",
+ "kernels": 6528,
+ "n_tokens": 16,
+ "ctx": 8200,
+ "analytic_bytes": 233772679168.0,
+ "dram__bytes_read.sum": 233900916480.0,
+ "dram__bytes_write.sum": 2625521152.0,
+ "lts__t_bytes.sum": 368213777504.0,
+ "l1tex__t_bytes.sum": 9850140000.0,
+ "dram_over_analytic": 1.01177964197442,
+ "dram_write_frac": 0.011100328480340624,
+ "l2_over_analytic": 1.5750932864117295,
+ "l1_over_analytic": 0.042135548238813776
+}
+=== [ncu] Qwen2-7B batch-1 decode at context 30720 ===
+Processed prompts:   0%|          | 0/1 [00:00<?, ?it/s, est. speed input: 0.00 toks/s, output: 0.00 toks/s]Processed prompts: 100%|██████████| 1/1 [07:41<00:00, 461.17s/it, est. speed input: 66.61 toks/s, output: 0.03 toks/s]Processed prompts: 100%|██████████| 1/1 [07:41<00:00, 461.17s/it, est. speed input: 66.61 toks/s, output: 0.03 toks/s]Processed prompts: 100%|██████████| 1/1 [07:41<00:00, 461.17s/it, est. speed input: 66.61 toks/s, output: 0.03 toks/s]
+[generate] prompt_len=30720 generated=16 tokens
+[rank0]:[W1016 16:15:52.234071867 ProcessGroupNCCL.cpp:1538] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+{
+ "model": "Qwen/Qwen2-7B-Instruct",
+ "byte_source": "models.py:Qwen2-7B-Instruct",
+ "kernels": 6528,
+ "n_tokens": 16,
+ "ctx": 30728,
+ "analytic_bytes": 254442209280.0,
+ "dram__bytes_read.sum": 254580954368.0,
+ "dram__bytes_write.sum": 2876709120.0,
+ "lts__t_bytes.sum": 399799839584.0,
+ "l1tex__t_bytes.sum": 31202461408.0,
+ "dram_over_analytic": 1.0118512341821464,
+ "dram_write_frac": 0.011173522982484778,
+ "l2_over_analytic": 1.5712795479779917,
+ "l1_over_analytic": 0.1226308382413995
+}
+=== [analyze] ===
+
+===== longctx / Qwen2-7B-Instruct: 10 runs =====
+run                tok/s mJ/out-tok     W  KV share of decode bytes  cap%     src
+ctx1024_c16         2993        237   708                        8%     9  energy
+ctx1024_c4           827        792   656                        2%     4  energy
+ctx16384_c16         938        959   900                       51%    26  energy
+ctx16384_c4          498       1583   788                       21%    13  energy
+ctx30720_c16         479       1819   871                       64%    15  energy
+ctx30720_c4          305       2641   806                       33%     7  energy
+ctx4096_c16         2247        354   796                       22%    26  energy
+ctx4096_c4           756        918   694                        7%     9  energy
+ctx8192_c16         1610        535   862                       35%    43  energy
+ctx8192_c4           663       1110   736                       12%    17  energy
+A. decode-only bins (n=2431, corr(KV,FLOP)=0.34): e_w 1.338e-10 [1.323e-10,1.353e-10]  e_kv 2.021e-10 [1.948e-10,2.117e-10]  e_g -0.141 pJ [-0.292,-0.005]  R2 -6.836
+   e_kv / e_w = 1.51  [1.45, 1.59]
+   e_g pinned 0.943 pJ: e_w 1.266e-10  e_kv 1.941e-10 [1.872e-10,2.030e-10]  e_kv/e_w 1.53
+B. prefill bins (n=660), e_w/e_kv fixed from A: e_gemm 0.422 pJ (steady uncapped 0.943; capped GEMM loops 0.57-0.67)
+C. all bins (n=3093): e_w 1.337e-10  e_kv 1.902e-10  e_g 0.424 pJ  R2 -4.927
+
+===== longctx32 / Qwen2.5-32B-Instruct: 3 runs =====
+run                tok/s mJ/out-tok     W  KV share of decode bytes  cap%     src
+ctx1024_c4           265       3141   831                        2%     3  energy
+ctx30720_c4          100       9365   940                       33%    27  energy
+ctx8192_c4           203       4358   886                       12%    18  energy
+A. decode-only bins (n=836, corr(KV,FLOP)=0.13): e_w 7.060e-10 [3.901e-10,1.858e-09]  e_kv 1.728e-10 [1.600e-10,1.833e-10]  e_g -144.120 pJ [-432.143,-65.161]  R2 -18.589
+   e_kv / e_w = 0.24  [0.09, 0.46]
+   e_g pinned 0.943 pJ: e_w 1.278e-10  e_kv 1.774e-10 [1.692e-10,1.866e-10]  e_kv/e_w 1.39
+B. prefill bins (n=47), e_w/e_kv fixed from A: e_gemm 0.004 pJ (steady uncapped 0.943; capped GEMM loops 0.57-0.67)
+C. all bins (n=884): e_w 1.329e-10  e_kv 1.709e-10  e_g 0.080 pJ  R2 -20.550
+
+E. logger A/B (eager, Qwen2-7B): tok/s full logger -> slim logger (September runs, old logger: c1 182, c64 ~8900 tok/s)
+   alpaca_c1: 148 -> 178  (x1.21)
+   alpaca_c64: 7474 -> 9244  (x1.24)
+
+wrote logs/B200_prov/longctx_summary.json
+== 1. runs ==
+arm/model/tag                                  tok/s  req/s  mJ/tok     W   MBU  step  cap%   KV% wait%  TTFT50/99 s  TPOT50/99 ms  hit%
+graphs/Qwen2-7B-Instruct/alpaca_c1               218    1.6    2934   640  0.39   4.6     0     0     0    0.01/0.01       4.6/4.7     0
+graphs/Qwen2-7B-Instruct/alpaca_c16             3183   21.6     206   654  0.36   4.9     0     0     0    0.01/0.03       4.9/5.2    13
+graphs/Qwen2-7B-Instruct/alpaca_c4               840    5.8     768   645  0.38   4.7     0     0     0    0.01/0.01       4.7/4.9     4
+graphs/Qwen2-7B-Instruct/alpaca_c64            10408   70.5      68   706  0.31   5.9     0     0     0    0.01/0.21       6.0/6.6    34
+graphs/Qwen2-7B-Instruct/sharegpt_c1             217    0.9    2953   641  0.39   4.6     0     0     0    0.01/0.03       4.6/4.6     0
+graphs/Qwen2-7B-Instruct/sharegpt_c16           3136   13.6     215   674  0.36   4.8     3     1     0    0.01/0.07       4.9/5.6    18
+graphs/Qwen2-7B-Instruct/sharegpt_c4             838    3.7     775   649  0.38   4.7     0     0     0    0.01/0.06       4.7/5.0     3
+graphs/Qwen2-7B-Instruct/sharegpt_c64          10235   44.5      74   755  0.31   5.7     9     1     0    0.01/0.12       6.1/6.7    35
+graphs/Qwen2.5-32B-Instruct/alpaca_c1             71    0.4   11528   821  0.57  14.0     0     0     0    0.02/0.17     14.0/14.1     0
+graphs/Qwen2.5-32B-Instruct/alpaca_c16          1031    5.6     828   853  0.54  14.8     0     1     0    0.03/0.05     14.8/15.0     5
+graphs/Qwen2.5-32B-Instruct/alpaca_c64          3733   19.9     260   969  0.51  16.1    27     4     0    0.03/0.10     16.4/16.9    14
+highconc/Qwen2-7B-Instruct/alpaca_c128         18779  128.3      42   791  0.29   6.7     0     1     0    0.01/0.04       6.7/7.0    46
+highconc/Qwen2-7B-Instruct/alpaca_c256         27347  186.2      31   852  0.22   9.0     1     2     0    0.02/0.07      9.1/10.7    53
+highconc/Qwen2-7B-Instruct/alpaca_c512         32089  219.5      26   845  0.15  15.3     9     4     0    0.03/0.11     15.4/19.5    56
+highconc/Qwen2-7B-Instruct/sharegpt_c128       15751   68.9      49   776  0.26   7.4     9     2     1    0.02/0.22       7.9/8.9    50
+highconc/Qwen2-7B-Instruct/sharegpt_c256       23108  101.4      36   835  0.21  10.0    13     4     1    0.02/0.45     10.6/12.4    62
+highconc/Qwen2-7B-Instruct/sharegpt_c512       28609  125.4      30   855  0.16  16.2    22     7     3    0.04/0.98     17.1/19.6    71
+highconc/Qwen2.5-32B-Instruct/alpaca_c128       6212   33.4     157   977  0.44  18.8    95     8     0    0.04/0.18     19.7/22.9    22
+highconc/Qwen2.5-32B-Instruct/alpaca_c256       8989   47.8     108   967  0.35  27.1    98    15     0    0.06/0.31     27.2/33.3    30
+highconc/Qwen2.5-32B-Instruct/alpaca_c512      10577   56.4      91   960  0.24  45.8    99    29     0    0.10/0.62     46.4/62.6    35
+loggerab/Qwen2-7B-Instruct/alpaca_c1             178    1.3    3177   565  0.32   5.6     -     0     0    0.01/0.02       5.6/5.8     0
+loggerab/Qwen2-7B-Instruct/alpaca_c64           9244   62.7      71   656  0.27   6.5     -     0     0    0.01/0.03       6.7/8.2    37
+longctx/Qwen2-7B-Instruct/ctx1024_c16           2993    5.8     237   708  0.36   5.0     9     1     0    0.03/0.19       5.3/5.3     4
+longctx/Qwen2-7B-Instruct/ctx1024_c4             827    1.6     792   656  0.37   4.7     4     0     0    0.03/0.05       4.8/4.8     2
+longctx/Qwen2-7B-Instruct/ctx16384_c16           938    1.8     959   900  0.22   7.0    26    10     4    0.58/5.41     17.3/17.5    13
+longctx/Qwen2-7B-Instruct/ctx16384_c4            498    1.0    1583   788  0.28   5.3    14     2     1    0.54/1.08       7.1/7.3     3
+longctx/Qwen2-7B-Instruct/ctx30720_c16           479    0.9    1819   871  0.17   9.0    16    18    11   1.41/15.39     36.3/37.9    23
+longctx/Qwen2-7B-Instruct/ctx30720_c4            305    0.6    2641   806  0.21   5.7     8     5     2    1.42/3.61     10.9/11.6     6
+longctx/Qwen2-7B-Instruct/ctx4096_c16           2247    4.4     354   796  0.32   5.4    26     3     1    0.13/0.79       6.9/7.1     5
+longctx/Qwen2-7B-Instruct/ctx4096_c4             756    1.5     918   694  0.36   4.9     9     1     0    0.10/0.17       5.1/5.1     2
+longctx/Qwen2-7B-Instruct/ctx8192_c16           1610    3.1     535   862  0.28   6.0    43     5     1    0.24/2.11       9.8/9.9     7
+longctx/Qwen2-7B-Instruct/ctx8192_c4             663    1.3    1110   736  0.34   5.0    17     1     0    0.21/0.46       5.6/5.7     3
+longctx32/Qwen2.5-32B-Instruct/ctx1024_c4        265    0.5    3141   831  0.54  14.7     3     2     0    0.12/0.24     14.9/15.0     6
+longctx32/Qwen2.5-32B-Instruct/ctx30720_c4       100    0.2    9365   940  0.35  19.2    27    31     3   3.95/11.32     28.9/38.8    18
+longctx32/Qwen2.5-32B-Instruct/ctx8192_c4        203    0.4    4358   886  0.47  15.8    17     9     0    0.80/1.90     18.4/18.8     9
+prefill/Qwen2-7B-Instruct/in2048_c16             529   33.1    1815   961  0.07   5.5   100     1     0    0.16/0.31     21.8/30.0     1
+prefill/Qwen2-7B-Instruct/in2048_c4              362   22.6    2426   879  0.18   5.1   100     0     0    0.10/0.11       5.1/9.7     0
+prefill/Qwen2-7B-Instruct/in8192_c16             121    7.5    8069   973  0.02 136.6   100     5     4    0.41/1.56   119.8/128.9     4
+prefill/Qwen2-7B-Instruct/in8192_c4              106    6.6    8976   951  0.06   5.3   100     1     0    0.34/0.41     14.2/22.6     1
+relog/Qwen2-7B-Instruct/alpaca_c1                148    1.1    3463   511  0.26   6.8     0     0     0    0.01/0.02       6.8/6.9     0
+relog/Qwen2-7B-Instruct/alpaca_c16              2142   14.4     244   522  0.25   7.2     0     0     0    0.02/0.05       7.3/8.0     9
+relog/Qwen2-7B-Instruct/alpaca_c4                561    3.8     910   511  0.25   6.9     0     0     0    0.02/0.03       6.9/7.2     3
+relog/Qwen2-7B-Instruct/alpaca_c64              7474   50.4      78   581  0.22   8.0     0     0     0    0.02/0.04      8.2/10.4    27
+relog/Qwen2-7B-Instruct/sharegpt_c1              146    0.6    3500   510  0.26   6.8     0     0     0    0.02/0.03       6.8/7.2     0
+relog/Qwen2-7B-Instruct/sharegpt_c16            2053    8.9     257   527  0.24   7.3     1     1     0    0.02/0.08       7.6/8.1    10
+relog/Qwen2-7B-Instruct/sharegpt_c4              565    2.5     907   513  0.25   6.9     0     0     0    0.02/0.04       7.0/7.2     5
+relog/Qwen2-7B-Instruct/sharegpt_c64            7345   31.8      85   622  0.22   7.8     5     1     0    0.02/0.23       8.4/9.5    28
+tp1ref/Qwen2-72B-Instruct/alpaca_c1               37    0.2   24852   931  0.67  26.7     0     0     0    0.03/0.03     26.7/26.8     0
+tp1ref/Qwen2-72B-Instruct/alpaca_c16             572    2.3    1724   986  0.68  26.5    72     6     0    0.06/0.09     26.6/26.8     1
+tp2/Qwen2-72B-Instruct/alpaca_c1                  60    0.2   25635  1539  0.54  16.6     0     0     0    0.02/0.02     16.6/16.7     0
+tp2/Qwen2-72B-Instruct/alpaca_c16                879    3.6    1837  1615  0.52  17.3     0     1     0    0.04/0.06     17.3/17.9     3
+tp2/Qwen2-72B-Instruct/alpaca_c64               2999   12.2     591  1772  0.45  19.9     3     3     0    0.08/0.13     20.2/20.4    10
+tp2/Qwen2.5-32B-Instruct/alpaca_c1               101    0.5   12840  1295  0.41   9.9     0     0     0    0.01/0.01      9.9/10.0     0
+tp2/Qwen2.5-32B-Instruct/alpaca_c16             1503    8.0     898  1350  0.39  10.1     0     0     0    0.02/0.04     10.2/10.6     5
+tp2/Qwen2.5-32B-Instruct/alpaca_c64             5103   27.3     293  1493  0.34  11.8     0     1     0    0.03/0.06     12.1/12.5    18
+   bin energy source(s): ['energy']  ('energy' = NVML energy counter, validated against POWER_INSTANT; 'inst' = POWER_INSTANT; 'avg' = smoothed GetPowerUsage)
+ncu ctx 8192: DRAM/analytic 1.0118  L2/analytic 1.575
+ncu ctx 30720: DRAM/analytic 1.0119  L2/analytic 1.571
+==== done Fri Oct 16 04:16:24 PM EDT 2026 ====

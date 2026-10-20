@@ -917,3 +917,95 @@ NVML calls per sample (sample p99 interval 19–21 ms vs 10 ms) in the client pr
 Energy per byte is unaffected (1.26 vs 1.24e-10), but absolute throughput and J/token
 of the new runs may be slightly pessimistic. To settle it: one relog c = 1 run with
 the new columns disabled.
+
+---
+
+# UPDATE 6: long-context sweep (2026-10-16, B200)
+
+`logs/B200_prov/{longctx,longctx32,loggerab}`, `microbench/ncu_B200/serve_ctx*`.
+Job 9085503, 54 min, 1 GPU. Context 1k→30k at **fixed** concurrency, which is
+what breaks the KV/FLOP collinearity that made UPDATE 5's conclusion (and the
+UPDATE 4 review's) unsupportable.
+
+## The design worked: collinearity broken
+
+`corr(KV bytes, GEMM FLOPs)` per bin: **0.74–0.76** in the concurrency sweeps →
+**0.34** (7B decode-only) and **0.13** (32B). KV now varies ~30× while weight
+bytes and FLOPs per step stay fixed.
+
+## Byte model holds at long context — a third and fourth confirmation
+
+| capture | context | DRAM/analytic | L2/analytic |
+|---|---|---|---|
+| UPDATE 3 | short (8 tok) | 1.004 | 1.86 |
+| UPDATE 4 | short (24 tok) | 1.008 | 1.57 |
+| **this run** | **8,192** | **1.0118** | 1.575 |
+| **this run** | **30,720** | **1.0119** | 1.571 |
+
+This is the stronger test. At 30k, KV is ~11–33% of decode bytes, so (per the
+handoff) a 2× KV miscount would move DRAM/analytic by ~10%. It moved by **0.1%**.
+So **both weight and KV analytic byte counts are validated** — not just weights.
+The analytic byte model is good to ~1% across a 30× context range.
+
+## KV energy: ~1.4–1.5× a weight byte. Both earlier claims were wrong.
+
+| | `e_kv / e_w` |
+|---|---|
+| UPDATE 4 review predicted | ~1.0 |
+| September per-bin implied | 2.3–3.2 |
+| **7B, free fit** | **1.51** [1.45, 1.59] |
+| **7B, `e_gemm` pinned at 0.943 pJ** | **1.53** |
+| **32B, `e_gemm` pinned** | **1.39** |
+
+Two models agree on ~1.4–1.5, and for the 7B the ratio is insensitive to how
+`e_gemm` is treated (1.51 free vs 1.53 pinned) — which is the reassuring part,
+since `e_gemm` is the badly-determined term here.
+
+**Caveat, and it is a real one: the free fits are degenerate.** 7B decode-only
+gives R² = **−6.84** with `e_gemm` = **−0.141 pJ**; the 32B free fit is worse
+(R² −18.6, `e_gemm` −144 pJ, `e_w` 7.06e-10 with CI [3.9e-10, 1.9e-9]). Decode-only
+bins have little energy variance relative to the regressor spread — the same
+failure mode as the 72B run. So:
+
+* the **32B free fit is unusable**; its `e_kv/e_w` of 0.24 should be ignored;
+* the 32B figure of 1.39 **depends on importing `e_gemm` = 0.943 pJ** from the
+  steady microbench, so it is not self-contained;
+* treat **1.4–1.5 as the best current estimate, provisional**, not as a settled
+  coefficient.
+
+What is now well established across every fit in this corpus: **`e_wbyte` =
+1.25–1.34e-10 J/B**.
+
+## Prefill `e_gemm` from these bins is not usable
+
+7B prefill bins give 0.422 pJ, 32B gives 0.004 pJ — both **below** even the
+capped GEMM-loop range (0.57–0.67), and the 32B value is nonsense. Prefill ran at
+`cap% = 100%`, so these bins are constant-power and cannot calibrate compute.
+The steady uncapped 0.943 pJ remains the reference.
+
+## Operational: the new logger costs ~20% throughput (confirmed)
+
+| | full logger | slim logger | September (old logger) |
+|---|---|---|---|
+| 7B alpaca c=1 | 148 | **178** (×1.21) | 182 |
+| 7B alpaca c=64 | 7474 | **9244** (×1.24) | ~8900 |
+
+The slim logger recovers September's throughput almost exactly, so the ~20%
+slowdown is the full logger's extra NVML calls, not the node or environment.
+**The slim logger should become the default.** Note this means UPDATE 5's
+`relog` throughput figures are depressed ~20%; its *coefficients* are less
+affected (energy and work fall together) and `e_w` 1.260e-10 there agrees with
+1.266e-10 here.
+
+## Power limit binds at high load (corroborates the UPDATE 5 review)
+
+32B `highconc`: `cap%` **95 / 98 / 99%** at c = 128 / 256 / 512. Prefill 100%.
+7B stays under 25% at every concurrency. So on B200 the 1000 W limit, not the
+rooflines, is the binding resource for a 32B at scale.
+
+## No second GPU type is reachable from this account
+
+The `probe_gpus` stage (read-only, `--test-only`) found **no A100/H100/H200/L40S
+GRES** in any partition available to `leebcc-systems-architecture-int` — only
+`dgx` (B200), `mig`, and CPU partitions. PI next-step #4 (an uncapped GDDR6 or
+HBM2e point) is therefore not reachable here, confirmed rather than assumed.

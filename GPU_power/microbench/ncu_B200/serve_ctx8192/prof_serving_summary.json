@@ -1,0 +1,16 @@
+{
+ "model": "Qwen/Qwen2-7B-Instruct",
+ "byte_source": "models.py:Qwen2-7B-Instruct",
+ "kernels": 6528,
+ "n_tokens": 16,
+ "ctx": 8200,
+ "analytic_bytes": 233772679168.0,
+ "dram__bytes_read.sum": 233900916480.0,
+ "dram__bytes_write.sum": 2625521152.0,
+ "lts__t_bytes.sum": 368213777504.0,
+ "l1tex__t_bytes.sum": 9850140000.0,
+ "dram_over_analytic": 1.01177964197442,
+ "dram_write_frac": 0.011100328480340624,
+ "l2_over_analytic": 1.5750932864117295,
+ "l1_over_analytic": 0.042135548238813776
+}

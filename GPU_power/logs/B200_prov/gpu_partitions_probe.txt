@@ -1,0 +1,2 @@
+(no A100/H100/H200/L40S GRES listed)
+leebcc-systems-architecture-int||dgx,genoa-lrg,genoa-std,mig,normal
