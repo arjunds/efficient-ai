@@ -1009,3 +1009,49 @@ The `probe_gpus` stage (read-only, `--test-only`) found **no A100/H100/H200/L40S
 GRES** in any partition available to `leebcc-systems-architecture-int` — only
 `dgx` (B200), `mig`, and CPU partitions. PI next-step #4 (an uncapped GDDR6 or
 HBM2e point) is therefore not reachable here, confirmed rather than assumed.
+
+## UPDATE 6 review (2026-10-20): hidden chunked-prefill steps; KV byte ≈ 1.2–1.3× a weight byte
+
+**The "decode-only" bins in UPDATE 6 weren't decode-only.** vLLM reports a request's
+prompt tokens (`IterationStats.num_prompt_tokens`) only on the step where its prefill
+*finishes*. With chunked prefill (2048-token step budget), a 30k prompt runs ~15 chunk
+steps, and the first 14 report `prefill_tokens = 0`, so they look like decode.
+
+Evidence: steps with `prefill_tokens = 0` that fall inside some request's
+`[t_submit, t_first_token]` window took a median of 34–73 ms (7B) and 155–240 ms (32B).
+Steps outside any prefill window took ~5 ms (7B) and 15–19 ms (32B). These hidden
+steps grow with context. That made the earlier "decode-only" energy per token
+*convex* in KV bytes, and the fits degenerate (R² −6.8, negative e_gemm).
+
+**Fix:** `longctx_analysis.py` now drops any bin that overlaps a request's prefill
+window (from `requests.csv`). Results on clean decode bins:
+
+| method | e_kvbyte (J/B) | ratio to weight byte |
+|---|---|---|
+| slope: decode J/token vs KV bytes/token, 7B c=4 (5 contexts) | 1.598e-10 | 1.28 (vs 1.25e-10) |
+| slope, 7B c=16 | 1.613e-10 | 1.29 |
+| slope, 32B c=4 (3 contexts) | 1.613e-10 | 1.29 |
+| 3-term fit, 7B clean bins (R² 0.901, corr(KV,FLOP) 0.21) | 1.548e-10 | **1.18 [1.16, 1.20]** (e_w 1.310e-10) |
+| same, e_gemm pinned at 0.943 pJ | 1.530e-10 | 1.18 |
+| 3-term fit, 32B clean bins | 1.560e-10 | 1.21–1.23 |
+
+- The slope R² is 0.998–1.000 in all three configurations, which agree to within 1%.
+- **Settled:** a KV byte costs about 1.2–1.3× a weight byte on B200, 1.53–1.61e-10 J/B.
+  It includes the attention compute that comes with reading KV.
+- Neither "≈ 1.0×" (UPDATE 4 review) nor the September per-bin 2.3–3.2× survives.
+- NCU confirms the denominator: DRAM/analytic 1.012 at 8k and 30k context.
+- **e_gemm is still loose:** 0.70 pJ [0.64, 0.77] from the clean 7B fit, 0.75–2.1 pJ
+  implied by the slope intercepts, and 0.943 from steady loops.
+
+**This also affects older fits.** Any run with prompts over the 2048-token step budget
+(ShareGPT tails, the prefill arm, long context) put its prefill tokens and FLOPs in the
+bin of the *last* chunk, while the energy was spent across all the chunk steps. That's
+a per-bin misattribution, probably part of why per-bin e_gemm came out low.
+
+**Next fix:** in `energy_model.py`, spread each request's prompt tokens across the steps
+of its prefill window (from `requests.csv`) before binning. Run totals don't change.
+
+**Logger:** the A/B confirmed the full NVML logger cost ~20% of throughput.
+`nvml_logger.py` now reads power, POWER_INSTANT and the energy counter every sample,
+but clocks, util, temperature and throttle reasons only every 10th sample (100 ms).
+`NVML_LOGGER_FULL=1` restores the old behaviour.

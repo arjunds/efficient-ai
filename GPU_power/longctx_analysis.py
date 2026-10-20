@@ -18,6 +18,7 @@ compute that comes with reading a KV byte - which is what the energy model needs
   python3 longctx_analysis.py [--root logs/B200_prov] [--arms longctx,longctx32]
 """
 import argparse
+import bisect
 import csv
 import glob
 import json
@@ -42,16 +43,44 @@ def fnum(x):
         return None
 
 
+def prefill_windows(rd):
+    """[t_submit, t_first_token] per request. vLLM reports a request's prompt tokens
+    only on the step its prefill FINISHES; with chunked prefill (2048-token step
+    budget) a long prompt's earlier chunk steps report prefill_tokens = 0 and look
+    like decode. On the B200 long-context runs those hidden steps took 34-73 ms (7B)
+    and 155-240 ms (32B) vs ~5 ms decode steps, and grew with context - they made
+    'decode-only' fits convex and degenerate. A bin overlapping any request's prefill
+    window is therefore NOT decode-only."""
+    iv = []
+    p = os.path.join(rd, "requests.csv")
+    if os.path.exists(p):
+        for r in csv.DictReader(open(p)):
+            a, f = fnum(r.get("t_submit")), fnum(r.get("t_first_token"))
+            if a is not None and f is not None:
+                iv.append((a, f))
+    iv.sort()
+    return iv
+
+
+def _overlaps(iv, b0, b1, max_len=600.0):
+    lo = max(0, bisect.bisect_left(iv, (b0 - max_len, 0.0)) - 1)
+    hi = bisect.bisect_right(iv, (b1, float("inf")))
+    return any(s <= b1 and b0 <= f for s, f in iv[lo:hi])
+
+
 def run_bins(rd):
     idle = jload(os.path.join(rd, "run_meta.json")).get("idle_power_w")
     out = []
     if idle is None:
         return out
+    iv = prefill_windows(rd)
     for b in csv.DictReader(open(os.path.join(rd, "binned_table.csv"))):
+        tm, dt = fnum(b["t_mid"]), fnum(b["dt_s"])
         pc = fnum(b.get("prefill_tokens_computed"))
         pc = fnum(b.get("prefill_tokens")) if pc is None else pc
         g = fnum(b.get("gemm_flops_bin_computed")) or fnum(b["gemm_flops_bin"])
-        out.append(dict(W=fnum(b["weight_bytes_bin"]), K=fnum(b["kv_bytes_bin"]), G=g,
+        in_pf = _overlaps(iv, tm - dt / 2, tm + dt / 2) if iv else False
+        out.append(dict(W=fnum(b["weight_bytes_bin"]), K=fnum(b["kv_bytes_bin"]), G=g, in_prefill_window=in_pf,
                         Y=fnum(b["energy_bin_j"]) - idle * fnum(b["dt_s"]),
                         prefill=pc or 0.0, decode=fnum(b["decode_tokens"]) or 0.0,
                         src=b.get("power_source")))
@@ -94,7 +123,7 @@ def main():
                 res = jload(os.path.join(rd, "results.json"))
                 win = res.get("window_duration_s") or 1
                 E = res.get("energy_window_j"); gen = res.get("generated_tokens_window") or 0
-                dec = [b for b in bins if b["prefill"] == 0 and b["decode"] > 0]
+                dec = [b for b in bins if b["prefill"] == 0 and b["decode"] > 0 and not b["in_prefill_window"]]
                 kvs = (sum(b["K"] for b in dec) / sum(b["K"] + b["W"] for b in dec)) if dec else None
                 tr = list(csv.DictReader(open(os.path.join(rd, "power_trace.csv"))))
                 cr = [int(r["clk_reasons"]) for r in tr if (r.get("clk_reasons") or "").strip()]
@@ -103,8 +132,36 @@ def main():
                       f"{(E / gen * 1e3) if (E and gen) else float('nan'):>11.0f}{(E / win) if E else float('nan'):>6.0f}"
                       f"{(kvs or 0) * 100:>25.0f}%{(cap or 0) * 100:>6.0f}{(bins[0]['src'] if bins else '-'):>8}")
             rec = {}
+            # A0. slope method (headline): at fixed concurrency, truly-decode energy per
+            # output token vs KV bytes per output token is a straight line; slope = e_kv,
+            # intercept = weight + GEMM energy per token. Needs no e_gemm assumption.
+            by_c = {}
+            for rd in rds:
+                tag = os.path.basename(rd)
+                if "_c" not in tag:
+                    continue
+                d = [b for b in run_bins(rd) if b["prefill"] == 0 and b["decode"] > 0
+                     and not b["in_prefill_window"]]
+                if len(d) >= 5:
+                    tok = sum(b["decode"] for b in d)
+                    by_c.setdefault(tag.split("_c")[-1], []).append(
+                        (tag, sum(b["Y"] for b in d) / tok, sum(b["K"] for b in d) / tok,
+                         sum(b["W"] for b in d) / tok, sum(b["G"] for b in d) / tok))
+            rec["slope"] = {}
+            for c, rows in sorted(by_c.items(), key=lambda kv: int(kv[0])):
+                if len(rows) < 3:
+                    continue
+                yv = np.array([r[1] for r in rows]); kv_ = np.array([r[2] for r in rows])
+                A = np.c_[np.ones_like(kv_), kv_]
+                (a0, s), *_ = np.linalg.lstsq(A, yv, rcond=None)
+                r2s = 1 - ((yv - A @ np.array([a0, s])) ** 2).sum() / ((yv - yv.mean()) ** 2).sum()
+                wbar, gbar = np.mean([r[3] for r in rows]), np.mean([r[4] for r in rows])
+                print(f"A0. slope, c={c} ({len(rows)} contexts): e_kv = {s:.3e} J/B "
+                      f"(x{s / 1.25e-10:.2f} a 1.25e-10 weight byte)  intercept {a0:.4f} J/tok  R2 {r2s:.4f}  "
+                      f"-> intercept implies e_gemm {(a0 - 1.25e-10 * wbar) / gbar * 1e12:.2f} pJ if e_w = 1.25e-10")
+                rec["slope"][c] = dict(e_kvbyte=s, intercept_j_per_tok=a0, r2=r2s, n=len(rows))
             # A. decode-only bins
-            dec = [b for b in allb if b["prefill"] == 0 and b["decode"] > 0]
+            dec = [b for b in allb if b["prefill"] == 0 and b["decode"] > 0 and not b["in_prefill_window"]]
             if len(dec) >= 30:
                 X = np.array([[b["W"], b["K"], b["G"]] for b in dec]); y = np.array([b["Y"] for b in dec])
                 corr = np.corrcoef(X[:, 1], X[:, 2])[0, 1]

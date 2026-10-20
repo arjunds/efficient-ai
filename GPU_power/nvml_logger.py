@@ -22,9 +22,12 @@ Emits power_trace.csv with columns (matches handoff schema):
                   (0x4 = SW power cap, 0x8 = HW slowdown, 0x80 = HW power brake):
                   marks samples where the GPU throttled to hold its power limit.
 
-NVML_LOGGER_SLIM=1 (env): read only power_w, power_inst_w and energy_mj (no clocks,
-util, temperature or throttle reasons) - to test whether the logger's NVML calls slow
-the client process (B200 relog runs were ~20% slower than September's).
+Read rate (2026-10-20): power_w, power_inst_w and energy_mj every sample; clocks,
+util, temperature and clk_reasons only every 10th sample (100 ms at the default
+10 ms), held in between. Reading everything every sample slowed vLLM serving by
+~20% on B200 (logger A/B: 7B c=1 148 -> 178 tok/s, c=64 7474 -> 9244; September's
+leaner logger: 182). NVML_LOGGER_FULL=1 restores every-sample reads;
+NVML_LOGGER_SLIM=1 drops the slow fields entirely.
 
 Multi-GPU (tensor parallel): pass gpu_id as a list; power_w, power_inst_w and
 energy_mj are SUMMED across the GPUs (whole-job energy), clk_reasons is OR'ed,
@@ -113,9 +116,11 @@ class NvmlPowerLogger:
 
     def _read_row(self):
         h = self._handle
-        slim = getattr(self, "_slim", False)
+        self._k = getattr(self, "_k", -1) + 1
+        slim = getattr(self, "_slim", False) or (
+            not getattr(self, "_full", False) and self._k % 10 != 0)
         power_w = self._sum(pynvml.nvmlDeviceGetPowerUsage, 1e-3)  # mW -> W
-        sm_mhz = mem_mhz = temp_c = None
+        sm_mhz, mem_mhz, temp_c = getattr(self, "_slow_last", (None, None, None))[:3]
         if not slim:
             sm_mhz = self._try(lambda: pynvml.nvmlDeviceGetClockInfo(h, pynvml.NVML_CLOCK_SM))
             mem_mhz = self._try(lambda: pynvml.nvmlDeviceGetClockInfo(h, pynvml.NVML_CLOCK_MEM))
@@ -143,20 +148,22 @@ class NvmlPowerLogger:
         # Additive (2026-10-16): cumulative energy counter (mJ) and throttle reasons.
         self._last_energy = (self._sum(pynvml.nvmlDeviceGetTotalEnergyConsumption)
                              if getattr(self, "_have_energy", False) else None)
-        reasons = None
-        for hh in ([] if slim else self._handles):
-            r = self._clk_reasons(hh)
-            if r is not None:
-                reasons = (reasons or 0) | r
-        self._last_reasons = reasons
-
-        gpu_util = mem_util = None
+        prev = getattr(self, "_slow_last", (None,) * 6)
+        reasons = None if getattr(self, "_slim", False) else prev[3]
+        gpu_util, mem_util = prev[4], prev[5]
         if not slim:
+            reasons = None
+            for hh in self._handles:
+                r = self._clk_reasons(hh)
+                if r is not None:
+                    reasons = (reasons or 0) | r
             try:
                 u = pynvml.nvmlDeviceGetUtilizationRates(h)
                 gpu_util, mem_util = float(u.gpu), float(u.memory)
             except Exception:
                 pass
+            self._slow_last = (sm_mhz, mem_mhz, temp_c, reasons, gpu_util, mem_util)
+        self._last_reasons = reasons
 
         return power_w, sm_mhz, mem_mhz, gpu_util, mem_util, temp_c
 
@@ -212,6 +219,9 @@ class NvmlPowerLogger:
         self._last_reasons = None
         import os as _os
         self._slim = _os.environ.get("NVML_LOGGER_SLIM") == "1"
+        self._full = _os.environ.get("NVML_LOGGER_FULL") == "1"
+        self._k = -1
+        self._slow_last = (None,) * 6
         self._have_energy = self._sum(pynvml.nvmlDeviceGetTotalEnergyConsumption) is not None
         try:
             v = pynvml.nvmlDeviceGetFieldValues(self._handle, [186])[0]
