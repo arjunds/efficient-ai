@@ -170,3 +170,45 @@ on one GPU. It buys latency at batch 1 and nothing beyond.
 - **Provisioning implication:** for MoE, the older GPU's disadvantage is smaller.
   Eager-mode overhead dominates on both GPUs, so CUDA graphs and a newer vLLM would
   change both columns, and that should be re-measured before drawing conclusions.
+
+## Size ladder, long context, prefill (`a100-more`, 54 runs, 2026-10-21)
+
+**A100 vs H200 over model size** (Qwen2.5 0.5B–14B, eager, both measured; mean of the
+alpaca and sharegpt J/token ratios):
+
+| model | c=1 | c=4 | c=16 | c=64 | A100 power |
+|---|---|---|---|---|---|
+| 0.5B | 1.55 | 1.59 | 1.58 | 1.47 | 122–140 W |
+| 1.5B | 1.65 | 1.66 | 1.63 | 1.51 | 155–199 W |
+| 3B | 1.72 | 1.75 | 1.62 | 1.51 | 186–235 W |
+| 7B | 1.60 | 1.60 | 1.53 | 1.35 | 298–299 W (capped) |
+| 14B | 1.56 | 1.56 | 1.54 | 1.29 | 298–299 W (capped) |
+
+- **The A100 costs 1.5–1.75× H200 per token at up to 16 concurrent requests, at every
+  size.**
+- Small models (≤ 3B) don't reach the A100's cap, yet the A100 still delivers only
+  ~0.5× H200's throughput. Those runs are limited by fixed per-step host work, so the
+  comparison includes the two nodes' CPU and launch paths, not just the GPUs.
+
+**Long context on a capped A100** (Qwen2-7B, 1k → 30k context; decode-only bins with
+prefill windows excluded):
+- At constant 300 W, energy just tracks time, so these are **at-cap costs**
+  (300 W × time per byte), not physical energy per byte.
+- A KV byte costs about 1.29–1.32e-10 J/B at the cap (slope method, R² 0.97–0.98).
+  A weight byte costs about 1.59e-10 J/B at the cap, because it also carries GEMM and
+  per-layer time, so the at-cap KV/weight ratio is 0.79.
+- The implied e_gemm (2.6–8.9 pJ) is meaningless under the cap.
+- **Physical KV energy is calibrated on B200** (1.53–1.61e-10 J/B), not here.
+
+**Prefill-dominated serving** (unique 2k/8k-token prompts, 16 output tokens; both GPUs
+at the cap):
+
+| run | A100 J per prompt token | B200 J per prompt token | A100 / B200 | B200 prompt throughput / A100 |
+|---|---|---|---|---|
+| in2048 c=4 | 0.0269 | 0.0190 | 1.42 | 4.2× |
+| in2048 c=16 | 0.0216 | 0.0142 | 1.52 | 4.9× |
+| in8192 c=4 | 0.0234 | 0.0175 | 1.34 | 4.3× |
+| in8192 c=16 | 0.0198 | 0.0158 | 1.25 | 4.1× |
+
+B200 prefill is 1.25–1.52× cheaper per prompt token and 4–5× faster, in line with its
+1.9× cheaper GEMM energy (0.77 vs 1.47 pJ/FLOP at full clock).

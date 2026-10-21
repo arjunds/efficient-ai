@@ -1,0 +1,160 @@
+==== A100 job Wed Oct 21 11:32:03 PDT 2026 host=a100-more-k6knd stages=idle_states,serve arms=a100_longctx,a100_prefill,a100_ladder_eager,a100_graphs,a100_eager,a100_highconc ====
+=== [idle_states] no process / CUDA context / vLLM loaded / after shutdown / decay ===
+[1_no_process] {"p_avg_w": 52.847090949820796, "p_inst_w": 52.847090949820796, "p_energy_w": 52.8650546760331, "sm_mhz": 210.0, "mem_mhz": 1512.0, "pstate_min": 0, "pstate_max": 0, "duration_s": 29.980939388275146, "n": 2232}
+[2_cuda_context] {"p_avg_w": 104.79218048128342, "p_inst_w": 104.79218048128342, "p_energy_w": 104.60216074980453, "sm_mhz": 1410.0, "mem_mhz": 1512.0, "pstate_min": 0, "pstate_max": 0, "duration_s": 29.982764959335327, "n": 2244}
+INFO 10-21 11:33:15 [__init__.py:216] Automatically detected platform cuda.
+INFO 10-21 11:33:16 [utils.py:328] non-default args: {'dtype': 'float16', 'max_model_len': 4096, 'disable_log_stats': True, 'model': 'Qwen/Qwen2-7B-Instruct'}
+INFO 10-21 11:33:28 [__init__.py:742] Resolved architecture: Qwen2ForCausalLM
+`torch_dtype` is deprecated! Use `dtype` instead!
+WARNING 10-21 11:33:28 [__init__.py:2767] Casting torch.bfloat16 to torch.float16.
+INFO 10-21 11:33:28 [__init__.py:1815] Using max model len 4096
+INFO 10-21 11:33:29 [scheduler.py:222] Chunked prefill is enabled with max_num_batched_tokens=8192.
+WARNING 10-21 11:33:29 [__init__.py:2974] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+INFO 10-21 11:33:36 [__init__.py:216] Automatically detected platform cuda.
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:33:37 [core.py:654] Waiting for init message from front-end.
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:33:37 [core.py:76] Initializing a V1 LLM engine (v0.10.2) with config: model='Qwen/Qwen2-7B-Instruct', speculative_config=None, tokenizer='Qwen/Qwen2-7B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.float16, max_seq_len=4096, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, decoding_config=DecodingConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_backend=''), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=0, served_model_name=Qwen/Qwen2-7B-Instruct, enable_prefix_caching=True, chunked_prefill_enabled=True, use_async_output_proc=True, pooler_config=None, compilation_config={"level":3,"debug_dump_path":"","cache_dir":"","backend":"","custom_ops":[],"splitting_ops":["vllm.unified_attention","vllm.unified_attention_with_output","vllm.mamba_mixer2","vllm.mamba_mixer","vllm.short_conv","vllm.linear_attention","vllm.plamo2_mamba_mixer","vllm.gdn_attention"],"use_inductor":true,"compile_sizes":[],"inductor_compile_config":{"enable_auto_functionalized_v2":false},"inductor_passes":{},"cudagraph_mode":1,"use_cudagraph":true,"cudagraph_num_of_warmups":1,"cudagraph_capture_sizes":[512,504,496,488,480,472,464,456,448,440,432,424,416,408,400,392,384,376,368,360,352,344,336,328,320,312,304,296,288,280,272,264,256,248,240,232,224,216,208,200,192,184,176,168,160,152,144,136,128,120,112,104,96,88,80,72,64,56,48,40,32,24,16,8,4,2,1],"cudagraph_copy_inputs":false,"full_cuda_graph":false,"pass_config":{},"max_capture_size":512,"local_cache_dir":null}
+[1;36m(EngineCore_DP0 pid=280)[0;0m W1021 11:33:40.361000 280 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=280)[0;0m W1021 11:33:40.361000 280 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[W1021 11:33:41.522868917 ProcessGroupNCCL.cpp:981] Warning: TORCH_NCCL_AVOID_RECORD_STREAMS is the default now, this environment variable is thus deprecated. (function operator())
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:33:41 [parallel_state.py:1165] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:33:41 [topk_topp_sampler.py:58] Using FlashInfer for top-p & top-k sampling.
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:33:41 [gpu_model_runner.py:2338] Starting to load model Qwen/Qwen2-7B-Instruct...
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:33:42 [gpu_model_runner.py:2370] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:33:42 [cuda.py:362] Using Flash Attention backend on V1 engine.
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:33:42 [weight_utils.py:348] Using model weights format ['*.safetensors']
+[1;36m(EngineCore_DP0 pid=280)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
+[1;36m(EngineCore_DP0 pid=280)[0;0m Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:26<01:18, 26.23s/it]
+[1;36m(EngineCore_DP0 pid=280)[0;0m Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:27<00:22, 11.28s/it]
+[1;36m(EngineCore_DP0 pid=280)[0;0m Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:27<00:06,  6.49s/it]
+[1;36m(EngineCore_DP0 pid=280)[0;0m Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:28<00:00,  4.22s/it]
+[1;36m(EngineCore_DP0 pid=280)[0;0m Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:28<00:00,  7.15s/it]
+[1;36m(EngineCore_DP0 pid=280)[0;0m 
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:34:11 [default_loader.py:268] Loading weights took 28.74 seconds
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:34:12 [gpu_model_runner.py:2392] Model loading took 14.2488 GiB and 29.607367 seconds
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:34:16 [backends.py:539] Using cache directory: /tmp/vllm_cache/torch_compile_cache/85bb24a553/rank_0_0/backbone for vLLM's torch.compile
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:34:16 [backends.py:550] Dynamo bytecode transform time: 3.57 s
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:34:18 [backends.py:194] Cache the graph for dynamic shape for later use
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:34:32 [backends.py:215] Compiling a graph for dynamic shape takes 15.95 s
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:34:35 [monitor.py:34] torch.compile takes 19.51 s in total
+[1;36m(EngineCore_DP0 pid=280)[0;0m [rank0]:W1021 11:34:35.901000 280 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=280)[0;0m [rank0]:W1021 11:34:35.901000 280 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=280)[0;0m [rank0]:W1021 11:34:35.905000 280 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=280)[0;0m [rank0]:W1021 11:34:35.905000 280 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:34:36 [gpu_worker.py:298] Available KV cache memory: 55.93 GiB
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:34:36 [kv_cache_utils.py:864] GPU KV cache size: 1,047,232 tokens
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:34:36 [kv_cache_utils.py:868] Maximum concurrency for 4,096 tokens per request: 255.67x
+[1;36m(EngineCore_DP0 pid=280)[0;0m Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/67 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   3%|▎         | 2/67 [00:00<00:03, 16.72it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   6%|▌         | 4/67 [00:00<00:03, 17.48it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   9%|▉         | 6/67 [00:00<00:03, 18.15it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  12%|█▏        | 8/67 [00:00<00:03, 18.79it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  16%|█▋        | 11/67 [00:00<00:02, 19.50it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  19%|█▉        | 13/67 [00:00<00:02, 19.40it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  22%|██▏       | 15/67 [00:00<00:02, 19.35it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  25%|██▌       | 17/67 [00:00<00:02, 19.23it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  30%|██▉       | 20/67 [00:01<00:02, 20.01it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  34%|███▍      | 23/67 [00:01<00:02, 20.66it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  39%|███▉      | 26/67 [00:01<00:01, 21.42it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  43%|████▎     | 29/67 [00:01<00:01, 21.60it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  48%|████▊     | 32/67 [00:01<00:01, 22.35it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  52%|█████▏    | 35/67 [00:01<00:01, 23.57it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  57%|█████▋    | 38/67 [00:01<00:01, 24.34it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  61%|██████    | 41/67 [00:01<00:01, 25.03it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  66%|██████▌   | 44/67 [00:02<00:00, 25.43it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  70%|███████   | 47/67 [00:02<00:00, 25.15it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  75%|███████▍  | 50/67 [00:02<00:00, 25.38it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  81%|████████  | 54/67 [00:02<00:00, 27.06it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  87%|████████▋ | 58/67 [00:02<00:00, 28.41it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  93%|█████████▎| 62/67 [00:02<00:00, 29.89it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  97%|█████████▋| 65/67 [00:02<00:00, 29.76it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 67/67 [00:02<00:00, 23.82it/s]
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:34:40 [gpu_model_runner.py:3118] Graph capturing finished in 3 secs, took 0.49 GiB
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:34:40 [gpu_worker.py:391] Free memory on device (78.28/79.25 GiB) on startup. Desired GPU memory utilization is (0.9, 71.33 GiB). Actual usage is 14.25 GiB for weight, 1.13 GiB for peak activation, 0.02 GiB for non-torch memory, and 0.49 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=59365464268` to fit into requested memory, or `--kv-cache-memory=66830289920` to fully utilize gpu memory. Current kv cache memory in use is 60053330124 bytes.
+[1;36m(EngineCore_DP0 pid=280)[0;0m INFO 10-21 11:34:40 [core.py:218] init engine (profile, create kv cache, warmup model) took 28.06 seconds
+INFO 10-21 11:34:41 [llm.py:295] Supported_tasks: ['generate']
+INFO 10-21 11:34:41 [__init__.py:36] No IOProcessor plugins requested by the model
+WARNING 10-21 11:34:41 [__init__.py:1695] Default sampling parameters have been overridden by the model's Hugging Face generation config recommended from the model creator. If this is not intended, please relaunch vLLM instance with `--generation-config vllm`.
+[3_vllm_loaded] {"p_avg_w": 104.49440424610052, "p_inst_w": 104.49440424610052, "p_energy_w": 104.67525975099072, "sm_mhz": 1410.0, "mem_mhz": 1512.0, "pstate_min": 0, "pstate_max": 0, "duration_s": 29.978707551956177, "n": 2308}
+[rank0]:[W1021 11:35:13.357797684 ProcessGroupNCCL.cpp:1538] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[4_after_shutdown] {"p_avg_w": 103.3608717948718, "p_inst_w": 103.3608717948718, "p_energy_w": 103.21418294407056, "sm_mhz": 1410.0, "mem_mhz": 1512.0, "pstate_min": 0, "pstate_max": 0, "duration_s": 29.975638151168823, "n": 2301}
+[5_decay_trace] [{"t": 10, "p_w": 102.5119378238342, "sm_mhz": 1410.0}, {"t": 20, "p_w": 102.37372987012986, "sm_mhz": 1410.0}, {"t": 30, "p_w": 102.27599355670104, "sm_mhz": 1410.0}, {"t": 40, "p_w": 102.21017357512953, "sm_mhz": 1410.0}, {"t": 50, "p_w": 102.16334901960784, "sm_mhz": 1410.0}, {"t": 60, "p_w": 102.09078421052631, "sm_mhz": 1410.0}, {"t": 70, "p_w": 102.02963376623377, "sm_mhz": 1410.0}, {"t": 80, "p_w": 101.97389048239896, "sm_mhz": 1410.0}, {"t": 90, "p_w": 101.8917483702738, "sm_mhz": 1410.0}]
+wrote logs/A100_prov/idle_states.json
+=== [serve] a100_longctx,a100_prefill,a100_ladder_eager,a100_graphs,a100_eager,a100_highconc ===
+[2026-10-21 11:37:17] === a100_longctx / Qwen/Qwen2-7B-Instruct engine={'no_enforce_eager': None, 'max_model_len': 32768}
+[2026-10-21 11:37:17] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx1024_c4
+[2026-10-21 11:37:17]   ctx1024_c4: tok/s=334.6 reqs=32 P_avg=297.7085 E_counter=14600.324347045898
+[2026-10-21 11:37:17] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx4096_c4
+[2026-10-21 11:37:17]   ctx4096_c4: tok/s=286.6 reqs=28 P_avg=298.176982067298 E_counter=14913.956970703126
+[2026-10-21 11:37:17] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx8192_c4
+[2026-10-21 11:37:17]   ctx8192_c4: tok/s=227.7 reqs=23 P_avg=298.3608230604705 E_counter=15427.318128417968
+[2026-10-21 11:37:17] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx16384_c4
+[2026-10-21 11:37:17]   ctx16384_c4: tok/s=171.4 reqs=16 P_avg=297.8537616340282 E_counter=14221.864814331055
+[2026-10-21 11:37:17] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx30720_c4
+[2026-10-21 11:37:18]   ctx30720_c4: tok/s=109.1 reqs=12 P_avg=298.46113417676406 E_counter=16778.725143066407
+[2026-10-21 11:37:18] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx1024_c16
+[2026-10-21 11:37:18]   ctx1024_c16: tok/s=1114.0 reqs=112 P_avg=298.66281349284174 E_counter=15351.327885498047
+[2026-10-21 11:37:18] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx4096_c16
+[2026-10-21 11:37:18]   ctx4096_c16: tok/s=668.9 reqs=67 P_avg=298.65483021837497 E_counter=15296.487587524414
+[2026-10-21 11:37:18] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx8192_c16
+[2026-10-21 11:37:18]   ctx8192_c16: tok/s=501.2 reqs=48 P_avg=298.8805324407827 E_counter=14628.46468701172
+[2026-10-21 11:37:18] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx16384_c16
+[2026-10-21 11:37:18]   ctx16384_c16: tok/s=321.5 reqs=32 P_avg=298.62108395743 E_counter=15206.12439074707
+[2026-10-21 11:37:18] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx30720_c16
+[2026-10-21 11:37:18]   ctx30720_c16: tok/s=162.7 reqs=32 P_avg=298.24248121574493 E_counter=30038.227497070315
+[2026-10-21 11:37:18] === a100_prefill / Qwen/Qwen2-7B-Instruct engine={'no_enforce_eager': None, 'max_num_batched_tokens': 8192, 'max_model_len': 10240}
+[2026-10-21 11:37:18] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_prefill/Qwen2-7B-Instruct/in2048_c4
+[2026-10-21 11:37:18]   in2048_c4: tok/s=86.1 reqs=244 P_avg=296.13044283485624 E_counter=13432.255291137695
+[2026-10-21 11:37:18] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_prefill/Qwen2-7B-Instruct/in2048_c16
+[2026-10-21 11:37:19]   in2048_c16: tok/s=107.8 reqs=308 P_avg=298.08339823594264 E_counter=13601.356189941407
+[2026-10-21 11:37:19] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_prefill/Qwen2-7B-Instruct/in8192_c4
+[2026-10-21 11:37:19]   in8192_c4: tok/s=24.8 reqs=72 P_avg=298.45735299238305 E_counter=13804.998744750977
+[2026-10-21 11:37:19] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_prefill/Qwen2-7B-Instruct/in8192_c16
+[2026-10-21 11:37:19]   in8192_c16: tok/s=29.5 reqs=85 P_avg=298.8334860748477 E_counter=13753.683743286134
+[2026-10-21 11:37:19] === a100_ladder_eager / Qwen/Qwen2.5-0.5B-Instruct engine={}
+[2026-10-21 11:37:19] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/alpaca_c1
+[2026-10-21 11:37:22]   alpaca_c1: tok/s=125.4 reqs=24 P_avg=126.00380312907431 E_counter=5792.5754633789065
+[2026-10-21 11:37:22] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/alpaca_c4
+[2026-10-21 11:37:25]   alpaca_c4: tok/s=446.6 reqs=87 P_avg=121.8661420636616 E_counter=5699.857578247071
+[2026-10-21 11:37:25] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/alpaca_c16
+[2026-10-21 11:37:29]   alpaca_c16: tok/s=1734.3 reqs=345 P_avg=123.2063884244373 E_counter=5758.242880126953
+[2026-10-21 11:37:29] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/alpaca_c64
+[2026-10-21 11:37:32]   alpaca_c64: tok/s=6877.4 reqs=1354 P_avg=139.8090170794193 E_counter=6628.069838378907
+[2026-10-21 11:37:32] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/sharegpt_c1
+[2026-10-21 11:37:35]   sharegpt_c1: tok/s=126.5 reqs=23 P_avg=123.48735896885069 E_counter=5741.525942993164
+[2026-10-21 11:37:35] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/sharegpt_c4
+[2026-10-21 11:37:38]   sharegpt_c4: tok/s=461.5 reqs=84 P_avg=121.34124827586207 E_counter=5607.341450317383
+[2026-10-21 11:37:38] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/sharegpt_c16
+[2026-10-21 11:37:40]   sharegpt_c16: tok/s=1772.4 reqs=331 P_avg=127.09887078891259 E_counter=5908.887921020508
+[2026-10-21 11:37:40] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/sharegpt_c64
+[2026-10-21 11:37:43]   sharegpt_c64: tok/s=6866.7 reqs=1304 P_avg=151.09131487375345 E_counter=7119.4693336181645
+[2026-10-21 11:37:43] === a100_ladder_eager / Qwen/Qwen2.5-1.5B-Instruct engine={}
+[2026-10-21 11:37:43] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/alpaca_c1
+[2026-10-21 11:37:48]   alpaca_c1: tok/s=105.9 reqs=26 P_avg=162.67113741438357 E_counter=7611.848051147461
+[2026-10-21 11:37:48] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/alpaca_c4
+[2026-10-21 11:37:51]   alpaca_c4: tok/s=381.9 reqs=90 P_avg=154.60386786469346 E_counter=7316.800239624024
+[2026-10-21 11:37:51] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/alpaca_c16
+[2026-10-21 11:37:54]   alpaca_c16: tok/s=1526.1 reqs=386 P_avg=164.82371190023252 E_counter=7791.006166992188
+[2026-10-21 11:37:54] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/alpaca_c64
+[2026-10-21 11:37:57]   alpaca_c64: tok/s=6162.1 reqs=1553 P_avg=198.58042700421942 E_counter=9433.06274597168
+[2026-10-21 11:37:57] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/sharegpt_c1
+[2026-10-21 11:38:00]   sharegpt_c1: tok/s=104.8 reqs=21 P_avg=165.67553412715287 E_counter=7774.581728759766
+[2026-10-21 11:38:00] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/sharegpt_c4
+[2026-10-21 11:38:03]   sharegpt_c4: tok/s=396.9 reqs=76 P_avg=157.8877626219771 E_counter=7457.046938964844
+[2026-10-21 11:38:03] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/sharegpt_c16
+[2026-10-21 11:38:03] WARNING rc=1 -> logs/A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/sharegpt_c16/two_term.log
+[2026-10-21 11:38:03]   sharegpt_c16: tok/s=1517.8 reqs=297 P_avg=168.52738515081205 E_counter=None
+[2026-10-21 11:38:03] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/sharegpt_c64
+[2026-10-21 11:38:06]   sharegpt_c64: tok/s=5785.6 reqs=1132 P_avg=211.56442363598063 E_counter=10070.9793359375
+[2026-10-21 11:38:06] === a100_ladder_eager / Qwen/Qwen2.5-3B-Instruct engine={}
+[2026-10-21 11:38:06] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/alpaca_c1
+[2026-10-21 11:38:09]   alpaca_c1: tok/s=84.6 reqs=16 P_avg=199.28647884904444 E_counter=9291.61831176758
+[2026-10-21 11:38:09] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/alpaca_c4
+[2026-10-21 11:38:11]   alpaca_c4: tok/s=300.7 reqs=62 P_avg=186.26652661122662 E_counter=8954.98614416504
+[2026-10-21 11:38:11] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/alpaca_c16
+[2026-10-21 11:38:14]   alpaca_c16: tok/s=1216.7 reqs=246 P_avg=196.90095377888818 E_counter=9465.306537597657
+[2026-10-21 11:38:14] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/alpaca_c64
+[2026-10-21 11:38:18]   alpaca_c64: tok/s=4689.1 reqs=953 P_avg=234.50708252125233 E_counter=11294.002830322266
+[2026-10-21 11:38:18] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/sharegpt_c1
+[2026-10-21 11:38:21]   sharegpt_c1: tok/s=84.8 reqs=15 P_avg=204.86507454103074 E_counter=9263.367969604493
+[2026-10-21 11:38:21] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/sharegpt_c4
+[2026-10-21 11:38:24]   sharegpt_c4: tok/s=287.0 reqs=57 P_avg=186.224895572264 E_counter=8931.23624633789
+[2026-10-21 11:38:24] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/sharegpt_c16
+[2026-10-21 11:38:27]   sharegpt_c16: tok/s=1138.0 reqs=231 P_avg=195.90228725612286 E_counter=9418.889418701172
+[2026-10-21 11:38:27] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/sharegpt_c64
+[2026-10-21 11:38:30]   sharegpt_c64: tok/s=4328.0 reqs=877 P_avg=241.8825833679834 E_counter=11816.026662475586
+[2026-10-21 11:38:30] === a100_ladder_eager / Qwen/Qwen2.5-7B-Instruct engine={}
+[2026-10-21 11:38:30] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/alpaca_c1
+[2026-10-21 11:38:33]   alpaca_c1: tok/s=85.4 reqs=18 P_avg=298.8433756476684 E_counter=13949.576720703126
+[2026-10-21 11:38:33] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/alpaca_c4
+[2026-10-21 11:38:37]   alpaca_c4: tok/s=328.7 reqs=70 P_avg=298.5410569620253 E_counter=14298.843193481445
+[2026-10-21 11:38:37] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/alpaca_c16
+[2026-10-21 11:38:40]   alpaca_c16: tok/s=1235.1 reqs=256 P_avg=298.28235662854723 E_counter=14118.132880615234
+[2026-10-21 11:38:40] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/alpaca_c64
+[2026-10-21 11:38:43]   alpaca_c64: tok/s=4111.4 reqs=866 P_avg=298.0180591900312 E_counter=14370.805745239259
+[2026-10-21 11:38:43] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/sharegpt_c1
+[2026-10-21 11:38:46]   sharegpt_c1: tok/s=85.3 reqs=16 P_avg=298.8546983043383 E_counter=13616.940469238281
+[2026-10-21 11:38:46] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/sharegpt_c4
+[2026-10-21 11:38:49]   sharegpt_c4: tok/s=323.2 reqs=65 P_avg=298.4404636517329 E_counter=14175.002251464844
+[2026-10-21 11:38:49] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-7B-Instruct --dtype float16 --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/sharegpt_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task sharegpt --concurrency 16

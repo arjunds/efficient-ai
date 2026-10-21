@@ -1,0 +1,14 @@
+==== A100 job Wed Oct 21 11:43:31 PDT 2026 host=a100-moe-graphs-lg2q7 stages=serve arms=a100_moe_graphs ====
+=== [serve] a100_moe_graphs ===
+[2026-10-21 11:43:31] === a100_moe_graphs / Qwen/Qwen3-30B-A3B engine={'no_enforce_eager': None}
+[2026-10-21 11:43:31] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen3-30B-A3B --dtype float16 --run_dir logs/A100_prov/a100_moe_graphs/Qwen3-30B-A3B/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 15.0
+[2026-10-21 12:16:32] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen3-30B-A3B --dtype float16 --run_dir logs/A100_prov/a100_moe_graphs/Qwen3-30B-A3B/alpaca_c1 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 45.0 --task alpaca --concurrency 1
+[2026-10-21 12:26:39] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_moe_graphs/Qwen3-30B-A3B/alpaca_c1
+[2026-10-21 12:26:39]   alpaca_c1: tok/s=121.1 reqs=22 P_avg=231.4271797314855 E_counter=10798.991297973633
+[2026-10-21 12:26:39] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen3-30B-A3B --dtype float16 --run_dir logs/A100_prov/a100_moe_graphs/Qwen3-30B-A3B/alpaca_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 45.0 --task alpaca --concurrency 4
+[2026-10-21 12:28:41] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_moe_graphs/Qwen3-30B-A3B/alpaca_c4
+[2026-10-21 12:28:41]   alpaca_c4: tok/s=276.4 reqs=52 P_avg=280.7242477987421 E_counter=13451.608665161133
+[2026-10-21 12:28:41] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen3-30B-A3B --dtype float16 --run_dir logs/A100_prov/a100_moe_graphs/Qwen3-30B-A3B/alpaca_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 45.0 --task alpaca --concurrency 16
+[2026-10-21 12:30:59] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_moe_graphs/Qwen3-30B-A3B/alpaca_c16
+[2026-10-21 12:30:59]   alpaca_c16: tok/s=680.4 reqs=128 P_avg=297.335293204698 E_counter=14301.469028564454
+[2026-10-21 12:30:59] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen3-30B-A3B --dtype float16 --run_dir logs/A100_prov/a100_moe_graphs/Qwen3-30B-A3B/alpaca_c64 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 45.0 --task alpaca --concurrency 64

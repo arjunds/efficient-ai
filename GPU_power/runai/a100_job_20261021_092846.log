@@ -1,0 +1,15 @@
+==== A100 job Wed Oct 21 09:28:46 PDT 2026 host=a100-probe-nr7fg stages=probe arms=a100_graphs,a100_eager,a100_highconc ====
+=== [probe] ===
+name, pci.bus_id, power.limit [W], enforced.power.limit [W], power.default_limit [W], power.max_limit [W], clocks.max.sm [MHz], clocks.max.memory [MHz], memory.total [MiB], driver_version
+NVIDIA A100 80GB PCIe, 00000000:41:00.0, 300.00 W, 300.00 W, 300.00 W, 300.00 W, 1410 MHz, 1512 MHz, 81920 MiB, 565.57.01
+<stdin>:1: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+name NVIDIA A100 80GB PCIe
+POWER_INSTANT field 186: 0
+energy counter mJ over 2 s: 925458060931 925458158082 -> W 48.5755 | GetPowerUsage W 48.606
+power limit settable? (expect no): [150000, 300000]
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+vllm 0.10.2 torch 2.8.0+cu128 transformers 4.56.1
+--- ncu permission probe
+==ERROR== ERR_NVGPUCTRPERM - The user does not have permission to access NVIDIA GPU Performance Counters on the target device 0. For instructions on enabling permissions and to get more information see https://developer.nvidia.com/ERR_NVGPUCTRPERM
+==== A100 job done Wed Oct 21 09:28:56 PDT 2026 ====

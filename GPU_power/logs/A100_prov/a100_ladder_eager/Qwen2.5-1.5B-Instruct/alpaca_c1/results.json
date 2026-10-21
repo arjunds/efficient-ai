@@ -1,0 +1,30 @@
+{
+  "mode": "load",
+  "completed_requests": 26,
+  "generated_tokens_window": 4958,
+  "window_duration_s": 46.82025384902954,
+  "aggregate_tokens_per_sec": 105.89434256351787,
+  "avg_power_window_w": 162.67113741438357,
+  "energy_window_j": 7611.848051147461,
+  "energy_window_source": "energy",
+  "dram_rows_filled": 0,
+  "nvml_summary": {
+    "gpu_name": "NVIDIA A100 80GB PCIe",
+    "power_limit_w": 300.0,
+    "metered_gpus": [
+      0
+    ],
+    "power_limit_total_w": 300.0,
+    "have_power_instant": true,
+    "have_energy_counter": true,
+    "n_samples": 4833,
+    "duration_s": 48.43486499786377,
+    "mean_power_w": 162.3483329195117,
+    "median_power_w": 162.838,
+    "max_power_w": 170.292,
+    "min_power_w": 99.08800000000001
+  },
+  "dram_backend": null,
+  "dram_total_bytes": null,
+  "peak_hbm_bw_bytes_per_s": 1935000000000.0
+}

@@ -1,0 +1,20 @@
+{
+  "mode": "idle",
+  "idle_power_w": 104.66,
+  "nvml_summary": {
+    "gpu_name": "NVIDIA A100 80GB PCIe",
+    "power_limit_w": 300.0,
+    "metered_gpus": [
+      0
+    ],
+    "power_limit_total_w": 300.0,
+    "have_power_instant": true,
+    "have_energy_counter": true,
+    "n_samples": 1499,
+    "duration_s": 15.000838994979858,
+    "mean_power_w": 104.69030220146765,
+    "median_power_w": 104.66,
+    "max_power_w": 105.423,
+    "min_power_w": 104.177
+  }
+}

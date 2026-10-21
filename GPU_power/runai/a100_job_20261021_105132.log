@@ -1,0 +1,30 @@
+==== A100 job Wed Oct 21 10:51:32 PDT 2026 host=a100-moe-d99f4 stages=serve arms=a100_moe ====
+=== [serve] a100_moe ===
+[2026-10-21 10:51:32] === a100_moe / Qwen/Qwen3-30B-A3B engine={}
+[2026-10-21 10:51:32] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen3-30B-A3B --dtype float16 --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 15.0
+[2026-10-21 11:24:12] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen3-30B-A3B --dtype float16 --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/alpaca_c1 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task alpaca --concurrency 1
+[2026-10-21 11:28:58] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/alpaca_c1
+[2026-10-21 11:28:58]   alpaca_c1: tok/s=26.8 reqs=5 P_avg=124.023235639413 E_counter=5911.236178100586
+[2026-10-21 11:28:58] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen3-30B-A3B --dtype float16 --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/alpaca_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task alpaca --concurrency 4
+[2026-10-21 11:30:44] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/alpaca_c4
+[2026-10-21 11:30:44]   alpaca_c4: tok/s=98.3 reqs=20 P_avg=154.1139800153728 E_counter=8011.43364440918
+[2026-10-21 11:30:44] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen3-30B-A3B --dtype float16 --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/alpaca_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task alpaca --concurrency 16
+[2026-10-21 11:32:43] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/alpaca_c16
+[2026-10-21 11:32:43]   alpaca_c16: tok/s=383.8 reqs=80 P_avg=211.89035454716625 E_counter=11301.15614489746
+[2026-10-21 11:32:43] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen3-30B-A3B --dtype float16 --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/alpaca_c64 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task alpaca --concurrency 64
+[2026-10-21 11:34:34] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/alpaca_c64
+[2026-10-21 11:34:34]   alpaca_c64: tok/s=1528.1 reqs=320 P_avg=291.6392254346183 E_counter=15586.839192382813
+[2026-10-21 11:34:34] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen3-30B-A3B --dtype float16 --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/sharegpt_c1 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task sharegpt --concurrency 1
+[2026-10-21 11:36:41] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/sharegpt_c1
+[2026-10-21 11:36:41]   sharegpt_c1: tok/s=27.0 reqs=5 P_avg=128.11713109563013 E_counter=6066.583486694336
+[2026-10-21 11:36:41] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen3-30B-A3B --dtype float16 --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/sharegpt_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task sharegpt --concurrency 4
+[2026-10-21 11:38:34] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/sharegpt_c4
+[2026-10-21 11:38:34]   sharegpt_c4: tok/s=94.4 reqs=20 P_avg=155.5128464377999 E_counter=8440.675276733398
+[2026-10-21 11:38:34] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen3-30B-A3B --dtype float16 --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/sharegpt_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task sharegpt --concurrency 16
+[2026-10-21 11:40:27] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/sharegpt_c16
+[2026-10-21 11:40:27]   sharegpt_c16: tok/s=383.4 reqs=80 P_avg=235.41731601650412 E_counter=12605.465502929688
+[2026-10-21 11:40:27] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen3-30B-A3B --dtype float16 --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/sharegpt_c64 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task sharegpt --concurrency 64
+[2026-10-21 11:42:27] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A100_prov/a100_moe/Qwen3-30B-A3B/sharegpt_c64
+[2026-10-21 11:42:27]   sharegpt_c64: tok/s=1202.2 reqs=258 P_avg=278.27003677014045 E_counter=15263.075615478516
+[2026-10-21 11:42:27] PROVISIONING SWEEP DONE (a100_moe)
+==== A100 job done Wed Oct 21 11:42:27 PDT 2026 ====

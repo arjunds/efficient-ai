@@ -1,0 +1,30 @@
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+{
+  "run_dir": "logs/A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/alpaca_c64",
+  "model": "two_term",
+  "bin_s": 0.2,
+  "n_bins": 237,
+  "n_iters_total": 5497,
+  "weight_bytes": 987922432.0,
+  "kv_bytes_per_token": 12288.0,
+  "matmul_flops_per_token": 987922432.0,
+  "attn_flops_per_resident_token": 86016.0,
+  "active_params": 493961216.0,
+  "idle_power_w": 104.66,
+  "task": "alpaca",
+  "concurrency_or_rate": 64,
+  "power_source": "energy",
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.511618351044397e-10,
+  "e_flop_j_per_flop": 2.235569870272761e-12,
+  "p_static_w": 104.66,
+  "r2_energy": 0.12981687993800095,
+  "r2_power": 0.029409758374255746,
+  "bytes_flops_pearson": 0.29596896018800806,
+  "identifiable": true,
+  "arithmetic_intensity_min": 3.170130873062167,
+  "arithmetic_intensity_max": 148.43251227863522,
+  "binned_table": "logs/A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/alpaca_c64/binned_table.csv",
+  "e_flop_pJ_per_flop": 2.235569870272761
+}

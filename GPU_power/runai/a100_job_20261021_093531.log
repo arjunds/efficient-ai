@@ -1,0 +1,87 @@
+==== A100 job Wed Oct 21 09:35:31 PDT 2026 host=a100-more-tzjcd stages=idle_states,serve arms=a100_longctx,a100_prefill,a100_ladder_eager ====
+=== [idle_states] no process / CUDA context / vLLM loaded / after shutdown / decay ===
+[1_no_process] {"p_avg_w": 47.38815185350603, "p_inst_w": 47.38815185350603, "p_energy_w": 47.22443401692558, "sm_mhz": 210.0, "mem_mhz": 1512.0, "pstate_min": 0, "pstate_max": 0, "duration_s": 29.982720375061035, "n": 2239}
+[2_cuda_context] {"p_avg_w": 97.17773497622136, "p_inst_w": 97.17773497622136, "p_energy_w": 96.9670585455169, "sm_mhz": 1410.0, "mem_mhz": 1512.0, "pstate_min": 0, "pstate_max": 0, "duration_s": 29.99156665802002, "n": 2313}
+INFO 10-21 09:36:42 [__init__.py:216] Automatically detected platform cuda.
+INFO 10-21 09:36:43 [utils.py:328] non-default args: {'dtype': 'float16', 'max_model_len': 4096, 'disable_log_stats': True, 'model': 'Qwen/Qwen2-7B-Instruct'}
+Traceback (most recent call last):
+  File "/home/adsampat/efficient-ai/GPU_power/idle_states.py", line 100, in <module>
+    main()
+  File "/home/adsampat/efficient-ai/GPU_power/idle_states.py", line 80, in main
+    llm = LLM(model=a.model, dtype="float16", gpu_memory_utilization=0.9, max_model_len=4096)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/llm.py", line 282, in __init__
+    self.llm_engine = LLMEngine.from_engine_args(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/vllm/engine/llm_engine.py", line 486, in from_engine_args
+    vllm_config = engine_args.create_engine_config(usage_context)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/vllm/engine/arg_utils.py", line 1119, in create_engine_config
+    model_config = self.create_model_config()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/vllm/engine/arg_utils.py", line 963, in create_model_config
+    return ModelConfig(
+           ^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/pydantic/_internal/_dataclasses.py", line 123, in __init__
+    s.__pydantic_validator__.validate_python(ArgsKwargs(args, kwargs), self_instance=s)
+  File "/usr/local/lib/python3.12/dist-packages/vllm/config/__init__.py", line 603, in __post_init__
+    self.model, self.tokenizer = maybe_override_with_speculators_target_model(  # noqa: E501
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/vllm/transformers_utils/config.py", line 487, in maybe_override_with_speculators_target_model
+    config_dict, _ = PretrainedConfig.get_config_dict(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/transformers/configuration_utils.py", line 662, in get_config_dict
+    config_dict, kwargs = cls._get_config_dict(pretrained_model_name_or_path, **kwargs)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/transformers/configuration_utils.py", line 721, in _get_config_dict
+    resolved_config_file = cached_file(
+                           ^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py", line 321, in cached_file
+    file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py", line 566, in cached_files
+    raise e
+  File "/usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py", line 478, in cached_files
+    hf_hub_download(
+  File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1010, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1127, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "<frozen os>", line 215, in makedirs
+  File "<frozen os>", line 225, in makedirs
+FileNotFoundError: [Errno 2] No such file or directory: '/home/adsampat/.cache/huggingface/hub/models--Qwen--Qwen2-7B-Instruct'
+=== [serve] a100_longctx,a100_prefill,a100_ladder_eager ===
+[2026-10-21 09:36:44] === a100_longctx / Qwen/Qwen2-7B-Instruct engine={'no_enforce_eager': None, 'max_model_len': 32768}
+[2026-10-21 09:36:44] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A100_prov/a100_longctx/Qwen2-7B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 15.0
+[2026-10-21 09:36:53] WARNING rc=1 -> logs/A100_prov/a100_longctx/Qwen2-7B-Instruct/idle/run.log
+[2026-10-21 09:36:53] [skip] no idle baseline for logs/A100_prov/a100_longctx/Qwen2-7B-Instruct
+[2026-10-21 09:36:53] === a100_prefill / Qwen/Qwen2-7B-Instruct engine={'no_enforce_eager': None, 'max_num_batched_tokens': 8192, 'max_model_len': 10240}
+[2026-10-21 09:36:53] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A100_prov/a100_prefill/Qwen2-7B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_num_batched_tokens 8192 --max_model_len 10240 --duration_s 15.0
+[2026-10-21 09:37:02] WARNING rc=1 -> logs/A100_prov/a100_prefill/Qwen2-7B-Instruct/idle/run.log
+[2026-10-21 09:37:02] [skip] no idle baseline for logs/A100_prov/a100_prefill/Qwen2-7B-Instruct
+[2026-10-21 09:37:02] === a100_ladder_eager / Qwen/Qwen2.5-0.5B-Instruct engine={}
+[2026-10-21 09:37:02] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2.5-0.5B-Instruct --dtype float16 --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 15.0
+[2026-10-21 09:37:11] WARNING rc=1 -> logs/A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/idle/run.log
+[2026-10-21 09:37:11] [skip] no idle baseline for logs/A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct
+[2026-10-21 09:37:11] === a100_ladder_eager / Qwen/Qwen2.5-1.5B-Instruct engine={}
+[2026-10-21 09:37:11] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2.5-1.5B-Instruct --dtype float16 --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 15.0
+[2026-10-21 09:37:20] WARNING rc=1 -> logs/A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/idle/run.log
+[2026-10-21 09:37:20] [skip] no idle baseline for logs/A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct
+[2026-10-21 09:37:20] === a100_ladder_eager / Qwen/Qwen2.5-3B-Instruct engine={}
+[2026-10-21 09:37:20] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2.5-3B-Instruct --dtype float16 --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 15.0
+[2026-10-21 09:37:28] WARNING rc=1 -> logs/A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/idle/run.log
+[2026-10-21 09:37:28] [skip] no idle baseline for logs/A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct
+[2026-10-21 09:37:28] === a100_ladder_eager / Qwen/Qwen2.5-7B-Instruct engine={}
+[2026-10-21 09:37:28] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2.5-7B-Instruct --dtype float16 --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 15.0
+[2026-10-21 09:37:37] WARNING rc=1 -> logs/A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/idle/run.log
+[2026-10-21 09:37:37] [skip] no idle baseline for logs/A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct
+[2026-10-21 09:37:37] === a100_ladder_eager / Qwen/Qwen2.5-14B-Instruct engine={}
+[2026-10-21 09:37:37] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2.5-14B-Instruct --dtype float16 --run_dir logs/A100_prov/a100_ladder_eager/Qwen2.5-14B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 15.0
+[2026-10-21 09:37:46] WARNING rc=1 -> logs/A100_prov/a100_ladder_eager/Qwen2.5-14B-Instruct/idle/run.log
+[2026-10-21 09:37:46] [skip] no idle baseline for logs/A100_prov/a100_ladder_eager/Qwen2.5-14B-Instruct
+[2026-10-21 09:37:46] PROVISIONING SWEEP DONE (a100_longctx,a100_prefill,a100_ladder_eager)
+==== A100 job done Wed Oct 21 09:37:46 PDT 2026 ====
