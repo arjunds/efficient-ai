@@ -1,0 +1,30 @@
+{
+  "mode": "load",
+  "completed_requests": 707,
+  "generated_tokens_window": 109616,
+  "window_duration_s": 51.164268255233765,
+  "aggregate_tokens_per_sec": 2142.4326729970776,
+  "avg_power_window_w": 298.73620867687475,
+  "energy_window_j": 15284.822922885203,
+  "energy_window_source": "inst",
+  "dram_rows_filled": 0,
+  "nvml_summary": {
+    "gpu_name": "NVIDIA RTX A6000",
+    "power_limit_w": 300.0,
+    "metered_gpus": [
+      0
+    ],
+    "power_limit_total_w": 300.0,
+    "have_power_instant": true,
+    "have_energy_counter": true,
+    "n_samples": 5749,
+    "duration_s": 57.71477270126343,
+    "mean_power_w": 297.0246455035658,
+    "median_power_w": 298.788,
+    "max_power_w": 300.985,
+    "min_power_w": 153.145
+  },
+  "dram_backend": null,
+  "dram_total_bytes": null,
+  "peak_hbm_bw_bytes_per_s": null
+}

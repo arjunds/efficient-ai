@@ -1,0 +1,459 @@
+==== A100 job Wed Oct 21 09:57:25 PDT 2026 host=a6000-energy-q2vpm stages=probe,idle_states,microbench,serve,analyze arms=gpu_graphs,gpu_eager,gpu_highconc,gpu_longctx ====
+=== [probe] ===
+name, pci.bus_id, power.limit [W], enforced.power.limit [W], power.default_limit [W], power.max_limit [W], clocks.max.sm [MHz], clocks.max.memory [MHz], memory.total [MiB], driver_version
+NVIDIA RTX A6000, 00000000:61:00.0, 300.00 W, 300.00 W, 300.00 W, 300.00 W, 2100 MHz, 8001 MHz, 49140 MiB, 565.57.01
+<stdin>:1: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+name NVIDIA RTX A6000
+POWER_INSTANT field 186: 0
+energy counter mJ over 2 s: 658155456089 658155516508 -> W 30.2095 | GetPowerUsage W 30.48
+power limit settable? (expect no): [100000, 300000]
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+vllm 0.10.2 torch 2.8.0+cu128 transformers 4.56.1
+--- ncu permission probe
+=== [idle_states] no process / CUDA context / vLLM loaded / after shutdown / decay ===
+[1_no_process] {"p_avg_w": 32.510491497304024, "p_inst_w": 32.37669888013273, "p_energy_w": 2.1954889155304156, "sm_mhz": 228.4529240978847, "mem_mhz": 416.9265864786396, "pstate_min": 5, "pstate_max": 8, "duration_s": 29.979199409484863, "n": 2411}
+[2_cuda_context] {"p_avg_w": 73.03900196695515, "p_inst_w": 71.87709952793077, "p_energy_w": 4.598088286110248, "sm_mhz": 1100.9598741148702, "mem_mhz": 4433.287962234461, "pstate_min": 2, "pstate_max": 8, "duration_s": 29.991159677505493, "n": 2542}
+INFO 10-21 09:58:46 [__init__.py:216] Automatically detected platform cuda.
+INFO 10-21 09:58:47 [utils.py:328] non-default args: {'dtype': 'float16', 'max_model_len': 4096, 'disable_log_stats': True, 'model': 'Qwen/Qwen2-7B-Instruct'}
+INFO 10-21 09:58:58 [__init__.py:742] Resolved architecture: Qwen2ForCausalLM
+`torch_dtype` is deprecated! Use `dtype` instead!
+WARNING 10-21 09:58:58 [__init__.py:2767] Casting torch.bfloat16 to torch.float16.
+INFO 10-21 09:58:58 [__init__.py:1815] Using max model len 4096
+INFO 10-21 09:58:58 [scheduler.py:222] Chunked prefill is enabled with max_num_batched_tokens=8192.
+WARNING 10-21 09:58:59 [__init__.py:2974] We must use the `spawn` multiprocessing start method. Overriding VLLM_WORKER_MULTIPROC_METHOD to 'spawn'. See https://docs.vllm.ai/en/latest/usage/troubleshooting.html#python-multiprocessing for more information. Reasons: CUDA is initialized
+INFO 10-21 09:59:06 [__init__.py:216] Automatically detected platform cuda.
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 09:59:07 [core.py:654] Waiting for init message from front-end.
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 09:59:07 [core.py:76] Initializing a V1 LLM engine (v0.10.2) with config: model='Qwen/Qwen2-7B-Instruct', speculative_config=None, tokenizer='Qwen/Qwen2-7B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.float16, max_seq_len=4096, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, decoding_config=DecodingConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_backend=''), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=0, served_model_name=Qwen/Qwen2-7B-Instruct, enable_prefix_caching=True, chunked_prefill_enabled=True, use_async_output_proc=True, pooler_config=None, compilation_config={"level":3,"debug_dump_path":"","cache_dir":"","backend":"","custom_ops":[],"splitting_ops":["vllm.unified_attention","vllm.unified_attention_with_output","vllm.mamba_mixer2","vllm.mamba_mixer","vllm.short_conv","vllm.linear_attention","vllm.plamo2_mamba_mixer","vllm.gdn_attention"],"use_inductor":true,"compile_sizes":[],"inductor_compile_config":{"enable_auto_functionalized_v2":false},"inductor_passes":{},"cudagraph_mode":1,"use_cudagraph":true,"cudagraph_num_of_warmups":1,"cudagraph_capture_sizes":[512,504,496,488,480,472,464,456,448,440,432,424,416,408,400,392,384,376,368,360,352,344,336,328,320,312,304,296,288,280,272,264,256,248,240,232,224,216,208,200,192,184,176,168,160,152,144,136,128,120,112,104,96,88,80,72,64,56,48,40,32,24,16,8,4,2,1],"cudagraph_copy_inputs":false,"full_cuda_graph":false,"pass_config":{},"max_capture_size":512,"local_cache_dir":null}
+[1;36m(EngineCore_DP0 pid=348)[0;0m W1021 09:59:10.178000 348 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=348)[0;0m W1021 09:59:10.178000 348 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[W1021 09:59:11.575599259 ProcessGroupNCCL.cpp:981] Warning: TORCH_NCCL_AVOID_RECORD_STREAMS is the default now, this environment variable is thus deprecated. (function operator())
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 09:59:11 [parallel_state.py:1165] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 09:59:11 [topk_topp_sampler.py:58] Using FlashInfer for top-p & top-k sampling.
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 09:59:11 [gpu_model_runner.py:2338] Starting to load model Qwen/Qwen2-7B-Instruct...
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 09:59:11 [gpu_model_runner.py:2370] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 09:59:11 [cuda.py:362] Using Flash Attention backend on V1 engine.
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 09:59:12 [weight_utils.py:348] Using model weights format ['*.safetensors']
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 09:59:12 [weight_utils.py:369] Time spent downloading weights for Qwen/Qwen2-7B-Instruct: 0.644047 seconds
+[1;36m(EngineCore_DP0 pid=348)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
+[1;36m(EngineCore_DP0 pid=348)[0;0m Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:30<01:32, 30.82s/it]
+[1;36m(EngineCore_DP0 pid=348)[0;0m Loading safetensors checkpoint shards:  50% Completed | 2/4 [01:52<02:01, 60.85s/it]
+[1;36m(EngineCore_DP0 pid=348)[0;0m Loading safetensors checkpoint shards:  75% Completed | 3/4 [02:26<00:48, 48.57s/it]
+[1;36m(EngineCore_DP0 pid=348)[0;0m Loading safetensors checkpoint shards: 100% Completed | 4/4 [03:01<00:00, 43.07s/it]
+[1;36m(EngineCore_DP0 pid=348)[0;0m Loading safetensors checkpoint shards: 100% Completed | 4/4 [03:01<00:00, 45.32s/it]
+[1;36m(EngineCore_DP0 pid=348)[0;0m 
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 10:02:14 [default_loader.py:268] Loading weights took 181.38 seconds
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 10:02:14 [gpu_model_runner.py:2392] Model loading took 14.2488 GiB and 182.417716 seconds
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 10:02:18 [backends.py:539] Using cache directory: /tmp/vllm_cache/torch_compile_cache/5114a53643/rank_0_0/backbone for vLLM's torch.compile
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 10:02:18 [backends.py:550] Dynamo bytecode transform time: 3.55 s
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 10:02:20 [backends.py:194] Cache the graph for dynamic shape for later use
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 10:02:33 [backends.py:215] Compiling a graph for dynamic shape takes 14.70 s
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 10:02:34 [monitor.py:34] torch.compile takes 18.24 s in total
+[1;36m(EngineCore_DP0 pid=348)[0;0m [rank0]:W1021 10:02:35.153000 348 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=348)[0;0m [rank0]:W1021 10:02:35.153000 348 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=348)[0;0m [rank0]:W1021 10:02:35.159000 348 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=348)[0;0m [rank0]:W1021 10:02:35.159000 348 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 10:02:35 [gpu_worker.py:298] Available KV cache memory: 27.30 GiB
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 10:02:36 [kv_cache_utils.py:864] GPU KV cache size: 511,088 tokens
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 10:02:36 [kv_cache_utils.py:868] Maximum concurrency for 4,096 tokens per request: 124.78x
+[1;36m(EngineCore_DP0 pid=348)[0;0m Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/67 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   3%|▎         | 2/67 [00:00<00:05, 10.91it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   6%|▌         | 4/67 [00:00<00:05, 11.09it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   9%|▉         | 6/67 [00:00<00:05, 11.82it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  12%|█▏        | 8/67 [00:00<00:04, 12.07it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  15%|█▍        | 10/67 [00:00<00:04, 12.33it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  18%|█▊        | 12/67 [00:00<00:04, 12.46it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  21%|██        | 14/67 [00:01<00:04, 12.46it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  24%|██▍       | 16/67 [00:01<00:04, 12.60it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  27%|██▋       | 18/67 [00:01<00:03, 12.68it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  30%|██▉       | 20/67 [00:01<00:03, 12.80it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  33%|███▎      | 22/67 [00:01<00:03, 13.03it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  36%|███▌      | 24/67 [00:01<00:03, 13.27it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  39%|███▉      | 26/67 [00:02<00:03, 13.63it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  42%|████▏     | 28/67 [00:02<00:02, 13.97it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  45%|████▍     | 30/67 [00:02<00:02, 14.19it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  48%|████▊     | 32/67 [00:02<00:02, 14.28it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  51%|█████     | 34/67 [00:02<00:02, 15.30it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  54%|█████▎    | 36/67 [00:02<00:01, 16.29it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  57%|█████▋    | 38/67 [00:02<00:01, 17.07it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  60%|█████▉    | 40/67 [00:02<00:01, 17.76it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  63%|██████▎   | 42/67 [00:02<00:01, 17.97it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  67%|██████▋   | 45/67 [00:03<00:01, 19.01it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  72%|███████▏  | 48/67 [00:03<00:00, 19.55it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  76%|███████▌  | 51/67 [00:03<00:00, 20.71it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  81%|████████  | 54/67 [00:03<00:00, 21.65it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  85%|████████▌ | 57/67 [00:03<00:00, 22.06it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  90%|████████▉ | 60/67 [00:03<00:00, 22.92it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  94%|█████████▍| 63/67 [00:03<00:00, 23.55it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  99%|█████████▊| 66/67 [00:04<00:00, 23.69it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 67/67 [00:04<00:00, 16.45it/s]
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 10:02:40 [gpu_model_runner.py:3118] Graph capturing finished in 5 secs, took 0.50 GiB
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 10:02:40 [gpu_worker.py:391] Free memory on device (46.82/47.43 GiB) on startup. Desired GPU memory utilization is (0.9, 42.69 GiB). Actual usage is 14.25 GiB for weight, 1.13 GiB for peak activation, 0.02 GiB for non-torch memory, and 0.5 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=28610362572` to fit into requested memory, or `--kv-cache-memory=33047949312` to fully utilize gpu memory. Current kv cache memory in use is 29308714188 bytes.
+[1;36m(EngineCore_DP0 pid=348)[0;0m INFO 10-21 10:02:40 [core.py:218] init engine (profile, create kv cache, warmup model) took 26.19 seconds
+INFO 10-21 10:02:41 [llm.py:295] Supported_tasks: ['generate']
+INFO 10-21 10:02:41 [__init__.py:36] No IOProcessor plugins requested by the model
+WARNING 10-21 10:02:41 [__init__.py:1695] Default sampling parameters have been overridden by the model's Hugging Face generation config recommended from the model creator. If this is not intended, please relaunch vLLM instance with `--generation-config vllm`.
+[3_vllm_loaded] {"p_avg_w": 85.82119492549336, "p_inst_w": 84.08974224728152, "p_energy_w": 5.0453817887311105, "sm_mhz": 1066.2867498993153, "mem_mhz": 4266.408779701974, "pstate_min": 2, "pstate_max": 8, "duration_s": 29.979891777038574, "n": 2483}
+[rank0]:[W1021 10:03:14.426399741 ProcessGroupNCCL.cpp:1538] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[4_after_shutdown] {"p_avg_w": 45.18219983552632, "p_inst_w": 43.50226973684211, "p_energy_w": 3.0718768680553024, "sm_mhz": 293.5053453947368, "mem_mhz": 853.4222861842105, "pstate_min": 2, "pstate_max": 8, "duration_s": 29.987204551696777, "n": 2432}
+[5_decay_trace] [{"t": 10, "p_w": 33.863824189526184, "sm_mhz": 210.0}, {"t": 20, "p_w": 33.86820448877806, "sm_mhz": 210.0}, {"t": 30, "p_w": 33.570921641791045, "sm_mhz": 210.0}, {"t": 40, "p_w": 33.03972851805729, "sm_mhz": 210.0}, {"t": 50, "p_w": 32.57484184308842, "sm_mhz": 210.0}, {"t": 60, "p_w": 32.53073848069739, "sm_mhz": 210.0}, {"t": 70, "p_w": 32.08600374064838, "sm_mhz": 210.0}, {"t": 80, "p_w": 31.766937578027466, "sm_mhz": 210.0}, {"t": 90, "p_w": 31.59557160647572, "sm_mhz": 210.0}]
+wrote logs/A6000_prov/idle_states.json
+=== [microbench] steady + duty-cycle (A100 HBM2e J/byte, power roof) ===
+GPU: {"name": "NVIDIA RTX A6000", "driver": "565.57.01", "power_limit_enforced_w": 300.0, "power_limit_default_w": 300.0, "power_limit_range_w": [100.0, 300.0], "max_sm_mhz": 2100.0, "max_mem_mhz": 8001.0, "mem_bus_width_bits": 384.0, "sm_count": 84, "l2_bytes": 6291456, "total_mem_bytes": 50925535232, "cc": "8.6", "have_power_instant_field": true, "have_energy_counter": true, "torch": "2.8.0+cu128", "triton": "3.4.0"}
+idle_deep(pre): {"n_samples": 999, "p_energy_w": 2.535491651030434, "energy_counter_updates": 100, "energy_counter_period_s": 0.09989894038499003, "p_inst_w": 32.52465365365365, "p_avg_w": 32.533630700778644, "sm_mhz": 210.0, "mem_mhz": 405.0, "temp_c": 39.748748748748746, "frac_sw_power_cap": 0.0, "frac_thermal": 0.0, "frac_hw_slowdown": 0.0, "p_w": 32.52465365365365, "energy_counter_over_inst": 0.07795599233831073, "duration_s": 10.000266075134277, "waited_s": 21.004090785980225}
+idle_p0(pre): {"n_samples": 1000, "p_energy_w": 42.75231322347139, "energy_counter_updates": 100, "energy_counter_period_s": 0.09999931460679179, "p_inst_w": 106.71958000000001, "p_avg_w": 106.72027111111112, "sm_mhz": 1800.0, "mem_mhz": 7601.0, "temp_c": 43.443, "frac_sw_power_cap": 0.0, "frac_thermal": 0.0, "frac_hw_slowdown": 0.0, "p_w": 106.71958000000001, "energy_counter_over_inst": 0.4006042117432564, "duration_s": 10.004692792892456}
+=== duty ===
+  [duty dram_stream r0 d=0.000] P=108.00 W  rate=0.000e+00/s  duty_act=0.000  burst_rate=7.055e+11  sm=1800 mem=7601  cap=0.00  T=45
+  [duty dram_stream r0 d=0.015] P=112.02 W  rate=1.056e+10/s  duty_act=0.016  burst_rate=6.583e+11  sm=1800 mem=7601  cap=0.00  T=46
+  [duty dram_stream r0 d=0.030] P=115.66 W  rate=2.112e+10/s  duty_act=0.032  burst_rate=6.600e+11  sm=1800 mem=7601  cap=0.00  T=48
+  [duty dram_stream r0 d=0.045] P=120.98 W  rate=3.167e+10/s  duty_act=0.048  burst_rate=6.618e+11  sm=1800 mem=7601  cap=0.00  T=49
+  [duty dram_stream r0 d=0.060] P=123.95 W  rate=4.217e+10/s  duty_act=0.064  burst_rate=6.610e+11  sm=1800 mem=7601  cap=0.00  T=50
+  [duty dram_stream r0 d=0.075] P=126.85 W  rate=5.269e+10/s  duty_act=0.079  burst_rate=6.638e+11  sm=1800 mem=7601  cap=0.00  T=51
+  [duty dram_stream r1 d=0.000] P=117.03 W  rate=0.000e+00/s  duty_act=0.000  burst_rate=7.040e+11  sm=1800 mem=7601  cap=0.00  T=51
+  [duty dram_stream r1 d=0.015] P=119.65 W  rate=1.057e+10/s  duty_act=0.016  burst_rate=6.665e+11  sm=1800 mem=7601  cap=0.00  T=52
+  [duty dram_stream r1 d=0.030] P=122.06 W  rate=2.113e+10/s  duty_act=0.032  burst_rate=6.672e+11  sm=1800 mem=7601  cap=0.00  T=52
+  [duty dram_stream r1 d=0.045] P=124.60 W  rate=3.167e+10/s  duty_act=0.047  burst_rate=6.672e+11  sm=1800 mem=7601  cap=0.00  T=53
+  [duty dram_stream r1 d=0.060] P=127.14 W  rate=4.216e+10/s  duty_act=0.064  burst_rate=6.625e+11  sm=1800 mem=7601  cap=0.00  T=53
+  [duty dram_stream r1 d=0.075] P=125.13 W  rate=5.207e+10/s  duty_act=0.079  burst_rate=6.631e+11  sm=1800 mem=7601  cap=0.00  T=54
+  ==> dram_stream: e = 2.7397e-10 ± 5.4e-11 J/byte  floor a = 113.05 W  R2=0.7212  per-repeat e = [3.670694e-10, 1.800009e-10]
+  [duty l2_stream_half r0 d=0.000] P=114.46 W  rate=0.000e+00/s  duty_act=0.000  burst_rate=2.380e+12  sm=1800 mem=7601  cap=0.00  T=54
+  [duty l2_stream_half r0 d=0.015] P=116.63 W  rate=3.514e+10/s  duty_act=0.029  burst_rate=1.200e+12  sm=1800 mem=7601  cap=0.00  T=54
+  [duty l2_stream_half r0 d=0.030] P=118.86 W  rate=6.907e+10/s  duty_act=0.055  burst_rate=1.267e+12  sm=1800 mem=7601  cap=0.00  T=54
+  [duty l2_stream_half r0 d=0.045] P=120.23 W  rate=8.800e+10/s  duty_act=0.068  burst_rate=1.300e+12  sm=1800 mem=7601  cap=0.00  T=54
+  [duty l2_stream_half r0 d=0.060] P=122.24 W  rate=1.206e+11/s  duty_act=0.065  burst_rate=1.854e+12  sm=1800 mem=7601  cap=0.00  T=54
+  [duty l2_stream_half r0 d=0.075] P=122.93 W  rate=1.312e+11/s  duty_act=0.069  burst_rate=1.899e+12  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l2_stream_half r1 d=0.000] P=115.18 W  rate=0.000e+00/s  duty_act=0.000  burst_rate=2.359e+12  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l2_stream_half r1 d=0.015] P=117.42 W  rate=3.520e+10/s  duty_act=0.025  burst_rate=1.403e+12  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l2_stream_half r1 d=0.030] P=119.83 W  rate=6.934e+10/s  duty_act=0.054  burst_rate=1.292e+12  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l2_stream_half r1 d=0.045] P=121.89 W  rate=1.038e+11/s  duty_act=0.061  burst_rate=1.703e+12  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l2_stream_half r1 d=0.060] P=123.09 W  rate=1.282e+11/s  duty_act=0.068  burst_rate=1.897e+12  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l2_stream_half r1 d=0.075] P=122.94 W  rate=1.191e+11/s  duty_act=0.064  burst_rate=1.853e+12  sm=1800 mem=7601  cap=0.00  T=55
+  ==> l2_stream_half: e = 6.3806e-11 ± 2.9e-12 J/byte  floor a = 114.83 W  R2=0.9920  per-repeat e = [6.45387e-11, 6.31841e-11]
+  [duty l1_stream_8KBperprog r0 d=0.000] P=116.02 W  rate=0.000e+00/s  duty_act=0.000  burst_rate=1.180e+13  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l1_stream_8KBperprog r0 d=0.015] P=119.18 W  rate=1.522e+11/s  duty_act=0.029  burst_rate=5.226e+12  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l1_stream_8KBperprog r0 d=0.030] P=120.30 W  rate=1.922e+11/s  duty_act=0.032  burst_rate=5.925e+12  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l1_stream_8KBperprog r0 d=0.045] P=120.58 W  rate=1.895e+11/s  duty_act=0.031  burst_rate=6.078e+12  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l1_stream_8KBperprog r0 d=0.060] P=120.66 W  rate=1.922e+11/s  duty_act=0.031  burst_rate=6.158e+12  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l1_stream_8KBperprog r0 d=0.075] P=120.57 W  rate=1.896e+11/s  duty_act=0.031  burst_rate=6.119e+12  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l1_stream_8KBperprog r1 d=0.000] P=116.37 W  rate=0.000e+00/s  duty_act=0.000  burst_rate=1.201e+13  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l1_stream_8KBperprog r1 d=0.015] P=120.28 W  rate=1.714e+11/s  duty_act=0.031  burst_rate=5.469e+12  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l1_stream_8KBperprog r1 d=0.030] P=120.70 W  rate=1.815e+11/s  duty_act=0.031  burst_rate=5.854e+12  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l1_stream_8KBperprog r1 d=0.045] P=120.98 W  rate=1.869e+11/s  duty_act=0.030  burst_rate=6.142e+12  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l1_stream_8KBperprog r1 d=0.060] P=121.01 W  rate=1.922e+11/s  duty_act=0.033  burst_rate=5.894e+12  sm=1800 mem=7601  cap=0.00  T=55
+  [duty l1_stream_8KBperprog r1 d=0.075] P=120.65 W  rate=1.843e+11/s  duty_act=0.031  burst_rate=5.935e+12  sm=1800 mem=7601  cap=0.00  T=56
+  ==> l1_stream_8KBperprog: e = 2.3725e-11 ± 1.1e-12 J/byte  floor a = 116.20 W  R2=0.9918  per-repeat e = [2.40732e-11]
+  [duty gemv_b1 r0 d=0.000] P=116.64 W  rate=0.000e+00/s  duty_act=0.000  burst_rate=6.735e+11  sm=1800 mem=7601  cap=0.00  T=55
+  [duty gemv_b1 r0 d=0.015] P=119.42 W  rate=1.013e+10/s  duty_act=0.016  burst_rate=6.419e+11  sm=1800 mem=7601  cap=0.00  T=55
+  [duty gemv_b1 r0 d=0.030] P=121.53 W  rate=2.026e+10/s  duty_act=0.032  burst_rate=6.426e+11  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemv_b1 r0 d=0.045] P=124.10 W  rate=3.024e+10/s  duty_act=0.054  burst_rate=5.627e+11  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemv_b1 r0 d=0.060] P=126.92 W  rate=4.047e+10/s  duty_act=0.063  burst_rate=6.454e+11  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemv_b1 r0 d=0.075] P=129.91 W  rate=5.049e+10/s  duty_act=0.078  burst_rate=6.455e+11  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemv_b1 r1 d=0.000] P=116.80 W  rate=0.000e+00/s  duty_act=0.000  burst_rate=6.764e+11  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemv_b1 r1 d=0.015] P=119.23 W  rate=1.013e+10/s  duty_act=0.016  burst_rate=6.427e+11  sm=1800 mem=7601  cap=0.00  T=55
+  [duty gemv_b1 r1 d=0.030] P=121.93 W  rate=2.026e+10/s  duty_act=0.032  burst_rate=6.415e+11  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemv_b1 r1 d=0.045] P=124.35 W  rate=3.036e+10/s  duty_act=0.047  burst_rate=6.426e+11  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemv_b1 r1 d=0.060] P=127.08 W  rate=4.046e+10/s  duty_act=0.063  burst_rate=6.421e+11  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemv_b1 r1 d=0.075] P=129.90 W  rate=5.052e+10/s  duty_act=0.078  burst_rate=6.458e+11  sm=1800 mem=7601  cap=0.00  T=56
+  ==> gemv_b1: e = 2.5913e-10 ± 3.1e-12 J/byte  floor a = 116.63 W  R2=0.9987  per-repeat e = [2.595951e-10, 2.585677e-10]
+  [duty gemm_fp16_4096 r0 d=0.000] P=116.80 W  rate=0.000e+00/s  duty_act=0.000  burst_rate=1.242e+14  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemm_fp16_4096 r0 d=0.015] P=121.53 W  rate=1.863e+12/s  duty_act=0.016  burst_rate=1.178e+14  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemm_fp16_4096 r0 d=0.030] P=126.40 W  rate=3.710e+12/s  duty_act=0.031  burst_rate=1.179e+14  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemm_fp16_4096 r0 d=0.045] P=131.22 W  rate=5.565e+12/s  duty_act=0.047  burst_rate=1.174e+14  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemm_fp16_4096 r0 d=0.060] P=136.13 W  rate=7.421e+12/s  duty_act=0.063  burst_rate=1.174e+14  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemm_fp16_4096 r0 d=0.075] P=141.35 W  rate=9.244e+12/s  duty_act=0.079  burst_rate=1.173e+14  sm=1800 mem=7601  cap=0.00  T=57
+  [duty gemm_fp16_4096 r1 d=0.000] P=116.99 W  rate=0.000e+00/s  duty_act=0.000  burst_rate=1.241e+14  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemm_fp16_4096 r1 d=0.015] P=121.69 W  rate=1.859e+12/s  duty_act=0.016  burst_rate=1.174e+14  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemm_fp16_4096 r1 d=0.030] P=126.29 W  rate=3.718e+12/s  duty_act=0.032  burst_rate=1.171e+14  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemm_fp16_4096 r1 d=0.045] P=131.30 W  rate=5.574e+12/s  duty_act=0.048  burst_rate=1.172e+14  sm=1800 mem=7601  cap=0.00  T=56
+  [duty gemm_fp16_4096 r1 d=0.060] P=136.30 W  rate=7.414e+12/s  duty_act=0.063  burst_rate=1.173e+14  sm=1800 mem=7601  cap=0.00  T=57
+  [duty gemm_fp16_4096 r1 d=0.075] P=141.47 W  rate=9.258e+12/s  duty_act=0.079  burst_rate=1.173e+14  sm=1800 mem=7601  cap=0.00  T=57
+  ==> gemm_fp16_4096: e = 2.6442e-12 ± 1.8e-14 J/flop  floor a = 116.70 W  R2=0.9995  per-repeat e = [2.6465e-12, 2.6419e-12]
+=== stream ===
+  [stream_L1ca_5.2MB r0] P=203.8 W (inst 203.8, avg 203.8)  dyn=171.3 W  BW=12637.3 GB/s  TF=0.00  sm=1365 mem=7601 MHz  T=60C  cap=1.00  J/B=1.355e-11
+  [stream_L1ca_5.2MB r1] P=204.6 W (inst 204.6, avg 204.6)  dyn=172.1 W  BW=12628.2 GB/s  TF=0.00  sm=1365 mem=7601 MHz  T=61C  cap=1.00  J/B=1.363e-11
+  [stream_L1ca_10.5MB r0] P=230.7 W (inst 230.7, avg 230.7)  dyn=198.2 W  BW=11510.2 GB/s  TF=0.00  sm=1523 mem=7601 MHz  T=63C  cap=1.00  J/B=1.722e-11
+  [stream_L1ca_10.5MB r1] P=230.8 W (inst 230.8, avg 230.8)  dyn=198.3 W  BW=11532.2 GB/s  TF=0.00  sm=1532 mem=7601 MHz  T=64C  cap=1.00  J/B=1.719e-11
+  [stream_cg_0.25MB r0] P=238.3 W (inst 238.3, avg 238.4)  dyn=205.8 W  BW=1264.7 GB/s  TF=0.00  sm=1905 mem=7601 MHz  T=66C  cap=0.00  J/B=1.627e-10
+  [stream_cg_0.25MB r1] P=237.1 W (inst 237.1, avg 237.1)  dyn=204.6 W  BW=1244.2 GB/s  TF=0.00  sm=1905 mem=7601 MHz  T=66C  cap=0.00  J/B=1.644e-10
+  [stream_cg_1.00MB r0] P=298.4 W (inst 298.4, avg 298.5)  dyn=265.9 W  BW=2379.0 GB/s  TF=0.00  sm=1858 mem=7601 MHz  T=69C  cap=1.00  J/B=1.118e-10
+  [stream_cg_1.00MB r1] P=298.5 W (inst 298.5, avg 298.3)  dyn=266.0 W  BW=2371.9 GB/s  TF=0.00  sm=1854 mem=7601 MHz  T=70C  cap=1.00  J/B=1.121e-10
+  [stream_cg_2.00MB r0] P=298.9 W (inst 298.9, avg 298.9)  dyn=266.4 W  BW=2453.9 GB/s  TF=0.00  sm=1843 mem=7601 MHz  T=71C  cap=1.00  J/B=1.086e-10
+  [stream_cg_2.00MB r1] P=298.8 W (inst 298.8, avg 298.8)  dyn=266.2 W  BW=2454.4 GB/s  TF=0.00  sm=1841 mem=7601 MHz  T=71C  cap=1.00  J/B=1.085e-10
+  [stream_cg_3.00MB r0] P=299.4 W (inst 299.4, avg 299.4)  dyn=266.9 W  BW=2518.6 GB/s  TF=0.00  sm=1828 mem=7601 MHz  T=71C  cap=1.00  J/B=1.060e-10
+  [stream_cg_3.00MB r1] P=299.1 W (inst 299.1, avg 299.1)  dyn=266.6 W  BW=2519.6 GB/s  TF=0.00  sm=1828 mem=7601 MHz  T=72C  cap=1.00  J/B=1.058e-10
+  [stream_cg_4.50MB r0] P=298.5 W (inst 298.5, avg 298.6)  dyn=266.0 W  BW=2117.7 GB/s  TF=0.00  sm=1866 mem=7601 MHz  T=72C  cap=1.00  J/B=1.256e-10
+  [stream_cg_4.50MB r1] P=298.5 W (inst 298.5, avg 298.5)  dyn=265.9 W  BW=2122.2 GB/s  TF=0.00  sm=1865 mem=7601 MHz  T=72C  cap=1.00  J/B=1.253e-10
+  [stream_cg_6.00MB r0] P=298.7 W (inst 298.7, avg 298.7)  dyn=266.2 W  BW=2417.4 GB/s  TF=0.00  sm=1838 mem=7601 MHz  T=72C  cap=1.00  J/B=1.101e-10
+  [stream_cg_6.00MB r1] P=298.8 W (inst 298.8, avg 298.8)  dyn=266.3 W  BW=2416.0 GB/s  TF=0.00  sm=1838 mem=7601 MHz  T=72C  cap=1.00  J/B=1.102e-10
+  [stream_cg_12.00MB r0] P=297.7 W (inst 297.7, avg 297.7)  dyn=265.2 W  BW=1245.1 GB/s  TF=0.00  sm=1883 mem=7601 MHz  T=71C  cap=1.00  J/B=2.130e-10
+  [stream_cg_12.00MB r1] P=297.6 W (inst 297.6, avg 297.7)  dyn=265.1 W  BW=1244.8 GB/s  TF=0.00  sm=1883 mem=7601 MHz  T=71C  cap=1.00  J/B=2.130e-10
+  [stream_cg_24.00MB r0] P=299.3 W (inst 299.3, avg 299.3)  dyn=266.8 W  BW=786.6 GB/s  TF=0.00  sm=1860 mem=7601 MHz  T=70C  cap=1.00  J/B=3.392e-10
+  [stream_cg_24.00MB r1] P=299.3 W (inst 299.3, avg 299.3)  dyn=266.8 W  BW=786.8 GB/s  TF=0.00  sm=1860 mem=7601 MHz  T=71C  cap=1.00  J/B=3.391e-10
+  [stream_cg_64.00MB r0] P=299.2 W (inst 299.2, avg 299.3)  dyn=266.7 W  BW=711.9 GB/s  TF=0.00  sm=1857 mem=7601 MHz  T=71C  cap=1.00  J/B=3.747e-10
+  [stream_cg_64.00MB r1] P=299.3 W (inst 299.3, avg 299.3)  dyn=266.8 W  BW=711.6 GB/s  TF=0.00  sm=1857 mem=7601 MHz  T=71C  cap=1.00  J/B=3.749e-10
+  [stream_cg_256.00MB r0] P=299.3 W (inst 299.3, avg 299.3)  dyn=266.8 W  BW=711.5 GB/s  TF=0.00  sm=1859 mem=7601 MHz  T=71C  cap=1.00  J/B=3.750e-10
+  [stream_cg_256.00MB r1] P=299.2 W (inst 299.2, avg 299.3)  dyn=266.7 W  BW=711.4 GB/s  TF=0.00  sm=1858 mem=7601 MHz  T=71C  cap=1.00  J/B=3.749e-10
+  [stream_cg_1024.00MB r0] P=299.3 W (inst 299.3, avg 299.3)  dyn=266.7 W  BW=711.4 GB/s  TF=0.00  sm=1857 mem=7601 MHz  T=71C  cap=1.00  J/B=3.750e-10
+  [stream_cg_1024.00MB r1] P=299.3 W (inst 299.3, avg 299.2)  dyn=266.8 W  BW=711.4 GB/s  TF=0.00  sm=1857 mem=7601 MHz  T=71C  cap=1.00  J/B=3.750e-10
+  [stream_cg_4096.00MB r0] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.7 W  BW=711.4 GB/s  TF=0.00  sm=1858 mem=7601 MHz  T=71C  cap=1.00  J/B=3.749e-10
+  [stream_cg_4096.00MB r1] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.7 W  BW=711.4 GB/s  TF=0.00  sm=1858 mem=7601 MHz  T=71C  cap=1.00  J/B=3.749e-10
+=== grid ===
+  [grid_10prog r0] P=226.5 W (inst 226.5, avg 226.5)  dyn=194.0 W  BW=224.5 GB/s  TF=0.00  sm=1890 mem=7601 MHz  T=68C  cap=0.00  J/B=8.643e-10
+  [grid_21prog r0] P=266.6 W (inst 266.6, avg 266.6)  dyn=234.1 W  BW=453.0 GB/s  TF=0.00  sm=1890 mem=7601 MHz  T=68C  cap=0.00  J/B=5.167e-10
+  [grid_42prog r0] P=298.8 W (inst 298.8, avg 298.9)  dyn=266.3 W  BW=677.2 GB/s  TF=0.00  sm=1879 mem=7601 MHz  T=70C  cap=1.00  J/B=3.932e-10
+  [grid_84prog r0] P=299.0 W (inst 299.0, avg 299.0)  dyn=266.4 W  BW=709.9 GB/s  TF=0.00  sm=1876 mem=7601 MHz  T=70C  cap=1.00  J/B=3.753e-10
+  [grid_168prog r0] P=298.9 W (inst 298.9, avg 298.9)  dyn=266.4 W  BW=711.5 GB/s  TF=0.00  sm=1875 mem=7601 MHz  T=71C  cap=1.00  J/B=3.744e-10
+  [grid_336prog r0] P=299.0 W (inst 299.0, avg 299.1)  dyn=266.5 W  BW=710.9 GB/s  TF=0.00  sm=1862 mem=7601 MHz  T=71C  cap=1.00  J/B=3.748e-10
+  [grid_672prog r0] P=299.3 W (inst 299.3, avg 299.4)  dyn=266.8 W  BW=711.2 GB/s  TF=0.00  sm=1859 mem=7601 MHz  T=71C  cap=1.00  J/B=3.751e-10
+=== vendor ===
+  [torch_sum_1GB r0] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.7 W  BW=707.6 GB/s  TF=0.00  sm=1856 mem=7601 MHz  T=71C  cap=1.00  J/B=3.769e-10
+  [torch_sum_1GB r1] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.7 W  BW=707.5 GB/s  TF=0.00  sm=1855 mem=7601 MHz  T=71C  cap=1.00  J/B=3.769e-10
+  [torch_copy_512MB r0] P=298.8 W (inst 298.8, avg 298.8)  dyn=266.3 W  BW=681.8 GB/s  TF=0.00  sm=1875 mem=7601 MHz  T=71C  cap=1.00  J/B=3.906e-10
+  [torch_copy_512MB r1] P=298.8 W (inst 298.8, avg 298.8)  dyn=266.3 W  BW=681.8 GB/s  TF=0.00  sm=1875 mem=7601 MHz  T=71C  cap=1.00  J/B=3.905e-10
+=== gemv ===
+  [gemv_b1_512MB r0] P=299.0 W (inst 299.0, avg 299.2)  dyn=266.5 W  BW=674.8 GB/s  TF=0.67  sm=1761 mem=7601 MHz  T=70C  cap=1.00  J/B=3.949e-10  pJ/flop=394.992
+  [gemv_b1_512MB r1] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.7 W  BW=674.8 GB/s  TF=0.67  sm=1762 mem=7601 MHz  T=70C  cap=1.00  J/B=3.953e-10  pJ/flop=395.303
+  [gemv_b16_512MB r0] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.7 W  BW=678.2 GB/s  TF=10.83  sm=1699 mem=7601 MHz  T=70C  cap=1.00  J/B=3.933e-10  pJ/flop=24.628
+  [gemv_b16_512MB r1] P=299.3 W (inst 299.3, avg 299.3)  dyn=266.8 W  BW=678.2 GB/s  TF=10.83  sm=1700 mem=7601 MHz  T=70C  cap=1.00  J/B=3.934e-10  pJ/flop=24.633
+=== llmgemm ===
+  [llm_qkv_M1 r0] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.7 W  BW=635.0 GB/s  TF=0.63  sm=1728 mem=7601 MHz  T=71C  cap=1.00  J/B=4.200e-10  pJ/flop=420.217
+  [llm_qkv_M1 r1] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.7 W  BW=635.0 GB/s  TF=0.63  sm=1729 mem=7601 MHz  T=71C  cap=1.00  J/B=4.200e-10  pJ/flop=420.212
+  [llm_qkv_M8 r0] P=299.2 W (inst 299.2, avg 299.1)  dyn=266.7 W  BW=639.4 GB/s  TF=5.09  sm=1765 mem=7601 MHz  T=71C  cap=1.00  J/B=4.171e-10  pJ/flop=52.344
+  [llm_qkv_M8 r1] P=299.0 W (inst 299.0, avg 299.1)  dyn=266.5 W  BW=639.6 GB/s  TF=5.10  sm=1765 mem=7601 MHz  T=71C  cap=1.00  J/B=4.166e-10  pJ/flop=52.287
+  [llm_qkv_M32 r0] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.7 W  BW=639.8 GB/s  TF=20.16  sm=1645 mem=7601 MHz  T=70C  cap=1.00  J/B=4.169e-10  pJ/flop=13.233
+  [llm_qkv_M32 r1] P=299.1 W (inst 299.1, avg 299.2)  dyn=266.6 W  BW=639.9 GB/s  TF=20.16  sm=1644 mem=7601 MHz  T=70C  cap=1.00  J/B=4.166e-10  pJ/flop=13.227
+  [llm_qkv_M64 r0] P=299.4 W (inst 299.4, avg 299.3)  dyn=266.8 W  BW=593.3 GB/s  TF=36.80  sm=1686 mem=7601 MHz  T=71C  cap=1.00  J/B=4.497e-10  pJ/flop=7.250
+  [llm_qkv_M64 r1] P=299.3 W (inst 299.3, avg 299.3)  dyn=266.8 W  BW=593.4 GB/s  TF=36.81  sm=1687 mem=7601 MHz  T=71C  cap=1.00  J/B=4.497e-10  pJ/flop=7.249
+  [llm_qkv_M128 r0] P=299.1 W (inst 299.1, avg 299.1)  dyn=266.6 W  BW=556.0 GB/s  TF=66.92  sm=1429 mem=7601 MHz  T=70C  cap=1.00  J/B=4.795e-10  pJ/flop=3.984
+  [llm_qkv_M128 r1] P=299.0 W (inst 299.0, avg 299.1)  dyn=266.5 W  BW=555.8 GB/s  TF=66.89  sm=1428 mem=7601 MHz  T=70C  cap=1.00  J/B=4.795e-10  pJ/flop=3.984
+  [llm_qkv_M512 r0] P=299.0 W (inst 299.0, avg 299.0)  dyn=266.4 W  BW=251.4 GB/s  TF=102.66  sm=1482 mem=7601 MHz  T=71C  cap=1.00  J/B=1.060e-09  pJ/flop=2.595
+  [llm_qkv_M512 r1] P=299.1 W (inst 299.1, avg 299.1)  dyn=266.6 W  BW=251.5 GB/s  TF=102.68  sm=1482 mem=7601 MHz  T=71C  cap=1.00  J/B=1.060e-09  pJ/flop=2.596
+  [llm_qkv_M2048 r0] P=299.1 W (inst 299.1, avg 299.2)  dyn=266.6 W  BW=104.1 GB/s  TF=105.77  sm=1426 mem=7601 MHz  T=71C  cap=1.00  J/B=2.561e-09  pJ/flop=2.520
+  [llm_qkv_M2048 r1] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.6 W  BW=104.1 GB/s  TF=105.74  sm=1425 mem=7601 MHz  T=71C  cap=1.00  J/B=2.562e-09  pJ/flop=2.522
+  [llm_qkv_M8192 r0] P=299.5 W (inst 299.5, avg 299.5)  dyn=267.0 W  BW=65.7 GB/s  TF=106.24  sm=1406 mem=7601 MHz  T=71C  cap=1.00  J/B=4.066e-09  pJ/flop=2.513
+  [llm_qkv_M8192 r1] P=299.6 W (inst 299.6, avg 299.5)  dyn=267.0 W  BW=65.7 GB/s  TF=106.27  sm=1408 mem=7601 MHz  T=71C  cap=1.00  J/B=4.065e-09  pJ/flop=2.513
+  [llm_o_M1 r0] P=299.1 W (inst 299.1, avg 299.2)  dyn=266.6 W  BW=619.7 GB/s  TF=0.62  sm=1814 mem=7601 MHz  T=71C  cap=1.00  J/B=4.302e-10  pJ/flop=430.399
+  [llm_o_M1 r1] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.7 W  BW=619.6 GB/s  TF=0.62  sm=1816 mem=7601 MHz  T=71C  cap=1.00  J/B=4.304e-10  pJ/flop=430.684
+  [llm_o_M8 r0] P=299.4 W (inst 299.4, avg 299.5)  dyn=266.9 W  BW=622.9 GB/s  TF=4.96  sm=1770 mem=7601 MHz  T=71C  cap=1.00  J/B=4.284e-10  pJ/flop=53.795
+  [llm_o_M8 r1] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.7 W  BW=623.0 GB/s  TF=4.96  sm=1770 mem=7601 MHz  T=71C  cap=1.00  J/B=4.281e-10  pJ/flop=53.751
+  [llm_o_M32 r0] P=299.2 W (inst 299.2, avg 299.3)  dyn=266.7 W  BW=622.0 GB/s  TF=19.56  sm=1662 mem=7601 MHz  T=70C  cap=1.00  J/B=4.288e-10  pJ/flop=13.640
+  [llm_o_M32 r1] P=299.2 W (inst 299.2, avg 299.3)  dyn=266.7 W  BW=622.0 GB/s  TF=19.55  sm=1663 mem=7601 MHz  T=71C  cap=1.00  J/B=4.287e-10  pJ/flop=13.637
+  [llm_o_M64 r0] P=299.3 W (inst 299.3, avg 299.3)  dyn=266.8 W  BW=572.8 GB/s  TF=35.39  sm=1712 mem=7601 MHz  T=71C  cap=1.00  J/B=4.658e-10  pJ/flop=7.538
+  [llm_o_M64 r1] P=299.3 W (inst 299.3, avg 299.4)  dyn=266.7 W  BW=573.1 GB/s  TF=35.41  sm=1713 mem=7601 MHz  T=71C  cap=1.00  J/B=4.655e-10  pJ/flop=7.533
+  [llm_o_M128 r0] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.7 W  BW=480.0 GB/s  TF=57.34  sm=1569 mem=7601 MHz  T=70C  cap=1.00  J/B=5.556e-10  pJ/flop=4.651
+  [llm_o_M128 r1] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.7 W  BW=480.1 GB/s  TF=57.35  sm=1570 mem=7601 MHz  T=70C  cap=1.00  J/B=5.555e-10  pJ/flop=4.650
+  [llm_o_M512 r0] P=298.9 W (inst 298.9, avg 299.0)  dyn=266.4 W  BW=253.1 GB/s  TF=100.79  sm=1438 mem=7601 MHz  T=71C  cap=1.00  J/B=1.052e-09  pJ/flop=2.643
+  [llm_o_M512 r1] P=299.1 W (inst 299.1, avg 299.1)  dyn=266.6 W  BW=253.0 GB/s  TF=100.77  sm=1436 mem=7601 MHz  T=71C  cap=1.00  J/B=1.054e-09  pJ/flop=2.646
+  [llm_o_M2048 r0] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.7 W  BW=104.1 GB/s  TF=99.50  sm=1448 mem=7601 MHz  T=71C  cap=1.00  J/B=2.562e-09  pJ/flop=2.680
+  [llm_o_M2048 r1] P=299.1 W (inst 299.1, avg 299.2)  dyn=266.6 W  BW=104.1 GB/s  TF=99.53  sm=1449 mem=7601 MHz  T=71C  cap=1.00  J/B=2.560e-09  pJ/flop=2.679
+  [llm_o_M8192 r0] P=299.4 W (inst 299.4, avg 299.5)  dyn=266.9 W  BW=72.3 GB/s  TF=106.23  sm=1420 mem=7601 MHz  T=71C  cap=1.00  J/B=3.694e-09  pJ/flop=2.512
+  [llm_o_M8192 r1] P=299.5 W (inst 299.5, avg 299.5)  dyn=267.0 W  BW=72.3 GB/s  TF=106.23  sm=1420 mem=7601 MHz  T=71C  cap=1.00  J/B=3.695e-09  pJ/flop=2.513
+  [llm_mlp_up_M1 r0] P=299.1 W (inst 299.1, avg 299.2)  dyn=266.6 W  BW=666.2 GB/s  TF=0.67  sm=1763 mem=7601 MHz  T=71C  cap=1.00  J/B=4.001e-10  pJ/flop=400.270
+  [llm_mlp_up_M1 r1] P=298.9 W (inst 298.9, avg 299.1)  dyn=266.4 W  BW=666.2 GB/s  TF=0.67  sm=1763 mem=7601 MHz  T=71C  cap=1.00  J/B=3.999e-10  pJ/flop=400.036
+  [llm_mlp_up_M8 r0] P=299.4 W (inst 299.4, avg 299.3)  dyn=266.9 W  BW=677.6 GB/s  TF=5.41  sm=1741 mem=7601 MHz  T=70C  cap=1.00  J/B=3.938e-10  pJ/flop=49.357
+  [llm_mlp_up_M8 r1] P=299.2 W (inst 299.2, avg 299.3)  dyn=266.7 W  BW=677.7 GB/s  TF=5.41  sm=1741 mem=7601 MHz  T=71C  cap=1.00  J/B=3.935e-10  pJ/flop=49.323
+  [llm_mlp_up_M32 r0] P=299.1 W (inst 299.1, avg 299.2)  dyn=266.6 W  BW=668.1 GB/s  TF=21.15  sm=1724 mem=7601 MHz  T=70C  cap=1.00  J/B=3.990e-10  pJ/flop=12.602
+  [llm_mlp_up_M32 r1] P=299.1 W (inst 299.1, avg 299.2)  dyn=266.6 W  BW=668.2 GB/s  TF=21.16  sm=1724 mem=7601 MHz  T=70C  cap=1.00  J/B=3.990e-10  pJ/flop=12.601
+  [llm_mlp_up_M64 r0] P=299.3 W (inst 299.3, avg 299.2)  dyn=266.7 W  BW=658.2 GB/s  TF=41.25  sm=1661 mem=7601 MHz  T=70C  cap=1.00  J/B=4.053e-10  pJ/flop=6.467
+  [llm_mlp_up_M64 r1] P=299.2 W (inst 299.2, avg 299.3)  dyn=266.7 W  BW=658.2 GB/s  TF=41.25  sm=1660 mem=7601 MHz  T=70C  cap=1.00  J/B=4.052e-10  pJ/flop=6.466
+  [llm_mlp_up_M128 r0] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.7 W  BW=605.8 GB/s  TF=74.38  sm=1458 mem=7601 MHz  T=70C  cap=1.00  J/B=4.402e-10  pJ/flop=3.585
+  [llm_mlp_up_M128 r1] P=299.1 W (inst 299.1, avg 299.2)  dyn=266.6 W  BW=605.8 GB/s  TF=74.38  sm=1457 mem=7601 MHz  T=70C  cap=1.00  J/B=4.401e-10  pJ/flop=3.584
+  [llm_mlp_up_M512 r0] P=299.6 W (inst 299.6, avg 299.6)  dyn=267.0 W  BW=191.4 GB/s  TF=83.75  sm=1289 mem=7601 MHz  T=71C  cap=1.00  J/B=1.395e-09  pJ/flop=3.188
+  [llm_mlp_up_M512 r1] P=299.5 W (inst 299.5, avg 299.5)  dyn=267.0 W  BW=191.4 GB/s  TF=83.75  sm=1290 mem=7601 MHz  T=71C  cap=1.00  J/B=1.395e-09  pJ/flop=3.188
+  [llm_mlp_up_M2048 r0] P=299.3 W (inst 299.3, avg 299.3)  dyn=266.8 W  BW=87.7 GB/s  TF=106.93  sm=1393 mem=7601 MHz  T=71C  cap=1.00  J/B=3.042e-09  pJ/flop=2.495
+  [llm_mlp_up_M2048 r1] P=299.3 W (inst 299.3, avg 299.3)  dyn=266.8 W  BW=87.7 GB/s  TF=106.93  sm=1394 mem=7601 MHz  T=71C  cap=1.00  J/B=3.043e-09  pJ/flop=2.495
+  [llm_mlp_up_M8192 r0] P=299.3 W (inst 299.3, avg 299.2)  dyn=266.7 W  BW=51.4 GB/s  TF=113.27  sm=1385 mem=7601 MHz  T=71C  cap=1.00  J/B=5.188e-09  pJ/flop=2.355
+  [llm_mlp_up_M8192 r1] P=299.3 W (inst 299.3, avg 299.2)  dyn=266.8 W  BW=51.4 GB/s  TF=113.27  sm=1385 mem=7601 MHz  T=71C  cap=1.00  J/B=5.189e-09  pJ/flop=2.355
+  [llm_mlp_down_M1 r0] P=299.2 W (inst 299.2, avg 299.1)  dyn=266.7 W  BW=665.5 GB/s  TF=0.67  sm=1757 mem=7601 MHz  T=71C  cap=1.00  J/B=4.007e-10  pJ/flop=400.833
+  [llm_mlp_down_M1 r1] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.6 W  BW=665.6 GB/s  TF=0.67  sm=1757 mem=7601 MHz  T=71C  cap=1.00  J/B=4.006e-10  pJ/flop=400.760
+  [llm_mlp_down_M8 r0] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.6 W  BW=667.9 GB/s  TF=5.33  sm=1755 mem=7601 MHz  T=70C  cap=1.00  J/B=3.992e-10  pJ/flop=50.034
+  [llm_mlp_down_M8 r1] P=299.3 W (inst 299.3, avg 299.3)  dyn=266.7 W  BW=667.9 GB/s  TF=5.33  sm=1753 mem=7601 MHz  T=70C  cap=1.00  J/B=3.994e-10  pJ/flop=50.057
+  [llm_mlp_down_M32 r0] P=299.5 W (inst 299.5, avg 299.5)  dyn=267.0 W  BW=681.9 GB/s  TF=21.59  sm=1620 mem=7601 MHz  T=70C  cap=1.00  J/B=3.915e-10  pJ/flop=12.364
+  [llm_mlp_down_M32 r1] P=299.5 W (inst 299.5, avg 299.5)  dyn=266.9 W  BW=681.8 GB/s  TF=21.59  sm=1620 mem=7601 MHz  T=71C  cap=1.00  J/B=3.915e-10  pJ/flop=12.364
+  [llm_mlp_down_M64 r0] P=299.3 W (inst 299.3, avg 299.4)  dyn=266.8 W  BW=650.2 GB/s  TF=40.74  sm=1639 mem=7601 MHz  T=70C  cap=1.00  J/B=4.103e-10  pJ/flop=6.548
+  [llm_mlp_down_M64 r1] P=299.3 W (inst 299.3, avg 299.3)  dyn=266.8 W  BW=650.1 GB/s  TF=40.74  sm=1639 mem=7601 MHz  T=70C  cap=1.00  J/B=4.104e-10  pJ/flop=6.548
+  [llm_mlp_down_M128 r0] P=299.3 W (inst 299.3, avg 299.3)  dyn=266.8 W  BW=612.8 GB/s  TF=75.24  sm=1452 mem=7601 MHz  T=70C  cap=1.00  J/B=4.353e-10  pJ/flop=3.545
+  [llm_mlp_down_M128 r1] P=299.3 W (inst 299.3, avg 299.3)  dyn=266.7 W  BW=612.9 GB/s  TF=75.25  sm=1451 mem=7601 MHz  T=70C  cap=1.00  J/B=4.352e-10  pJ/flop=3.544
+  [llm_mlp_down_M512 r0] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.7 W  BW=235.3 GB/s  TF=102.99  sm=1383 mem=7601 MHz  T=71C  cap=1.00  J/B=1.133e-09  pJ/flop=2.590
+  [llm_mlp_down_M512 r1] P=299.2 W (inst 299.2, avg 299.2)  dyn=266.6 W  BW=235.4 GB/s  TF=103.03  sm=1384 mem=7601 MHz  T=71C  cap=1.00  J/B=1.133e-09  pJ/flop=2.588
+  [llm_mlp_down_M2048 r0] P=299.3 W (inst 299.3, avg 299.3)  dyn=266.7 W  BW=84.0 GB/s  TF=102.45  sm=1425 mem=7601 MHz  T=71C  cap=1.00  J/B=3.175e-09  pJ/flop=2.604
+  [llm_mlp_down_M2048 r1] P=299.1 W (inst 299.1, avg 299.1)  dyn=266.6 W  BW=84.0 GB/s  TF=102.45  sm=1425 mem=7601 MHz  T=71C  cap=1.00  J/B=3.173e-09  pJ/flop=2.602
+  [llm_mlp_down_M8192 r0] P=299.4 W (inst 299.4, avg 299.4)  dyn=266.9 W  BW=51.7 GB/s  TF=113.97  sm=1398 mem=7601 MHz  T=71C  cap=1.00  J/B=5.159e-09  pJ/flop=2.342
+  [llm_mlp_down_M8192 r1] P=299.4 W (inst 299.4, avg 299.4)  dyn=266.9 W  BW=51.8 GB/s  TF=114.04  sm=1399 mem=7601 MHz  T=71C  cap=1.00  J/B=5.156e-09  pJ/flop=2.340
+=== launch ===
+  [launch_1elem r0] P=129.5 W (inst 129.5, avg 129.5)  dyn=97.0 W  BW=0.0 GB/s  TF=0.00  sm=1800 mem=7601 MHz  T=64C  cap=0.00  J/B=5.089e-04
+  [launch_1elem r1] P=123.6 W (inst 123.6, avg 123.6)  dyn=91.1 W  BW=0.0 GB/s  TF=0.00  sm=1800 mem=7601 MHz  T=61C  cap=0.00  J/B=4.727e-04
+  [launch_4096elem r0] P=123.1 W (inst 123.1, avg 123.2)  dyn=90.6 W  BW=0.0 GB/s  TF=0.00  sm=1809 mem=7601 MHz  T=59C  cap=0.00  J/B=4.699e-04
+  [launch_4096elem r1] P=124.0 W (inst 124.0, avg 124.1)  dyn=91.5 W  BW=0.0 GB/s  TF=0.00  sm=1818 mem=7601 MHz  T=58C  cap=0.00  J/B=4.721e-04
+=== square_multi ===
+idle_post: {"n_samples": 999, "p_energy_w": 3.2601014221738533, "energy_counter_updates": 99, "energy_counter_period_s": 0.10000001897617262, "p_inst_w": 38.63903403403404, "p_avg_w": 38.65175946547884, "sm_mhz": 210.0, "mem_mhz": 405.0, "temp_c": 51.38138138138138, "frac_sw_power_cap": 0.0, "frac_thermal": 0.0, "frac_hw_slowdown": 0.0, "p_w": 38.63903403403404, "energy_counter_over_inst": 0.08437326407544998, "duration_s": 10.000123023986816, "waited_s": 21.16215753555298}
+
+point                        BW GB/s   TFLOPS      P W   dyn W  SMMHz   cap   J/byte dyn    pJ/flop
+stream_L1ca_5.2MB            12632.7     0.00    204.2   171.7   1365  1.00 1.359e-11±3.7e-14          -
+stream_L1ca_10.5MB           11521.2     0.00    230.8   198.2   1528  1.00 1.721e-11±1.2e-14          -
+stream_cg_0.25MB              1254.4     0.00    237.7   205.2   1905  0.00 1.636e-10±8.5e-13          -
+stream_cg_1.00MB              2375.4     0.00    298.5   265.9   1856  1.00 1.120e-10±1.8e-13          -
+stream_cg_2.00MB              2454.2     0.00    298.8   266.3   1842  1.00 1.085e-10±4.1e-14          -
+stream_cg_3.00MB              2519.1     0.00    299.2   266.7   1828  1.00 1.059e-10±8.5e-14          -
+stream_cg_4.50MB              2120.0     0.00    298.5   265.9   1866  1.00 1.254e-10±1.4e-13          -
+stream_cg_6.00MB              2416.7     0.00    298.8   266.2   1838  1.00 1.102e-10±6.1e-14          -
+stream_cg_12.00MB             1244.9     0.00    297.7   265.1   1883  1.00 2.130e-10±1.3e-15          -
+stream_cg_24.00MB              786.7     0.00    299.3   266.8   1860  1.00 3.391e-10±5.2e-14          -
+stream_cg_64.00MB              711.8     0.00    299.3   266.7   1857  1.00 3.748e-10±1.0e-13          -
+stream_cg_256.00MB             711.5     0.00    299.3   266.7   1858  1.00 3.749e-10±5.6e-14          -
+stream_cg_1024.00MB            711.4     0.00    299.3   266.8   1857  1.00 3.750e-10±4.2e-14          -
+stream_cg_4096.00MB            711.4     0.00    299.2   266.7   1858  1.00 3.749e-10±1.5e-14          -
+torch_sum_1GB                  707.6     0.00    299.2   266.7   1856  1.00 3.769e-10±8.2e-15          -
+torch_copy_512MB               681.8     0.00    298.8   266.3   1875  1.00 3.905e-10±4.2e-14          -
+gemv_b1_512MB                  674.8     0.67    299.1   266.6   1762  1.00 3.951e-10±1.6e-13    395.147
+gemv_b16_512MB                 678.2    10.83    299.3   266.7   1700  1.00 3.933e-10±4.2e-14     24.630
+grid_10prog                    224.5     0.00    226.5   194.0   1890  0.00 8.643e-10±0.0e+00          -
+grid_21prog                    453.0     0.00    266.6   234.1   1890  0.00 5.167e-10±0.0e+00          -
+grid_42prog                    677.2     0.00    298.8   266.3   1879  1.00 3.932e-10±0.0e+00          -
+grid_84prog                    709.9     0.00    299.0   266.4   1876  1.00 3.753e-10±0.0e+00          -
+grid_168prog                   711.5     0.00    298.9   266.4   1875  1.00 3.744e-10±0.0e+00          -
+grid_336prog                   710.9     0.00    299.0   266.5   1862  1.00 3.748e-10±0.0e+00          -
+grid_672prog                   711.2     0.00    299.3   266.8   1859  1.00 3.751e-10±0.0e+00          -
+
+duty-cycle slope fits (full clocks, below cap):
+op                     e (marginal)         se   floor W      R2    n     burst rate
+dram_stream              2.7397e-10    5.4e-11    113.05  0.7212   12      6.631e+11  J/byte
+l2_stream_half           6.3806e-11    2.9e-12    114.83  0.9920    6      1.567e+12  J/byte
+l1_stream_8KBperprog     2.3725e-11    1.1e-12    116.20  0.9918    6      5.880e+12  J/byte
+gemv_b1                  2.5913e-10    3.1e-12    116.63  0.9987   11      6.353e+11  J/byte
+gemm_fp16_4096           2.6442e-12    1.8e-14    116.70  0.9995   12      1.174e+14  J/flop
+wrote microbench/results_A6000_steady.json
+=== [serve] gpu_graphs,gpu_eager,gpu_highconc,gpu_longctx ===
+[2026-10-21 10:41:30] === gpu_graphs / Qwen/Qwen2-7B-Instruct engine={'no_enforce_eager': None}
+[2026-10-21 10:41:30] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 15.0
+[2026-10-21 10:42:37] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/alpaca_c1 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 45.0 --task alpaca --concurrency 1
+[2026-10-21 10:44:08] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/alpaca_c1
+[2026-10-21 10:44:08]   alpaca_c1: tok/s=43.6 reqs=13 P_avg=299.15752990206295 E_counter=14360.65453914537
+[2026-10-21 10:44:08] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/alpaca_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 45.0 --task alpaca --concurrency 4
+[2026-10-21 10:45:43] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/alpaca_c4
+[2026-10-21 10:45:44]   alpaca_c4: tok/s=163.2 reqs=51 P_avg=299.0043661190965 E_counter=14627.899348167264
+[2026-10-21 10:45:44] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/alpaca_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 45.0 --task alpaca --concurrency 16
+[2026-10-21 10:47:21] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/alpaca_c16
+[2026-10-21 10:47:21]   alpaca_c16: tok/s=621.8 reqs=217 P_avg=298.68670308508547 E_counter=15264.611904401887
+[2026-10-21 10:47:21] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/alpaca_c64 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 45.0 --task alpaca --concurrency 64
+[2026-10-21 10:49:04] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/alpaca_c64
+[2026-10-21 10:49:04]   alpaca_c64: tok/s=2177.5 reqs=721 P_avg=298.6560272709437 E_counter=15281.753755173035
+[2026-10-21 10:49:04] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/sharegpt_c1 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 45.0 --task sharegpt --concurrency 1
+[2026-10-21 10:50:42] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/sharegpt_c1
+[2026-10-21 10:50:42]   sharegpt_c1: tok/s=43.5 reqs=9 P_avg=299.23864201432787 E_counter=14269.611532337776
+[2026-10-21 10:50:42] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/sharegpt_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 45.0 --task sharegpt --concurrency 4
+[2026-10-21 10:52:18] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/sharegpt_c4
+[2026-10-21 10:52:19]   sharegpt_c4: tok/s=162.3 reqs=34 P_avg=298.6539594139774 E_counter=15089.299848746148
+[2026-10-21 10:52:19] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/sharegpt_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 45.0 --task sharegpt --concurrency 16
+[2026-10-21 10:54:06] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/sharegpt_c16
+[2026-10-21 10:54:06]   sharegpt_c16: tok/s=585.7 reqs=127 P_avg=298.27047604967476 E_counter=15189.381675332339
+[2026-10-21 10:54:06] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/sharegpt_c64 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 45.0 --task sharegpt --concurrency 64
+[2026-10-21 10:55:53] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_graphs/Qwen2-7B-Instruct/sharegpt_c64
+[2026-10-21 10:55:53]   sharegpt_c64: tok/s=1789.2 reqs=398 P_avg=298.35124936831875 E_counter=15411.94879506454
+[2026-10-21 10:55:53] === gpu_graphs / Qwen/Qwen2.5-14B-Instruct engine={'no_enforce_eager': None}
+[2026-10-21 10:55:53] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2.5-14B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_graphs/Qwen2.5-14B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 15.0
+[2026-10-21 11:22:37] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-14B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_graphs/Qwen2.5-14B-Instruct/alpaca_c1 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 45.0 --task alpaca --concurrency 1
+[2026-10-21 11:26:35] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_graphs/Qwen2.5-14B-Instruct/alpaca_c1
+[2026-10-21 11:26:38]   alpaca_c1: tok/s=23.4 reqs=5 P_avg=299.2749864568082 E_counter=16358.215868007383
+[2026-10-21 11:26:38] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-14B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_graphs/Qwen2.5-14B-Instruct/alpaca_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 45.0 --task alpaca --concurrency 16
+[2026-10-21 11:28:49] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_graphs/Qwen2.5-14B-Instruct/alpaca_c16
+[2026-10-21 11:28:52]   alpaca_c16: tok/s=312.4 reqs=87 P_avg=299.0133771773907 E_counter=16827.48775091198
+[2026-10-21 11:28:52] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2.5-14B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_graphs/Qwen2.5-14B-Instruct/alpaca_c64 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --duration_s 45.0 --task alpaca --concurrency 64
+[2026-10-21 11:30:57] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_graphs/Qwen2.5-14B-Instruct/alpaca_c64
+[2026-10-21 11:31:00]   alpaca_c64: tok/s=916.4 reqs=254 P_avg=298.84951708428247 E_counter=17059.595018386324
+[2026-10-21 11:31:00] === gpu_eager / Qwen/Qwen2-7B-Instruct engine={}
+[2026-10-21 11:31:00] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 15.0
+[2026-10-21 11:31:52] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/alpaca_c1 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task alpaca --concurrency 1
+[2026-10-21 11:33:20] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/alpaca_c1
+[2026-10-21 11:33:20]   alpaca_c1: tok/s=42.8 reqs=13 P_avg=299.14923054931586 E_counter=14652.201144466484
+[2026-10-21 11:33:20] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/alpaca_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task alpaca --concurrency 4
+[2026-10-21 11:34:48] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/alpaca_c4
+[2026-10-21 11:34:48]   alpaca_c4: tok/s=160.1 reqs=51 P_avg=298.99343343343344 E_counter=15013.277367473123
+[2026-10-21 11:34:48] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/alpaca_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task alpaca --concurrency 16
+[2026-10-21 11:36:29] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/alpaca_c16
+[2026-10-21 11:36:30]   alpaca_c16: tok/s=605.0 reqs=209 P_avg=298.56930521140606 E_counter=15245.214079133217
+[2026-10-21 11:36:30] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/alpaca_c64 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task alpaca --concurrency 64
+[2026-10-21 11:37:58] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/alpaca_c64
+[2026-10-21 11:37:58]   alpaca_c64: tok/s=2142.4 reqs=707 P_avg=298.73620867687475 E_counter=15284.822922885203
+[2026-10-21 11:37:58] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/sharegpt_c1 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task sharegpt --concurrency 1
+[2026-10-21 11:39:27] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/sharegpt_c1
+[2026-10-21 11:39:27]   sharegpt_c1: tok/s=42.7 reqs=9 P_avg=299.08338197159907 E_counter=14535.027250876825
+[2026-10-21 11:39:27] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/sharegpt_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task sharegpt --concurrency 4
+[2026-10-21 11:41:07] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/sharegpt_c4
+[2026-10-21 11:41:07]   sharegpt_c4: tok/s=160.3 reqs=33 P_avg=298.5387650516927 E_counter=14786.21651701049
+[2026-10-21 11:41:07] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/sharegpt_c16 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task sharegpt --concurrency 16
+[2026-10-21 11:43:01] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/sharegpt_c16
+[2026-10-21 11:43:02]   sharegpt_c16: tok/s=580.6 reqs=126 P_avg=298.20131487341774 E_counter=15143.981803724868
+[2026-10-21 11:43:02] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/sharegpt_c64 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --duration_s 45.0 --task sharegpt --concurrency 64
+[2026-10-21 11:44:34] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_eager/Qwen2-7B-Instruct/sharegpt_c64
+[2026-10-21 11:44:34]   sharegpt_c64: tok/s=1775.1 reqs=398 P_avg=298.18760713596913 E_counter=15546.37759951297
+[2026-10-21 11:44:34] === gpu_highconc / Qwen/Qwen2-7B-Instruct engine={'no_enforce_eager': None, 'max_num_seqs': 256}
+[2026-10-21 11:44:34] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_highconc/Qwen2-7B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_num_seqs 256 --duration_s 15.0
+[2026-10-21 11:45:39] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_highconc/Qwen2-7B-Instruct/alpaca_c128 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_num_seqs 256 --duration_s 45.0 --task alpaca --concurrency 128
+[2026-10-21 11:47:27] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_highconc/Qwen2-7B-Instruct/alpaca_c128
+[2026-10-21 11:47:27] WARNING rc=1 -> logs/A6000_prov/gpu_highconc/Qwen2-7B-Instruct/alpaca_c128/two_term.log
+[2026-10-21 11:47:27]   alpaca_c128: tok/s=3374.1 reqs=1095 P_avg=298.4262858252427 E_counter=None
+[2026-10-21 11:47:27] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_highconc/Qwen2-7B-Instruct/alpaca_c256 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_num_seqs 256 --duration_s 45.0 --task alpaca --concurrency 256
+[2026-10-21 11:49:21] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_highconc/Qwen2-7B-Instruct/alpaca_c256
+[2026-10-21 11:49:21]   alpaca_c256: tok/s=3720.2 reqs=1255 P_avg=298.2343365366497 E_counter=15833.148527281075
+[2026-10-21 11:49:21] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_highconc/Qwen2-7B-Instruct/sharegpt_c128 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_num_seqs 256 --duration_s 45.0 --task sharegpt --concurrency 128
+[2026-10-21 11:51:13] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_highconc/Qwen2-7B-Instruct/sharegpt_c128
+[2026-10-21 11:51:13]   sharegpt_c128: tok/s=2515.5 reqs=563 P_avg=298.71838725114856 E_counter=15611.243114308581
+[2026-10-21 11:51:13] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_highconc/Qwen2-7B-Instruct/sharegpt_c256 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_num_seqs 256 --duration_s 45.0 --task sharegpt --concurrency 256
+[2026-10-21 11:53:14] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_highconc/Qwen2-7B-Instruct/sharegpt_c256
+[2026-10-21 11:53:14]   sharegpt_c256: tok/s=2797.6 reqs=635 P_avg=298.57686888343096 E_counter=15809.540115310425
+[2026-10-21 11:53:14] === gpu_longctx / Qwen/Qwen2-7B-Instruct engine={'no_enforce_eager': None, 'max_model_len': 32768}
+[2026-10-21 11:53:14] RUN: /usr/bin/python3 -u energy_profile_load.py --mode idle --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_longctx/Qwen2-7B-Instruct/idle --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 15.0
+[2026-10-21 11:54:36] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_longctx/Qwen2-7B-Instruct/ctx1024_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 45.0 --input_len 1024 --output_len 512 --concurrency 4 --unique_prompts
+[2026-10-21 11:56:36] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_longctx/Qwen2-7B-Instruct/ctx1024_c4
+[2026-10-21 11:56:36]   ctx1024_c4: tok/s=161.5 reqs=16 P_avg=298.76280083151846 E_counter=15156.126756499656
+[2026-10-21 11:56:36] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_longctx/Qwen2-7B-Instruct/ctx4096_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 45.0 --input_len 4096 --output_len 512 --concurrency 4 --unique_prompts
+[2026-10-21 11:58:35] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_longctx/Qwen2-7B-Instruct/ctx4096_c4
+[2026-10-21 11:58:35]   ctx4096_c4: tok/s=140.2 reqs=16 P_avg=298.81210151150805 E_counter=17463.901686405014
+[2026-10-21 11:58:35] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_longctx/Qwen2-7B-Instruct/ctx8192_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 45.0 --input_len 8192 --output_len 512 --concurrency 4 --unique_prompts
+[2026-10-21 12:01:45] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_longctx/Qwen2-7B-Instruct/ctx8192_c4
+[2026-10-21 12:01:45]   ctx8192_c4: tok/s=120.1 reqs=12 P_avg=298.92428035190613 E_counter=15296.700417593122
+[2026-10-21 12:01:45] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_longctx/Qwen2-7B-Instruct/ctx16384_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 45.0 --input_len 16384 --output_len 512 --concurrency 4 --unique_prompts
+[2026-10-21 12:04:06] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_longctx/Qwen2-7B-Instruct/ctx16384_c4
+[2026-10-21 12:04:06]   ctx16384_c4: tok/s=78.2 reqs=9 P_avg=298.98780733322013 E_counter=17628.40681520984
+[2026-10-21 12:04:06] RUN: /usr/bin/python3 -u energy_profile_load.py --mode load --model Qwen/Qwen2-7B-Instruct --dtype float16 --run_dir logs/A6000_prov/gpu_longctx/Qwen2-7B-Instruct/ctx30720_c4 --gpu_id 0 --gpu_memory_utilization 0.90 --output_len 256 --max_model_len 8192 --no_enforce_eager --max_model_len 32768 --duration_s 45.0 --input_len 30720 --output_len 512 --concurrency 4 --unique_prompts
+[2026-10-21 12:07:15] RUN: /usr/bin/python3 -u energy_model.py --two_term --run_dir logs/A6000_prov/gpu_longctx/Qwen2-7B-Instruct/ctx30720_c4
+[2026-10-21 12:07:15]   ctx30720_c4: tok/s=61.1 reqs=8 P_avg=298.981790655885 E_counter=20043.890582845444
+[2026-10-21 12:07:15] PROVISIONING SWEEP DONE (gpu_graphs,gpu_eager,gpu_highconc,gpu_longctx)
+=== [analyze] ===
+== A6000: idle(deep) 32.52465365365365 W, idle(clocks-up) 106.71958000000001 W, peak BW 0.77 TB/s, enforced limit 300.0 W
+-- DRAM streaming ('blast HBM'): J/B median uncapped nan (n=0), CAPPED/throttled 3.750e-10 (n=6); max sustained BW 0.71 TB/s = 93% of peak
+   stream_cg_64.00MB        BW   0.71 TB/s ( 93%)  J/B 3.748e-10  sm 1857 MHz  capfrac 1.00
+   stream_cg_256.00MB       BW   0.71 TB/s ( 93%)  J/B 3.749e-10  sm 1858 MHz  capfrac 1.00
+   stream_cg_1024.00MB      BW   0.71 TB/s ( 93%)  J/B 3.750e-10  sm 1857 MHz  capfrac 1.00
+   stream_cg_4096.00MB      BW   0.71 TB/s ( 93%)  J/B 3.749e-10  sm 1858 MHz  capfrac 1.00
+   torch_sum_1GB            BW   0.71 TB/s ( 92%)  J/B 3.769e-10  sm 1856 MHz  capfrac 1.00
+   torch_copy_512MB         BW   0.68 TB/s ( 89%)  J/B 3.905e-10  sm 1875 MHz  capfrac 1.00
+   (32/32 GEMM points ran at the power cap, SM 1290-1815 MHz: EXCLUDED from the fit; at M>=2048 they deliver P_dyn/FLOP 2.34-2.68 pJ (throttled V/f))
+   !! only 0 uncapped GEMM points -> no valid steady e_flop
+   llm_qkv_M1             AI     1.0  BW  0.63 TB/s  TF     0.6  P_dyn  266.7 W
+   llm_qkv_M8192          AI  1617.9  BW  0.07 TB/s  TF   106.3  P_dyn  267.0 W
+   llm_o_M1               AI     1.0  BW  0.62 TB/s  TF     0.6  P_dyn  266.6 W
+   llm_o_M8192            AI  1470.4  BW  0.07 TB/s  TF   106.2  P_dyn  266.9 W
+   llm_mlp_up_M1          AI     1.0  BW  0.67 TB/s  TF     0.7  P_dyn  266.5 W
+   llm_mlp_up_M8192       AI  2203.2  BW  0.05 TB/s  TF   113.3  P_dyn  266.8 W
+   llm_mlp_down_M1        AI     1.0  BW  0.67 TB/s  TF     0.7  P_dyn  266.7 W
+   llm_mlp_down_M8192     AI  2203.2  BW  0.05 TB/s  TF   114.0  P_dyn  266.9 W
+-- launch-only launch_1elem: 192 k launches/s, P_dyn 94.0 W, 490.80 uJ/launch
+-- launch-only launch_4096elem: 193 k launches/s, P_dyn 91.1 W, 471.00 uJ/launch
+-- square_multi p_inst_w: boxcar window 0.15 s, lag +0.08 s, R2 0.904
+-- square_multi p_avg_w: boxcar window 1.05 s, lag +0.14 s, R2 0.908
+wrote microbench/results_A6000_steady_calib.json
+== 1. runs ==
+arm/model/tag                                  tok/s  req/s  mJ/tok     W   MBU  step  cap%   KV% wait%  TTFT50/99 s  TPOT50/99 ms  hit%
+gpu_eager/Qwen2-7B-Instruct/alpaca_c1             43    0.3    6994   299  0.79  23.3   100     0     0    0.03/0.03     23.4/23.4     0
+gpu_eager/Qwen2-7B-Instruct/alpaca_c16           605    4.1     494   299  0.75  24.7   100     1     0    0.05/0.07     24.7/25.0     4
+gpu_eager/Qwen2-7B-Instruct/alpaca_c4            160    1.0    1867   299  0.78  23.8   100     0     0    0.05/0.06     23.8/24.5     0
+gpu_eager/Qwen2-7B-Instruct/alpaca_c64          2142   13.8     139   299  0.70  25.9   100     3     0    0.06/0.23     27.6/29.0    11
+gpu_eager/Qwen2-7B-Instruct/sharegpt_c1           43    0.2    7005   299  0.79  23.4   100     0     0    0.03/0.07     23.4/23.5     0
+gpu_eager/Qwen2-7B-Instruct/sharegpt_c16         581    2.5     514   298  0.73  24.9   100     2     0    0.06/0.55     25.5/27.6     4
+gpu_eager/Qwen2-7B-Instruct/sharegpt_c4          160    0.7    1861   298  0.77  23.8   100     1     0    0.05/0.17     23.9/24.9     0
+gpu_eager/Qwen2-7B-Instruct/sharegpt_c64        1775    7.6     168   298  0.60  28.3   100     6     1    0.17/1.33     32.7/50.1    11
+gpu_graphs/Qwen2-7B-Instruct/alpaca_c1            44    0.3    6855   299  0.81  22.9   100     0     0    0.03/0.03     22.9/22.9     0
+gpu_graphs/Qwen2-7B-Instruct/alpaca_c16          622    4.2     480   299  0.77  24.2   100     1     0    0.05/0.07     24.3/24.5     4
+gpu_graphs/Qwen2-7B-Instruct/alpaca_c4           163    1.0    1832   299  0.79  23.3   100     0     0    0.05/0.05     23.4/23.7     0
+gpu_graphs/Qwen2-7B-Instruct/alpaca_c64         2177   14.1     137   299  0.71  25.6   100     3     0    0.06/0.23     27.1/28.7    11
+gpu_graphs/Qwen2-7B-Instruct/sharegpt_c1          44    0.2    6877   299  0.81  22.9   100     0     0    0.03/0.07     23.0/23.0     0
+gpu_graphs/Qwen2-7B-Instruct/sharegpt_c16        586    2.5     509   298  0.74  24.5   100     2     0    0.06/0.55     25.1/28.2     4
+gpu_graphs/Qwen2-7B-Instruct/sharegpt_c4         162    0.7    1840   299  0.78  23.4   100     1     0    0.05/0.17     23.4/24.5     0
+gpu_graphs/Qwen2-7B-Instruct/sharegpt_c64       1789    7.7     167   298  0.61  28.0   100     6     1    0.16/1.32     32.6/49.9    11
+gpu_graphs/Qwen2.5-14B-Instruct/alpaca_c1         23    0.1   12780   299  0.86  42.7   100     0     0    0.05/0.06     42.7/42.7     0
+gpu_graphs/Qwen2.5-14B-Instruct/alpaca_c16       312    1.5     957   299  0.82  44.9   100     5     0    0.10/0.15     45.3/45.9     0
+gpu_graphs/Qwen2.5-14B-Instruct/alpaca_c64       916    4.4     326   299  0.68  58.6   100    21     0    0.33/0.43     59.2/60.4     5
+gpu_highconc/Qwen2-7B-Instruct/alpaca_c128      3374   21.2      88   298     -  29.5   100     5     0    0.08/0.40     35.4/41.9    17
+gpu_highconc/Qwen2-7B-Instruct/alpaca_c256      3720   23.6      80   298  0.36  52.9   100    10     0    0.15/0.75     65.5/88.8    21
+gpu_highconc/Qwen2-7B-Instruct/sharegpt_c12     2515   10.8     119   299  0.50  32.7   100    11     2    0.41/2.57     43.9/67.0    20
+gpu_highconc/Qwen2-7B-Instruct/sharegpt_c25     2798   12.0     107   299  0.37  49.2   100    22     5    1.29/5.77    80.9/131.7    24
+gpu_longctx/Qwen2-7B-Instruct/ctx1024_c4         161    0.3    1850   299  0.76  23.9   100     1     0    0.29/0.55     24.2/24.7    18
+gpu_longctx/Qwen2-7B-Instruct/ctx16384_c4         78    0.2    3826   299  0.67  28.9   100    13     1    2.99/8.75     34.3/44.0    33
+gpu_longctx/Qwen2-7B-Instruct/ctx30720_c4         61    0.1    4894   299  0.60  33.6   100    24     4   6.84/20.48     45.5/68.4    37
+gpu_longctx/Qwen2-7B-Instruct/ctx4096_c4         140    0.3    2132   299  0.72  25.0   100     4     0    0.91/1.95     27.0/27.7    19
+gpu_longctx/Qwen2-7B-Instruct/ctx8192_c4         120    0.2    2490   299  0.69  26.3   100     7     1    1.60/3.92     29.4/32.5    25
+   bin energy source(s): ['inst']  ('energy' = NVML energy counter, validated against POWER_INSTANT; 'inst' = POWER_INSTANT; 'avg' = smoothed GetPowerUsage)
+
+== 3. smear-free per-bin refit (Qwen2-7B) vs earlier estimates ==
+  per-bin (GetPowerUsage, Sept): e_w 1.243e-10  e_kv 2.852e-10  e_g 0.642 pJ;  steady microbench e_g 0.943 pJ
+
+wrote logs/A6000_prov/provisioning_summary.json
+==== A100 job done Wed Oct 21 12:07:17 PDT 2026 ====

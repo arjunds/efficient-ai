@@ -1,0 +1,20 @@
+{
+  "mode": "idle",
+  "idle_power_w": 117.892,
+  "nvml_summary": {
+    "gpu_name": "NVIDIA RTX A6000",
+    "power_limit_w": 300.0,
+    "metered_gpus": [
+      0
+    ],
+    "power_limit_total_w": 300.0,
+    "have_power_instant": true,
+    "have_energy_counter": true,
+    "n_samples": 1501,
+    "duration_s": 15.001767873764038,
+    "mean_power_w": 121.63092071952033,
+    "median_power_w": 117.892,
+    "max_power_w": 153.516,
+    "min_power_w": 117.415
+  }
+}

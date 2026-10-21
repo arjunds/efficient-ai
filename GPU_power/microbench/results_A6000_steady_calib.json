@@ -1,0 +1,170 @@
+{
+ "gpu": "A6000",
+ "gpu_info": {
+  "name": "NVIDIA RTX A6000",
+  "driver": "565.57.01",
+  "power_limit_enforced_w": 300.0,
+  "power_limit_default_w": 300.0,
+  "power_limit_range_w": [
+   100.0,
+   300.0
+  ],
+  "max_sm_mhz": 2100.0,
+  "max_mem_mhz": 8001.0,
+  "mem_bus_width_bits": 384.0,
+  "sm_count": 84,
+  "l2_bytes": 6291456,
+  "total_mem_bytes": 50925535232,
+  "cc": "8.6",
+  "have_power_instant_field": true,
+  "have_energy_counter": true,
+  "torch": "2.8.0+cu128",
+  "triton": "3.4.0"
+ },
+ "peak_bw": 768096000000.0,
+ "source": "microbench/results_A6000_steady.json",
+ "idle_deep_w": 32.52465365365365,
+ "idle_clocks_up_w": 106.71958000000001,
+ "dram_stream": {
+  "points": [
+   {
+    "label": "stream_cg_64.00MB",
+    "ws": 67108864,
+    "bw": 711751396512.83,
+    "jb": 3.747713893835908e-10,
+    "jb_p0": 2.7052863200179414e-10,
+    "sm": 1857.0986595454524,
+    "cap": 1.0
+   },
+   {
+    "label": "stream_cg_256.00MB",
+    "ws": 268435456,
+    "bw": 711450311150.8796,
+    "jb": 3.749111565359998e-10,
+    "jb_p0": 2.7062428619608047e-10,
+    "sm": 1858.2615784432487,
+    "cap": 1.0
+   },
+   {
+    "label": "stream_cg_1024.00MB",
+    "ws": 1073741824,
+    "bw": 711384688845.4031,
+    "jb": 3.7500555761429955e-10,
+    "jb_p0": 2.7070906703266236e-10,
+    "sm": 1856.8091834635952,
+    "cap": 1.0
+   },
+   {
+    "label": "stream_cg_4096.00MB",
+    "ws": 4294967296,
+    "bw": 711400282565.4033,
+    "jb": 3.749133089162305e-10,
+    "jb_p0": 2.7061910467922203e-10,
+    "sm": 1857.812823164426,
+    "cap": 1.0
+   },
+   {
+    "label": "torch_sum_1GB",
+    "ws": null,
+    "bw": 707569675118.1698,
+    "jb": 3.7687023876507156e-10,
+    "jb_p0": 2.720114113274748e-10,
+    "sm": 1855.6442962913434,
+    "cap": 1.0
+   },
+   {
+    "label": "torch_copy_512MB",
+    "ws": null,
+    "bw": 681814158680.2194,
+    "jb": 3.905454632022977e-10,
+    "jb_p0": 2.8172559557167387e-10,
+    "sm": 1874.85,
+    "cap": 1.0
+   }
+  ],
+  "j_per_byte_median": null,
+  "j_per_byte_median_capped": 3.7495943326526503e-10,
+  "n_uncapped": 0,
+  "n_capped": 6,
+  "max_bw": 711751396512.83,
+  "max_bw_frac": 0.9266438004010306
+ },
+ "e_byte_full_clock": null,
+ "llmgemm_capped": {
+  "n": 32,
+  "labels": [
+   "llm_qkv_M1",
+   "llm_qkv_M8",
+   "llm_qkv_M32",
+   "llm_qkv_M64",
+   "llm_qkv_M128",
+   "llm_qkv_M512",
+   "llm_qkv_M2048",
+   "llm_qkv_M8192",
+   "llm_o_M1",
+   "llm_o_M8",
+   "llm_o_M32",
+   "llm_o_M64",
+   "llm_o_M128",
+   "llm_o_M512",
+   "llm_o_M2048",
+   "llm_o_M8192",
+   "llm_mlp_up_M1",
+   "llm_mlp_up_M8",
+   "llm_mlp_up_M32",
+   "llm_mlp_up_M64",
+   "llm_mlp_up_M128",
+   "llm_mlp_up_M512",
+   "llm_mlp_up_M2048",
+   "llm_mlp_up_M8192",
+   "llm_mlp_down_M1",
+   "llm_mlp_down_M8",
+   "llm_mlp_down_M32",
+   "llm_mlp_down_M64",
+   "llm_mlp_down_M128",
+   "llm_mlp_down_M512",
+   "llm_mlp_down_M2048",
+   "llm_mlp_down_M8192"
+  ],
+  "tflops_range": [
+   0.6193205678246394,
+   114.00752470506413
+  ],
+  "sm_mhz_range": [
+   1289.7233150697757,
+   1815.0139820359282
+  ],
+  "total_j_per_flop_M2048plus": [
+   2.340942563361454e-12,
+   2.6795744692888553e-12
+  ]
+ },
+ "launch": [
+  {
+   "label": "launch_1elem",
+   "launches_per_s": 191623.7059563336,
+   "p_dyn_w": 94.02933323196075,
+   "j_per_launch": 0.0004907969203493678
+  },
+  {
+   "label": "launch_4096elem",
+   "launches_per_s": 193335.1062006897,
+   "p_dyn_w": 91.06092534634637,
+   "j_per_launch": 0.00047099744843452754
+  }
+ ],
+ "square_multi_fit": {
+  "p_inst_w": {
+   "window_s": 0.15000000000000002,
+   "lag_s": 0.08000000000000035,
+   "r2": 0.9041081123978852,
+   "amplitude_w": 152.58166630473409
+  },
+  "p_avg_w": {
+   "window_s": 1.05,
+   "lag_s": 0.1400000000000004,
+   "r2": 0.9078392275527857,
+   "amplitude_w": 133.524836885179
+  }
+ }
+}

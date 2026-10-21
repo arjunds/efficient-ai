@@ -1,0 +1,2 @@
+name, pci.bus_id, power.limit [W], enforced.power.limit [W], power.default_limit [W], power.max_limit [W], clocks.max.sm [MHz], clocks.max.memory [MHz], memory.total [MiB], driver_version
+NVIDIA RTX A6000, 00000000:61:00.0, 300.00 W, 300.00 W, 300.00 W, 300.00 W, 2100 MHz, 8001 MHz, 49140 MiB, 565.57.01
