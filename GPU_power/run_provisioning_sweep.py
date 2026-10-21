@@ -100,6 +100,9 @@ ARMS = {
     # TP=1 a100_graphs runs prices the second GPU.
     "a100_tp2": [(Q14, dict(GRAPHS, tensor_parallel_size=2), _ragged(["alpaca"], [1, 16, 64])),
                  (Q32, dict(GRAPHS, tensor_parallel_size=2, max_model_len=8192), _ragged(["alpaca"], [1, 16, 64]))],
+    # MoE on A100, same grid and eager mode as the H200 logs/ragged_moe runs (measured
+    # cross-GPU MoE comparison). ~61 GB of weights leaves ~11 GB KV on 80 GB.
+    "a100_moe": [("Qwen/Qwen3-30B-A3B", {}, _ragged(["alpaca", "sharegpt"], [1, 4, 16, 64]))],
     # Generic arms for another GPU type (A6000 etc.; set PROV_LOG_ROOT per GPU).
     "gpu_graphs": [(Q7, GRAPHS, _ragged(["alpaca", "sharegpt"], [1, 4, 16, 64])),
                    (Q14, GRAPHS, _ragged(["alpaca"], [1, 16, 64]))],

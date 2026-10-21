@@ -83,3 +83,42 @@ under constant power, energy just tracks time.
   eager vs CUDA graphs; up to 256 concurrent requests.
 - **`a6000-energy`:** the uncapped GDDR6 point. Same microbenchmark and serving grids,
   plus idle states.
+
+## Cross-GPU energy per token: A100 vs H200 vs B200 (2026-10-21)
+
+**A100 vs H200, both measured in eager mode, 4 models × 2 tasks** (`logs/ragged_a100`
+from September vs `logs/ragged`):
+
+| concurrency | A100 / H200 J/token: min–max (median) | A100 / H200 throughput |
+|---|---|---|
+| 1 | 1.48–1.53 (1.50) | 0.52–0.56 |
+| 4 | 1.44–1.56 (1.53) | 0.50–0.56 |
+| 16 | 1.45–1.61 (1.48) | 0.45–0.54 |
+| 64 | 1.16–1.66 (1.40) | 0.34–0.52 |
+
+- Every A100 run is at or near its 300 W cap (270–299 W).
+- **Reproducible across months and nodes:** Qwen2-7B alpaca c=1 was 3,382 mJ/token in
+  September and 3,535 mJ/token today (eager, +4.5%).
+- **Idle baselines differ between the campaigns:** 73–76 W in September vs 98–100 W
+  today (clocks pinned at 1410 MHz with any CUDA process, see the idle-state table).
+  This moves only the idle-vs-dynamic split, not measured J/token.
+
+**Qwen2-7B alpaca, all three GPUs** (J/token in mJ, tok/s in parentheses):
+
+| concurrency | A100, CUDA graphs | B200, CUDA graphs | H200, graphs-adjusted est. (eager measured) | A100/B200 |
+|---|---|---|---|---|
+| 1 | 3333 (89) | 2934 (218) | 1974 (2230) | 1.14 |
+| 4 | 875 (341) | 768 (840) | 508 (575) | 1.14 |
+| 16 | 232 (1286) | 206 (3183) | 144 (161) | 1.13 |
+| 64 | 72 (4124) | 68 (10408) | 53 (57) | 1.07 |
+| 128 | 54 (5535) | 42 (18779) | — | 1.27 |
+| 256 | 43 (6839) | 31 (27347) | — | 1.38 |
+
+**Ranking per token at normal load: H200 < B200 ≈ 1.3× < A100 ≈ 1.5×.**
+- The A100 is within 7–14% of B200 at up to 64 concurrent requests, despite 2.4–2.6×
+  lower throughput. Its idle power is 2.4× lower, and both parts spend most of their
+  energy streaming weights at similar J/B.
+- B200 pulls ahead only from 128 concurrent requests on.
+- **CUDA graphs barely help a power-capped GPU:** A100 +5–7% throughput, −4–6% J/token,
+  against B200's +40–50% / −13–16%. When power sets the step time, launch overhead
+  doesn't matter.
