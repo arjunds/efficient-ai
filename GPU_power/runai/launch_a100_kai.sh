@@ -13,7 +13,7 @@ STAGES="${STAGES:-probe,microbench,serve,analyze}"
 NAME="${NAME:-a100-energy-$(echo "$STAGES" | tr ',' '-' | cut -c1-20)}"
 kai submit --name "$NAME" \
   -i "${IMAGE:-vllm/vllm-openai:v0.10.2}" \
-  -g 1 --gpu-type "${GPU_TYPE:-a100}" -q "${QUEUE:-brachiolab-collaborators}" \
+  -g "${GPUS:-1}" --gpu-type "${GPU_TYPE:-a100}" -q "${QUEUE:-brachiolab-collaborators}" \
   --cpu "${CPU:-16}" --mem "${MEM:-100Gi}" --large-shm --mount-home --keep \
   -v /shared_data0:/shared_data0 \
   --workdir "$REPO" \

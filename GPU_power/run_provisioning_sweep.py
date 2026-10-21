@@ -96,6 +96,10 @@ ARMS = {
                       [(f"in{n}_c{c}", {"input_len": n, "output_len": 16, "concurrency": c,
                                         "unique_prompts": None})
                        for n in (2048, 8192) for c in (4, 16)])],
+    # A100 TP=2 (2 GPUs, both metered): 32B needs TP=2 on 80 GB A100s; 14B TP=2 vs the
+    # TP=1 a100_graphs runs prices the second GPU.
+    "a100_tp2": [(Q14, dict(GRAPHS, tensor_parallel_size=2), _ragged(["alpaca"], [1, 16, 64])),
+                 (Q32, dict(GRAPHS, tensor_parallel_size=2, max_model_len=8192), _ragged(["alpaca"], [1, 16, 64]))],
     # Generic arms for another GPU type (A6000 etc.; set PROV_LOG_ROOT per GPU).
     "gpu_graphs": [(Q7, GRAPHS, _ragged(["alpaca", "sharegpt"], [1, 4, 16, 64])),
                    (Q14, GRAPHS, _ragged(["alpaca"], [1, 16, 64]))],
