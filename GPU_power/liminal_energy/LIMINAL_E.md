@@ -1,376 +1,304 @@
 # LIMINAL-E: LIMINAL's decode roofline with measured energy and a power roof
 
+*v2, 2026-10-21. The model now covers four measured GPUs: RTX A6000, A100 80GB PCIe, H200 and
+B200. The B200 KV coefficient is settled. A100 and A6000 have a zero-shot test. v1 (H200/B200 only) is
+backed up in the scratchpad, and its validation is in `validation.json`.*
+
 LIMINAL (arXiv 2507.14397) models decode time from bandwidth, compute, synchronization and
 capacity. For power it divides throughput by TDP, so power never depends on activity
 (`LIT_LIMINAL.md`). LIMINAL-E keeps LIMINAL's workload side and adds four things:
-
-- a fitted time model, with utilization measured rather than forced to peak;
+- a fitted time model;
 - a measured, activity-dependent energy model;
-- a power roof that can bind before the bandwidth and compute roofs do;
+- a power roof, plus a measured **at-cap roofline**;
 - a provisioning layer that chooses GPU type, TP degree and replica count to minimize J/token.
 
-**Code.** `liminal_e.py` is the model. It reuses `recommend_gpu.py` for the GPU table and
-priors, model resolution, serving work and the time model.
-- `validate.py` scores it against measured runs and writes `validation.json` and
-  `validation_runs.csv`.
-- `kv_longctx.py` runs the KV test in §7.
-- `figdata.py` computes the figure data and `plot_figs.py` draws `figs/`.
-- Run everything in the container. `plot_figs.py` needs `PYTHONPATH=/shared_data0/adsampat/pydeps`.
+**Labels used throughout.** **[M]** = measured, **[F]** = fitted to serving runs,
+**[P]** = prior, assumption or prediction, **[O]** = open question.
 
-**Labels used throughout.** **[M]** = measured, **[F]** = fitted to our runs,
-**[P]** = prior or prediction, **[O]** = open question.
+**Code** (everything runs in the container; plotting adds `PYTHONPATH=pydeps`):
+
+| file | what it does |
+|---|---|
+| `liminal_e.py` | the model. Reuses `recommend_gpu.py` and overlays `gpus_measured.json` |
+| `build_measured.py` | builds `gpus_measured.json` from the microbenchmarks only (the zero-shot block) |
+| `validate_v2.py` | zero-shot and calibrated scoring on 4 GPUs; writes `validation_v2.json`, `validation_v2_runs.csv` and the calibrated blocks |
+| `figdata.py` | figure data, `ranking_table.csv` |
+| `plot_figs.py` | draws `figs/` |
+| `validate.py`, `kv_longctx.py` | v1 scripts |
+
+`gpu_coefficients.json` is not modified.
 
 ---
 
 ## 1. Workload per step (GPU-independent)
 
-Take one decode step of a dense model. The model has N_act active parameters, L layers,
-hidden size d, and κ KV bytes per token (all layers, fp16). The step has B running
-sequences at mean resident context c, plus T_pf prefill tokens mixed in. Then T = B + T_pf
-tokens pass through the GEMMs.
+Take one decode step of a dense model. The model has N_act active parameters, L layers, hidden
+size d, and κ KV bytes per token. The step has B sequences at mean context c, plus T_pf
+chunked-prefill tokens, so T = B + T_pf tokens pass through the GEMMs.
 
-| quantity | expression | note |
+| quantity | expression |
+|---|---|
+| weight bytes | W = 2·N_w(T) (canonical `~/models.py`; for MoE, the experts touched) |
+| KV bytes | K = B·c·κ |
+| GEMM FLOPs | F_g = 2·N_act·T |
+| prefill attention FLOPs (FLOP-bound, charged at e_g) | F_a,pf = 4·n_h·d_h·L·T_pf·c_pf/2 |
+| TP all-reduce bytes per GPU | A = 2·L·T·d·2·2(n−1)/n |
+| arithmetic intensity | I = F/(W+K) |
+
+In steady serving, T = B·(1 + (1−f)·P/G) and c = P + G/2.
+
+[M] **The byte model is validated by NCU.** DRAM bytes / analytic bytes = 1.004 and 1.008 at
+short context, and 1.012 at 8k and 30k context (FINDINGS_B200 UPDATE 3, 4 and 6). This
+validates both the weight and the KV byte counts.
+
+## 2. Time
+
+LIMINAL v2: `t = max((W+K)/(n·BW_peak), F/(n·FLOPS_peak)) + 114 µs·L`, with bandwidth forced to peak.
+
+LIMINAL-E (`rg.iter_time`):
+```
+t_unc = max( t0 + L·softmax_k(τ+τ_ar, W/(L·n·BW·η)) + K/(n·BW·η_kv) + F/(n·FLOPS·μ),  t0 + F/(n·FLOPS·MFU) )
+```
+η is fitted, not forced to 1. t0 is the per-step overhead and τ the per-layer floor.
+
+| term | value | source |
 |---|---|---|
-| weight bytes | W = 2·N_w(T) | canonical `~/models.py`: no input-embedding gather, lm_head counted once. For MoE, N_w(T) counts the experts touched (`energy_model.weight_params_for_tokens`) |
-| KV bytes read | K = B·c·κ, with κ = 2·L·n_kv·d_head·2 | each sequence's attention reads its own context |
-| dense GEMM FLOPs | F_g = 2·N_act·T | |
-| attention FLOPs | F_a = 4·n_h·d_h·L·(B·c + T_pf·c_pf/2) | in decode, attention is KV-byte-bound and its energy sits in e_kv. Prefill attention (causal, ~c²) is FLOP-bound and is charged at e_g |
-| TP all-reduce bytes per GPU | A = 2·L·T·d·2·2(n−1)/n | two all-reduces per layer, ring algorithm |
-| arithmetic intensity | I = F/(W+K) | about T for short-context decode |
+| H200 / B200 time model | [F] fitted (RECOMMENDER.md §2) | |
+| A100 / A6000 time model | **[P] the pooled H200/B200 prior** | no A100/A6000 serving data used |
+| CUDA graphs | [F] τ − 34.5 µs/layer, B200. Held-out 32B/72B step-time MAPE 3.5%, against 12.8% without the correction | `validation.json` |
+| B200 TP sync (NVLink) | [F] τ_ar = 15.5 µs/layer. Held-out 32B 1.3% | `validation.json` |
+| **A100 TP sync (PCIe Gen4, no NVLink)** | **[F] τ_ar = 185 µs/layer + all-reduce bytes at 5 GB/s effective**, fitted on 14B TP2 | `validation_v2.json tp_a100` |
+| **A100-node host overhead** | **[F] t0 and τ ×1.92**, eager mode only, fitted on 27 uncapped eager runs (0.5–3B). It is a node/CPU property, so the provisioning map resets it to 1 | `validation_v2.json` |
 
-In steady continuous batching (`rg.serving_iter_work`), with prompt P, generation G and
-prefix-cache hit fraction f: T = B·(1 + (1−f)·P/G) and c = P + G/2.
-
-- **[M] The byte model is validated.** NCU DRAM bytes / analytic bytes = **1.004** and
-  **1.008** on B200 decode, in two independent captures (FINDINGS_B200.md UPDATE 3 and UPDATE 4).
-- **[M] TP communication is negligible in energy.** All-reduce bytes are ≤0.3% of weight
-  bytes for 72B TP2 at c ≤ 64, so e_link (prior: equal to e_wbyte) barely matters.
-
-## 2. Time: LIMINAL's form, with fitted utilization
-
-LIMINAL v2 (§5):
-```
-t_LIMINAL = max( (W+K)/(n·BW_peak), F/(n·FLOPS_peak) ) + T_exp·L,   T_exp ≈ 114 µs (8×H100 fit)
-```
-The memory slope is fixed at peak bandwidth, so all inefficiency lands in the per-layer intercept.
-
-LIMINAL-E uses the recommender's realized-utilization model (`rg.iter_time`, `RECOMMENDER.md` §2):
-```
-t_mem = t0 + L·softmax_k( τ + τ_ar , W/(L·n·BW·η) ) + K/(n·BW·η_kv) + F/(n·FLOPS·μ)
-t_cmp = t0 + F/(n·FLOPS·MFU_pf)
-t     = max(t_mem, t_cmp)
-```
-It differs from LIMINAL in three ways:
-1. η (the asymptotic MBU) and η_kv are **fitted**, not set to 1.
-2. There is a per-step framework overhead t0 in addition to the per-layer floor τ.
-3. The floor composes with the stream through softmax_k. k = 1 gives LIMINAL's additive form.
-
-| | H200 [F] | B200 [F] |
-|---|---|---|
-| form | hard max (k=50) | additive (k=1), i.e. LIMINAL's shape |
-| t0, τ | 2.15 ms, 110 µs/layer | 1.42 ms, 78 µs/layer |
-| η, η_kv | 0.73, 0.22 | 0.86, 0.33 |
-| LOMO step-time MAPE | 5.3% | 2.7% |
-
-**New in LIMINAL-E: two time terms fitted on the B200_prov runs** (`validation.json`).
-
-**CUDA graphs: τ_graphs = τ − 34.5 µs/layer [F].**
-- The time model above was fitted on eager-mode runs.
-- Δτ was fitted on 7B graphs runs at c ≤ 64 and tested on held-out 32B and 72B graphs runs at c ≤ 64:
-
-  | variant | held-out step-time MAPE |
-  |---|---|
-  | eager model, unchanged | 12.8% |
-  | **per-layer correction** | **3.5%** |
-  | per-step alternative (Δt0 = 0.97 ms) | 7.5% |
-
-- A model-free check gives the same answer. The Sept-eager minus graphs step time at c=1 is
-  0.88, 1.89 and 2.45 ms for 28, 64 and 80 layers, i.e. **31.6, 29.6 and 30.7 µs per layer**.
-  The saving is per layer, not per step.
-- Caveat: the Oct eager "relog" runs are ~1.3 ms per step slower than the Sept eager runs,
-  probably because of the heavier logger (UPDATE 5 review). The graphs saving is therefore
-  measured against Sept eager, not relog eager.
-
-**TP synchronization: τ_ar = 15.5 µs/layer, with no time-inflation factor [F] (B200 NVLink, TP=2).**
-- Fitted on the 72B TP2 runs. On held-out 32B TP2 the step-time MAPE is **1.3%**:
-
-  | sync model | 32B held-out step-time MAPE |
-  |---|---|
-  | **τ_ar = 15.5 µs/layer (fitted)** | **1.3%** |
-  | no sync term | 10.2% |
-  | recommender prior (25 µs, ×1.15) | 20.5% |
-
-- This is the first measured value of LIMINAL's sync term on our hardware.
-- [P] For other GPUs, both terms fall back to the recommender priors. **[O] H200 with CUDA
-  graphs has never been run.**
+- The A100 PCIe sync costs ~12× B200's NVLink per layer, and adds a bandwidth term.
+- Held-out 32B TP2 throughput MAPE is 16.3% (no sync term: 27.4%). The 32B TP2 runs are
+  power-capped, so they test the sync term only weakly.
+- Measured: TP2 costs 1.14–1.64× the J/token of TP1 (FINDINGS_A100).
 
 ## 3. Energy
 
-Per step, on n GPUs:
 ```
-E = n·P_s·t  +  e_w·W  +  e_kv·K  +  e_g·(F_g + F_a,prefill)  +  e_link·A
-J/token = E / B
-        = n·P_s·t/B  +  e_w·W/B  +  e_kv·c·κ  +  e_g·2N_act·(1 + (1−f)P/G)  (+ prefill-attention term)
+E = n·(P_s + P_0)·t + e_w·W + e_kv·K + e_g·(F_g + F_a,pf) + e_link·A        J/token = E/B
 ```
-Each term has its own slope in B:
-- weights: slope −1 on log-log;
-- static: slope −1 while overhead-bound, flattening as t grows;
-- KV and compute: flat per token.
+- **P_0** is the activity intercept above clocks-up idle. It matters on GDDR6: the memory
+  clock jumps from 417 to 8001 MHz whenever there is traffic.
+- e_link = e_w [P]. It is negligible (all-reduce bytes are ≤0.3% of weight bytes at TP2).
 
-That is what fig (b) plots.
+| GPU | P_s (W) | P_0 (W) | e_w (J/B) | e_kv (J/B) | e_g (pJ) | source |
+|---|---|---|---|---|---|---|
+| H200 | 116.4 [M] | 0 | 1.066e-10 [F] | **1.33e-10 [P]** (= 1.25·e_w, the B200 ratio) | **1.20 [F]** (refit with that KV) | gpu_coefficients.json; `validation_v2.json h200_refit` |
+| B200 | 237.8 [M] | 0 | 1.310e-10 [F] | **1.548e-10 [F], settled**: 1.18× e_w; slopes 1.60–1.61e-10 | 0.70 [F] (steady uncapped 0.943 [M]) | longctx_summary.json (UPDATE 6 review) |
+| A100 PCIe | 102.5 [M] (vLLM loaded; 47.5 with no process) | 0 | 1.83e-10 [M] (GEMV duty-cycle) | 2.29e-10 [P] (1.25·e_w) | 1.47 [M] | steady_calib_A100 / results_A100_steady.json |
+| A6000 | 106.7 [M] (clocks up; 85.8 vLLM idle; 32.5 no process) | **80.5 [M]** | 1.75e-10 [M] (grid marginal) | 2.19e-10 [P] | 2.64 [M] | results_A6000_steady.json grid and duty |
 
-| coefficient | H200 | B200 | source |
+**Zero-shot rule, fixed before scoring** (`build_measured.py`):
+- P_s = clocks-up idle; P_0 and e_w = the uncapped occupancy-grid intercept and slope;
+- e_kv = 1.25·e_w; e_g = the duty-cycle GEMM J/FLOP.
+
+The alternative, e_w = GEMV duty-cycle J/B with P_s = vLLM idle and no P_0, is scored as a
+sensitivity case.
+- On A100 it fits measured uncapped power slightly better: 4.3% against 5.7% MAPE at the
+  measured operating point. The calibrated A100 uses it.
+- On A6000 it fails (J −17%) because it omits the memory-activity term.
+
+**Ridges:**
+
+| GPU | performance ridge (FLOPS/BW) | energy ridge e_w/e_g |
+|---|---|---|
+| A6000 | 202 | 66 |
+| A100 | 161 | 124 |
+| H200 | 206 | 89 |
+| B200 | 281 | 188 |
+
+Measured decode serving sits at 1–90 FLOP/B, left of every ridge.
+
+## 4. Power roof and the at-cap roofline
+
+**Full clock.** `P_s + P_0 + e_b·β + e_f·φ ≤ P_cap`, which gives `φ_P(I) = (P_cap−P_s−P_0)/(e_b/I + e_f)`.
+The knee is at e_b/e_f.
+
+**At the cap.** The GPU throttles its clocks, so full-clock coefficients badly underpredict
+what it delivers. The A6000's duty-cycle GEMM costs 2.64 pJ/FLOP at full clock but about 1.8
+pJ at the cap. LIMINAL-E therefore fits an **at-cap roofline** directly on capped, LLM-shaped
+microbench kernels (llmgemm M = 1…8192, all at P_cap):
+```
+seconds per DRAM byte at the cap = softmax_k( τ_b , I·τ_f )
+→ capped streaming rate 1/τ_b,  capped FLOP rate 1/τ_f,  at-cap J/B ε_b = (P_cap − P_s)·τ_b
+```
+
+| GPU | full-clock power roof (BW / peak) | **at-cap roofline [M]** (BW / peak, k, rmsle) | at-cap ε_b |
 |---|---|---|---|
-| P_s (idle) | 116.4 W [M] | 237.8 W [M] (246.6 W on the Oct node) | gpu_coefficients.json; provisioning_summary.json |
-| e_wbyte | 1.066e-10 J/B [M] | **1.25–1.26e-10, robust** [M] | gpu_coefficients.json; UPDATE 5 review |
-| e_kvbyte | 3.29e-10 (per-bin) | **[O] undetermined:** 1.0–4.0e-10 depending on fit | UPDATE 5 review |
-| e_gemm | 0.79 pJ per-bin; 0.96–1.10 run-level | **[O] 0.71–0.99 pJ**; steady uncapped 0.943 | BALANCE.md; steady_calib_B200.json |
-| per-channel (optional) | — | e_DRAM 8.37e-11, e_L2 2.29e-11, e_L1 1.00e-11 J/B [M]. With serving traffic DRAM 1.008 / L2 1.567 / L1 0.0013 per analytic byte, they rebuild e_wbyte at 1.203e-10 (−3%) | UPDATE 4b |
+| A6000 | 84% / 28% | **0.66 TB/s (86%) / 107 TF (69%)**, k=2, 0.065 | 2.92e-10 J/B |
+| A100 | 71% / 38% | **1.31 TB/s (68%) / 192 TF (62%)**, k=1.5, 0.12 | **1.53e-10 J/B**: serving at-cap weight byte 1.59e-10 [M], −4% |
+| B200 | 73% / 34% | 5.94 TB/s (74%) / 1.42 PF (63%), k=1, 0.09 | 1.29e-10 J/B |
+| H200 | 114% / 62% [P] (power never binds streaming) | none (no microbench) | — |
 
-**Profiles.**
-- `canonical` (gpu_coefficients.json, as in the recommender) is the default.
-- `kv_high`, `kv_low` and `runlevel` bracket the undetermined KV/compute split on B200 (UPDATE 5
-  relog free fit, relog with e_gemm pinned at 0.943, and the whole-run fit).
-- `kv_as_weight` (e_kv := e_w) is a sensitivity case for any GPU.
-- On decode J/token the profiles differ by ≤1 MAPE point (§6): they are collinear on our
-  data. They diverge for long context (fig b shading, fig c panels 2 vs 3).
-
-**Two balance points** (FLOP per byte; for decode, about tokens per step):
-
-| | performance ridge FLOPS/BW | energy ridge e_w/e_g (canonical) | e_w/e_g (smear-free alternatives) |
-|---|---|---|---|
-| H200 | 206 | 134 | 93 (run-level) |
-| B200 | 281 | 194 | 133 (steady / kv_low), 177 (kv_high) |
-
-- The energy ridge is 0.47–0.69× the performance ridge. Weight-streaming energy equals GEMM
-  energy only at about 95–195 tokens per step.
-- In batch terms, with prefill FLOPs charged to the tokens they serve, the crossover is
-  **B\* = e_w·W / (2·e_g·N_act·(1+P/G))**. For Qwen2-7B on B200: 166 at P/G = 0.17, but
-  **11 at P=8192, G=512**. With long prompts, prefill compute dominates per-token energy
-  almost immediately.
-- **Static-equivalent bandwidth** BW_s = P_s/e_w: 1.09 TB/s on H200 and 1.91 TB/s on B200,
-  both 23–24% of peak.
-  - The effective cost of a streamed byte is e_w + P_s/BW_realized.
-  - On B200 at the measured graphs-mode realized 3.1 TB/s (7B, c=1), idle adds **+61%** to
-    every weight byte.
-  - This is the idle-amortization term, and it is what makes batching and consolidation pay.
-
-## 4. Power roofline
-
-Dynamic power is linear in the byte rate β and FLOP rate φ:
+**At-cap step model.** A step is capped when `n(P_s+P_0) + E_dyn/t_unc > n·P_cap`. Then:
 ```
-P = P_s + P_0 + e_b·β + e_f·φ  ≤  P_cap          (P_0: activity intercept, 38.7 W on B200)
+t = max( t_unc , s·t_cap(W+K, F) + t_overhead ),   power = n·P_cap,   J/token = n·P_cap·t / B
 ```
-At intensity I = φ/β, with Δ = P_cap − P_s − P_0:
-```
-φ_P(I) = Δ / (e_b/I + e_f)                   power roof (harmonic)
-→ I·BW_P for small I, with BW_P = Δ/e_b      power-limited bandwidth
-→ Φ_P for large I, with Φ_P = Δ/e_f          power-limited FLOP rate
-attainable φ(I) = min( I·BW, FLOPS_peak, φ_P(I) )
-```
-- The knee of the power roof sits at **I = e_b/e_f**, which is the energy ridge.
-- The power roof binds the memory side iff Δ < e_b·BW. It binds the compute side iff Δ < e_f·FLOPS_peak.
+- t_overhead is the host/launch part of the time model.
+- s = 1 zero-shot. The calibrated values are A100 1.17 (without the overhead term) and A6000 1.19.
 
-| | BW_P (share of BW roof) | Φ_P (share of peak) | φ_P at the perf. ridge | source |
-|---|---|---|---|---|
-| B200, full clock | **5.78 TB/s (72%)** | **768 TF (34%)** | 521 TF (23% of peak) | steady_calib_B200.json: e_b 1.251e-10 + 38.7 W, e_f 0.943 pJ [M] |
-| B200, throttled (DVFS) | 6.79 TB/s (85%) | 1.23 PF (55%) | — | capped streams 1.122e-10 J/B, capped GEMMs 0.57–0.67 pJ [M] |
-| B200, observed at cap | 7.39 TB/s (92%) at SM 1578 MHz | 1.1–1.3 PF at SM 1.1–1.7 GHz | — | [M] |
-| H200 | 5.48 TB/s (114%): **never binds streaming** | 610 TF (62%); 735 TF at e_g 0.79 | — | **[P]**: serving e_w + run-level e_g, no steady calibration |
+How the at-cap model transfers:
+- **Zero-shot, the parameter-free form already reaches 7–8% on capped runs** (§6).
+- **Calibration does not improve it** (A100 capped runs: 7.0% zero-shot, 7.8% calibrated).
+- **Scales do not transfer across GPUs.**
 
-**B200 is a power-roof machine.** At full clock its power roof lies below the classical
-roofline at every intensity. **H200 is a roofline machine for decode**: power binds only
-compute-heavy work. In fig (a), the measured B200 GEMM loops fall between the full-clock and
-DVFS roofs: uncapped points sit under the full-clock roof, capped points near the DVFS roof.
-
-**Time stretch at the cap.** If the demanded power E_dyn/t + n·P_s exceeds n·P_cap, then
-```
-t = max( t_uncapped , E'_dyn / (n·(P_cap − P_s)) ),   power pinned at the cap
-```
-- Default: E' uses the full-clock coefficients (the recommender's convention).
-- `cap_regime=True` uses the measured lower J/B and J/FLOP at the cap. This represents the
-  measured drop in J/FLOP, **0.57–0.67 pJ capped against 0.94 pJ uncapped** (UPDATE 4 review),
-  as a capped-regime coefficient.
-- **Validation favours the default for serving.** On the 5 capped serving runs:
-
-  | run | measured | default (full-clock J) | DVFS coefficients |
+  | applied to | zero-shot | with A100's s | with A6000's s |
   |---|---|---|---|
-  | 32B c=512, J/token | 0.0908 | 0.0905 | 0.0855 (−5.8%) |
-  | prefill, J per prompt token (4 runs) | — | MAPE 11.9% | MAPE 14.5% |
+  | A6000 | 8.2% | 7.3% | — |
+  | A100 | 7.2% | — | 23.3% |
+  | B200 | 4.2% | 4.2% | — |
 
-  The steady-loop capped coefficients describe kernels, not a whole serving step at the cap.
-- [M] **Prefill at the cap behaves like e_g ≈ 0.7 pJ.** Profile fits to the 4 prefill runs:
+  So the transferable at-cap model is the parameter-free one: the microbench at-cap roofline
+  plus the overhead term.
+- **For B200 the default is the stretch rule**: serving coefficients, with time stretched at the
+  cap. On B200's 10 capped runs it gives 4.8% J/token MAPE, against 8.9% for the microbench
+  roof. B200 decode sits at the edge of the cap rather than deep in it.
+- The A100 longctx bracket in FINDINGS_A100 (full-clock +4 to +26%, throttled stream −8 to
+  −17%) is narrowed to **−5% J / +7% tok/s zero-shot**.
 
-  | e_g | MAPE (bias) |
-  |---|---|
-  | 0.713 (kv_high profile) | **5.1% (−1.5%)** |
-  | 0.642 (canonical) | 10.5% (−10.5%) |
-  | 0.943 (steady uncapped) | 23.7% (+23.7%) |
-
-  The effective J/FLOP at the cap lies between the uncapped and loop-capped values. This
-  matches the 0.66–0.84 pJ/FLOP reported in UPDATE 5.
+**At the cap, LIMINAL's TDP power assumption becomes correct.** LIMINAL-TDP gets J/token to
+9.5% on A6000 and 10.4% on A100, against 87.5% on the uncapped H200. Its remaining error is time.
 
 ## 5. Provisioning
 
-Given a model, a context mix (P, G, f), a load (concurrency C, or Poisson rate λ) and a TPOT
-SLO, LIMINAL-E enumerates GPU type × TP degree n ∈ {1, 2, 4, 8} × replica count R:
-```
-feasible: weights + per-replica KV ≤ 0.9·n·mem;   b ≤ max_seqs;   t(b) ≤ SLO
-closed loop: b = C/R          open loop: b = (λ/R)·G·t(b)   (Little's law, fixed point)
-J/token = R·[ n·P_s·t + E_dyn(b) ] / (b·R)  →  minimized over (GPU, n, R)
-```
-- `provision_conc` and `provision_rate` in `liminal_e.py`.
-- Every provisioned GPU is charged its idle power. So the objective favours the fewest,
-  busiest GPUs that meet the SLO, and more bandwidth pays only when it is used.
+Inputs: model, context (P, G, f), load (concurrency C or rate λ), and a TPOT SLO.
+- LIMINAL-E enumerates GPU × TP ∈ {1, 2, 4, 8} × replicas R.
+- Every provisioned GPU is charged its idle power.
+- Constraints: KV must fit in memory, `b ≤ 512`, and `t(b) ≤ SLO`.
+- Code: `provision_conc` and `provision_rate`.
 
-**Example: open loop, Qwen2.5-32B, P=1024, G=256, TPOT ≤ 50 ms** (`figs_data.json`; [P] predictions):
+Settings for fig (c) and `ranking_table.csv`:
+- TPOT ≤ 50 ms, eager time model, a common host (A100 overhead scale reset to 1).
+- A6000 and L40S use the A100 PCIe sync as a prior.
+- **H100 and L40S are priors** (memory-technology e_w, unmeasured idle). Every number is
+  **[P] predicted**.
 
-| λ (req/s) | best | runner-ups | note |
-|---|---|---|---|
-| 0.5 | A100-SXM ×1, 2.62 J/token [low-confidence prior] | H100 3.48; H200 3.73; B200 5.94 | B200 costs 1.6× H200: idle is not amortized |
-| 5 | **B200 TP1 ×1, 0.71 J/token** | H100 TP2 0.80; H200 TP2 0.83 | |
-| 50 | **B200 TP2 × 3 replicas, 0.45 J/token** | H100 TP2 × 5, 0.52 | |
+Per-token ranking among the measured GPUs. Each cell lists the winner, then each other GPU's
+J/token as a multiple of the winner's.
 
-**Provisioning map, fig (c)** (measured GPUs only, eager time model, TPOT ≤ 50 ms):
-- **Short context:** H200 wins everywhere up to c=256 for ≤7B models. B200 wins from c ≥ 256
-  for 14–32B and at c=1024 for every model from 1.5B up. This agrees with the measured crossover in UPDATE 5
-  (B200 wins only at c ≳ 256).
-- **Long context:** B200 wins from c ≥ 64 for ≤7B models and from c ≥ 16 for 14–32B, through
-  more KV capacity per GPU and its lower canonical e_kv. **Under the `kv_as_weight` hypothesis
-  the crossover moves out to c=64 for 14–72B and to c=256 (1024 for 0.5B) for small models.**
-  The long-context ranking depends on the open KV coefficient.
+| short ctx (P=G=256) | c=1 | c=16 | c=64 | c=256 |
+|---|---|---|---|---|
+| 0.5B | H200 < A100 1.02 < B200 1.43 < A6000 1.62 | H200 < A100 1.04 < B200 1.38 < A6000 1.72 | H200 < A100 1.11 < B200 1.27 < A6000 1.96 | H200 < B200 1.06 < A100 1.23 < A6000 2.02 |
+| 3B | H200 < A100 1.28 < B200 1.47 < A6000 2.36 | H200 < A100 1.20 < B200 1.35 < A6000 2.48 | A100 < H200 1.02 < B200 1.17 < A6000 2.01 | B200 < A100 1.09 < H200 1.09 < A6000 1.94 |
+| 7B | H200 < B200 1.42 < A100 1.67 < A6000 3.07 | H200 < B200 1.28 < A100 1.42 < A6000 2.97 | H200 < B200 1.06 < A100 1.16 < A6000 2.17 | B200 < H200 1.21 < A100 1.26 < A6000 2.64 |
+| 14B | H200 < B200 1.39 < A100 1.77 < A6000 3.29 | H200 < B200 1.24 < A100 1.47 < A6000 3.76 | H200 < B200 1.04 < A100 1.18 < A6000 5.31 | B200 < H200 1.19 < A100 1.74 < A6000 7.70 |
+| 32B | H200 < B200 1.30 < A100 1.83 < A6000 3.40 | H200 < B200 1.18 < A100 1.59 < A6000 3.97 | B200 < H200 1.01 < A100 2.49 < A6000 7.80 | B200 < H200 1.28 < A100 4.15 < A6000 13.2 |
+| 72B | H200 < B200 1.19 < A100 1.77 < A6000 3.34 | H200 < B200 1.09 < A100 3.34 < A6000 7.17 | B200 < H200 1.07 < A100 5.96 < A6000 16.7 | B200 < H200 1.25 < A100 9.19 < A6000 25.7 |
 
-| status | items |
-|---|---|
-| measured | H200 and B200: P_s, e_w, time model. B200: CUDA graphs, TP2 sync, power roof, capped regime |
-| priors | A100, H100, L40S, A5000: memory-technology e_w priors and e_g priors (RECOMMENDER.md); time model = pooled ensemble prior; idle estimated, except A100-PCIe and A5000 |
-| open | **KV vs compute split** (both GPUs); H200 with CUDA graphs; H200 steady power roof; TP > 2; arrival-rate (open-loop) validation at high load |
+| long ctx (P=8192, G=1024) | c=1 | c=16 | c=64 | c=256 |
+|---|---|---|---|---|
+| 0.5B | H200 < A100 1.04 < B200 1.40 < A6000 1.72 | H200 < B200 1.17 < A100 1.25 < A6000 2.51 | H200 < B200 1.01 < A100 1.39 < A6000 3.05 | B200 < H200 1.07 < A100 1.63 < A6000 3.77 |
+| 7B | H200 < B200 1.36 < A100 1.57 < A6000 3.35 | H200 < B200 1.02 < A100 1.10 < A6000 3.60 | B200 < H200 1.12 < A100 1.30 < A6000 4.58 | B200 < H200 1.24 < A100 1.41 < A6000 4.94 |
+| 32B | H200 < B200 1.25 < A100 1.70 < A6000 3.57 | B200 < H200 1.07 < A100 2.76 < A6000 8.86 | B200 < H200 1.21 < A100 3.56 < A6000 10.9 | B200 < H200 1.32 < A100 3.93 < A6000 12.3 |
+| 72B | H200 < B200 1.15 < A100 1.73 < A6000 3.70 | B200 < H200 1.06 < A100 5.51 < A6000 14.8 | B200 < H200 1.22 < A100 8.09 < A6000 21.9 | B200 < H200 1.31 |
 
-## 6. Validation (`validate.py` → `validation.json`, `validation_runs.csv`)
+**Conclusions** (all [P], with the ratios checked against measurement):
 
-Columns of the table below:
-- **LIMINAL-E**: canonical coefficients, time model matched to the run's mode (eager fit, or
-  graphs = eager fit with τ − 34.5 µs), closed-loop at the nominal concurrency. Inputs are only
-  the model, P, G, f, c and the GPU.
-- **Energy-only**: the energy model evaluated at the *measured* running batch and step time.
-  It isolates the energy coefficients from the time model.
-- **LIMINAL time + E**: LIMINAL v2's time model with our energy model.
-- **LIMINAL (TDP)**: LIMINAL as published, with power = TDP.
+1. **H200 is cheapest per token up to about c=16–64.** **B200 is cheapest from c ≥ 64–256.**
+   - The crossover comes earlier for bigger models and for long context.
+   - At c ≥ 256, B200 beats H200 by 1.2–1.3×.
+2. **The A100 is a 1.4–1.8× H200 part for ≥7B models**, and does worse once it needs TP over
+   PCIe (32B and up at high load: 2.5–9×).
+   - It is competitive (≤1.1× the best) only for ≤3B models on a common host.
+   - On the measured A100 node, host overhead makes small models 1.5–1.75× H200 (FINDINGS_A100 ladder).
+3. **The A6000 is never cheapest.** It costs 1.6–3.4× the best GPU at short context and c ≤ 16 (measured
+   A6000/H200 for Qwen2-7B alpaca: 3.3–3.6), and much more once its 48 GB forces TP over PCIe.
+4. **Model vs measurement for Qwen2-7B alpaca** (FINDINGS_A100, FINDINGS_A6000):
 
-J/token MAPE (bias); the last column is step-time MAPE:
+   | ratio | model | measured |
+   |---|---|---|
+   | A100/H200, c ≤ 16 | 1.42–1.67 | ~1.5 |
+   | A100/B200, c = 1 | 1.18 | 1.14 |
+   | A100/B200, c = 16 | 1.11 | 1.13 |
+   | A6000/H200 | 3.0–3.3 | 3.3–3.6 |
 
-| set (n) | LIMINAL-E | energy-only | LIMINAL time + E | LIMINAL (TDP) | t MAPE |
+5. **With priors, H100 is predicted to win many mid-load cells**: H200's bandwidth at lower
+   idle, same die. The L40S wins tiny models at low load. Both are unmeasured.
+
+## 6. Validation (`validate_v2.py` → `validation_v2.json`, `validation_v2_runs.csv`)
+
+**Zero-shot** = the microbench zero-shot rule (§3), datasheet values, idle states, the at-cap
+roofline, and the H200/B200 time-model prior. **No A100 or A6000 serving data is used.**
+
+J/token and tok/s MAPE, with bias in parentheses:
+
+| set (n) | J zero-shot | tok/s zero-shot | J calibrated | tok/s calibrated | J, LIMINAL-TDP |
 |---|---|---|---|---|---|
-| Sept H200 eager (80) — *in-sample* | 3.8% (−2.8) | 2.6% | 9.8% | 87.5% | 4.1% |
-| Sept B200 eager (28) — *in-sample* | 3.9% (−3.3) | 1.6% | 7.6% | 28.4% | 2.2% |
-| Oct B200 graphs, c ≤ 64 (11) | 5.3% (−5.3) | 3.5% | 5.3% | 39.4% | 3.0% |
-| Oct B200 highconc, c 128–512 (9) | 10.4% (−9.6) | 6.9% | 13.5% | 12.2% | 12.1% |
-| Oct B200 relog, eager (8) | 13.4% (−13.4) | 3.7% | 19.2% | 26.7% | 18.4% |
-| Oct B200 72B TP1 (2) | 4.3% | 1.9% | 3.9% | 5.2% | 3.5% |
-| Oct B200 TP2 (6)† | 4.7% (−4.5) | 2.2% | 5.5% | 37.2% | 0.9% |
-| Oct B200 prefill-heavy (4), per generated token | 10.5% (−10.5) | 13.4% | 11.2% | 11.2% | 4.8% |
-| **all decode runs (144)** | **4.9%** | **2.8%** | **9.5%** | **61.0%** | |
-| **Oct decode, out of sample (36)** | **8.2%** (6.7% without relog) | 4.1% | 10.4% | 27.5% | |
+| **A6000, all (25; all at the cap)** | **8.2% (−7.6)** | **10.4% (+9.6)** | 7.5% (−1.4) | 8.4% | 9.5% |
+| A6000, c ≤ 64 short ctx (19) | 6.4% | 7.6% | 5.2% | 5.3% | 7.3% |
+| A6000 long ctx (3) / c = 128–256 (3) | 0.7% / 27% | 0.9% / 38% | 6.3% / 23% | | |
+| **A100, measured-capped dense TP1 (82)** | **7.0% (−1.9)** | **7.5% (+4.0)** | 7.8% | 7.9% | |
+| A100, uncapped ≤3B (27) | 27% (−25) | 75% (+75): host overhead | 4.3% | 5.7% | |
+| A100, all dense TP1 (109) | 12.0% | 24.2% | 7.0% | 7.4% | 10.4% |
+| A100 by arm: Sept eager 40 / graphs ≤c64 14 / long ctx 8 / prefill 4 / c=128–256 4 | 6.2 / 6.3 / 10.2 / 3.5 / 18.2% | | 6.7 / 8.0 / 9.5 / 3.5 / 20.1% | | |
+| A100 TP2 PCIe (6) | 15.9% (no PCIe term) | 36% | 9.1% | 13.1% | |
+| A100 MoE Qwen3-30B-A3B (13) | 34% (+27) | 38% | 40% | 36% | |
+| **B200, microbench zero-shot (77 dense TP1)** | **5.3% (−1.2)** | 9.4% | 5.6% (−4.2): serving fit | 8.5% | 28% |
+| B200 long ctx (13) / capped (8) | 5.6 / 11.0% | | 6.4 / 4.2% | | |
+| H200 Sept (80), KV prior + e_g refit | — | — | 2.7% (−1.3) | 4.7% | 87.5% |
 
-† τ_ar was fitted on the 3 72B TP2 runs.
+**Cap detection, zero-shot:** A100 95 of 115 runs right, A6000 18 of 25. The A6000 misses are
+low-batch runs that the full-clock model places just under the cap. J/token there is still
+within 8%.
 
-**B200 / H200 J/token ratio**, 22 matched Sept pairs (balance_analysis.json `matched`):
-- LIMINAL-E MAPE **2.5%**; LIMINAL-TDP MAPE 13.8%. Both get the sign right in 22 of 22.
+**What the calibration fixes:** only host overhead (A100 small models).
+- It fits three things: the A100 eager overhead scale, the at-cap scales, and the A100 PCIe TP sync.
+- It does not improve the capped regime.
 
-**TP2 energy premium** (J/token TP2 ÷ TP1):
+**Misses:**
+- **c = 128–256 on A100 and A6000:** throughput over-predicted by 24–38%. The same pattern
+  appears on B200 at c=512. The time model is extrapolated past ~110 tokens per step, and
+  chunked-prefill steps that vLLM hides are not modelled.
+- **MoE on A100:** J/token +27%. The fused-MoE layer floor is an in-sample H200 prior, and
+  graphs mode makes MoE 4.5× faster at c=1. This is not modelled.
+- **B200 long-context J/token −6% with the settled KV.** The Sept per-bin coefficients get
+  −2%, by error cancellation (they over-count KV). This should be checked with the
+  prefill-spread binning fix (UPDATE 6 review "next fix").
 
-| | predicted | measured |
-|---|---|---|
-| energy premium | 1.07–1.13 | 1.03–1.13 |
-| speedup | 1.37–1.58 | 1.37–1.60 |
+## 7. KV coefficient: status
 
-The premium is idle power of the second GPU plus sync time. Link energy is not material.
-
-**Where it misses:**
-1. **Oct graphs runs: −5% bias.** About 1.4 points is the Oct node's higher idle (246.6 W
-   against the 237.8 W coefficient). The remaining ~4% is dynamic power under-predicted by
-   ~17 W. Note that the eager time model scores *better* on these runs (3.7%) only by
-   cancellation: it over-predicts time by 18% and under-predicts power.
-2. **Relog eager: −13%.** This is a time miss (t −18%; energy-only 3.7%), consistent with the
-   logger slowing eager runs (UPDATE 5 review).
-3. **7B at c = 256–512: time under-predicted 12–27%.** The μ and MFU terms were fitted at
-   ≤110 tokens per step, and scheduler limits are not modelled. This is the extrapolation
-   UPDATE 5 flagged: B200 7B alpaca c=512 throughput over-predicted by 28%.
-4. **Long-prompt prefill at the cap: −15 to −16% at P=8192, −3 to −7% at P=2048.** Even with
-   prefill attention charged, canonical e_g is too low at the cap (§4).
-5. **Cap onset.** 32B at c=128/256 sits at the cap 95–98% of the time; predicted 945 W and
-   999 W, i.e. at the edge rather than capped. 32B c=512 is predicted capped (P 1000 W,
-   J −0.4%). 72B c=16 is 72% capped; predicted 948 W.
-
-## 7. A KV test that half-works: the H200 long-context sweep (`kv_longctx.py`)
-
-`logs/longctx` (H200, Qwen2-7B, July 2026; prompts 4k/16k/30k × c = 1/8/16) varies KV bytes
-about 7× at fixed concurrency. That breaks the KV-FLOP collinearity.
-
-Run-level power at the measured n and step time:
-
-| e_kv hypothesis | power MAPE (bias) |
-|---|---|
-| canonical, 3.29e-10 | 38.9% (+38.9) |
-| run-level, 2.42e-10 | 22.5% (+22.3) |
-| **e_kv = e_w, 1.07e-10** | **1.9% (−1.9)** |
-| free fit | **e_kv = 1.12e-10**, 1.8% |
-
-**This does not settle the split.**
-- The synthetic prompts are identical, so every sequence reads the same prefix-cached KV blocks.
-- The incremental KV bytes per incremental step time at c=16 come to **5.87 TB/s, above the
-  4.8 TB/s peak**. Some of the counted KV reads are therefore served from L2, so the fitted
-  e_kv per logical byte is biased low as a DRAM coefficient.
-
-What it does show: for **shared-prefix** long-context traffic, the canonical e_kv
-over-predicts power by about 40%, and up to 2× at c=16 and 30k context.
-
-**The decisive run** is the same sweep with `unique_prompts=True` (the harness already has
-the flag), on H200 or B200.
+- **B200: settled [M].** e_kv = 1.53–1.61e-10 J/B = 1.18–1.29× e_w (UPDATE 6 review: clean
+  decode bins, slope R² ≥ 0.998). It is now the canonical B200 value.
+- **H200: open [O].** The prior is e_kv = 1.25·e_w; with it, e_g refits to 1.20 pJ and Sept
+  J/token MAPE improves from 3.8% (per-bin 3.29e-10) to 2.7%.
+  - The v1 shared-prefix long-context sweep (`kv_longctx.json`) gave ~1.1e-10 per logical
+    byte, but it is L2-confounded.
+  - A unique-prompt H200 sweep would settle it.
+- **A100: not identifiable at the cap.** Its at-cap KV/weight ratio of 0.79 is time, not
+  energy (FINDINGS_A100). A6000: unmeasured; the prior is 1.25·e_w.
 
 ## 8. What LIMINAL-E adds over LIMINAL
 
-| | LIMINAL (v2) | LIMINAL-E |
+| | LIMINAL v2 | LIMINAL-E |
 |---|---|---|
-| bandwidth utilization | forced to 1.0 | fitted η: 0.73 (H200), 0.86 (B200), plus η_kv |
-| overhead | 114 µs/layer, fitted on H100 | t0 plus τ/layer, fitted per GPU. **CUDA graphs = −34.5 µs/layer**, measured as a per-layer effect |
-| sync | modelled, not validated here | **τ_ar = 15.5 µs/layer measured** (B200 TP2), 1.3% held-out time |
-| power | TDP, no activity dependence | P_s + e_w·W + e_kv·K + e_g·F, measured. J/token MAPE 4.9% against 61% for TDP on the same 144 runs |
-| power limit | none | **power roof** φ_P(I) = Δ/(e_b/I + e_f), plus a capped regime (time stretch, optional DVFS coefficients) |
-| balance | qualitative | energy ridge e_w/e_g against perf ridge; static-equivalent bandwidth P_s/e_w |
-| bound labels | memory / compute | bandwidth / compute / **overhead** / **power** (per step) |
-| provisioning | STPS/W at TDP | GPU × TP × replicas minimizing J/token under a TPOT SLO, with idle charged |
+| bandwidth utilization | forced to 1.0 | fitted η |
+| overhead | 114 µs/layer, H100 | t0 + τ per GPU. CUDA graphs = −34.5 µs/layer. Node host overhead (A100 ×1.92) separated from hardware |
+| sync | modelled | measured: 15.5 µs/layer on NVLink; 185 µs/layer + 5 GB/s on PCIe |
+| power | TDP | P_s + P_0 + e_w·W + e_kv·K + e_g·F, measured on 4 GPUs. Zero-shot from microbenchmarks to 5–8% J/token at the cap and on B200 |
+| power limit | none | full-clock power roof **and a measured at-cap roofline**: A100 68%/62%, A6000 86%/69%, B200 74%/63% of BW/peak |
+| balance | qualitative | energy ridge against performance ridge; static-equivalent bandwidth; the activity intercept (GDDR6) |
+| provisioning | STPS/W at TDP | GPU × TP × replicas at a TPOT SLO, with idle charged and NVLink vs PCIe TP |
 
-## 9. Limitations (read before quoting)
+## 9. Limitations
 
-- **The KV/compute split is undetermined** on both GPUs (UPDATE 5 review; §7 is suggestive
-  but confounded). Short-context J/token is insensitive to it. Long-context J/token and the
-  long-context provisioning map are not.
-- **The time model is fitted on eager vLLM 0.10.2.**
-  - The graphs correction is B200-only and fitted on one model.
-  - H200 with graphs is a prior.
-  - Above ~110 tokens per step the time model is extrapolated (miss 3).
-- **The power roof is measured only on B200.** The H200 roof uses serving coefficients and has
-  no P_0. Priors for A100/H100/L40S scale B200's capped/uncapped ratios.
-- **Capping is binary per step.** Real serving moves in and out of the cap within a step and
-  across steps. Average power at "capped" runs is 96–98% of the cap.
-- **The prefill-attention energy convention (e_g)** is untested beyond the 4 prefill runs.
-  Attention may cost more per FLOP than GEMMs.
-- **The Sept sets are in-sample** for both the energy coefficients and the time model. The
-  out-of-sample numbers are the Oct B200 rows, which come from one GPU type, three models and
-  one node.
-- **Static power is GPU idle only.** Host and node power are excluded, and including them
-  would strengthen the consolidation result. L40S/H100/A100-SXM idle values are estimates.
-- **The open-loop provisioning has not been validated** against Poisson runs at high load. The
-  provisioning maps are predictions, and cells at c=1024 extrapolate the time model.
+- **The zero-shot uncapped time uses the H200/B200 time-model prior**, not A100/A6000 data. Its
+  errors are host overhead and appear only in the uncapped small-model regime.
+- **At-cap scales are GPU-specific.** The parameter-free form is the one to use on a new GPU.
+  The A6000 calibration rests on 25 runs and one model family.
+- **PCIe TP sync was fitted on 3 runs** (2 parameters). TP4 and TP8 over PCIe, and the A6000 and
+  L40S use of it, are extrapolations.
+- **Priors:** H100 and L40S (all coefficients, idle), the A6000 KV value, and the H200 KV value.
+  Host and node power are excluded.
+- **MoE and very high concurrency (c ≥ 128) are not modelled well** (§6).
 
 ## Figures (`figs/`)
-- `fig_a_power_roofline.png`: H200 and B200 rooflines with the bandwidth, compute and power
-  roofs (B200: full clock and throttled), measured serving points (per GPU), prefill runs and
-  B200 steady GEMM microbenchmarks (capped vs uncapped).
-- `fig_b_energy_roofline.png`: J/token against batch, split into static, weight, KV and
-  compute, for short and long context, with the energy ridge, the power-capped region, the B200
-  kv_low..kv_high band and measured points.
-- `fig_c_provisioning_map.png`: best GPU (H200 vs B200), TP degree, replicas and J/token over
-  model size × concurrency. Panels: short context, long context, and long context under KV = weight.
-- `fig_d_validation_parity.png`: predicted against measured J/token.
+- `fig_a_power_roofline.png`: four panels. Bandwidth and compute roofs, the full-clock power
+  roof, the at-cap roofline, capped and uncapped microbench kernels, and measured serving points.
+- `fig_b_energy_roofline.png`: J/token against batch by component, for the 4 GPUs at short and
+  long context, with measured points.
+- `fig_c_provisioning_map.png`: the winner, J/token, and GPUs × TP. Measured GPUs only, and with
+  the H100/L40S priors (hatched).
+- `fig_d_validation_parity.png`: zero-shot and calibrated predictions against measured J/token.

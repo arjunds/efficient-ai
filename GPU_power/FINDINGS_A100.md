@@ -212,3 +212,21 @@ at the cap):
 
 B200 prefill is 1.25–1.52× cheaper per prompt token and 4–5× faster, in line with its
 1.9× cheaper GEMM energy (0.77 vs 1.47 pJ/FLOP at full clock).
+
+## MoE with CUDA graphs (Qwen3-30B-A3B on A100, 2026-10-21)
+| run | graphs J/tok (tok/s, W) | eager J/tok (tok/s) | throughput ×, graphs / eager | J/token ×, graphs / eager |
+|---|---|---|---|---|
+| alpaca c=1 | 1.92 (121, 231 W) | 4.62 (27) | **4.51** | **0.42** |
+| alpaca c=4 | 1.01 (276, 281 W) | 1.57 (98) | 2.81 | 0.65 |
+| alpaca c=16 | 0.437 (680, 297 W) | 0.552 (384) | 1.77 | 0.79 |
+| alpaca c=64 | 0.160 (1850, 297 W) | 0.191 (1528) | 1.21 | 0.84 |
+| sharegpt c=1 | 1.88 (121, 227 W) | 4.74 (27) | 4.47 | 0.40 |
+| sharegpt c=64 | 0.214 (1394, 298 W) | 0.232 (1202) | 1.16 | 0.92 |
+
+- **For MoE, the serving configuration matters more than the GPU.** CUDA graphs cut
+  J/token 2.4× at batch 1, more than the whole A100-vs-H200 gap (1.20–1.45×, both
+  eager).
+- With graphs, the A100 even comes in at 0.50× the H200-in-eager J/token at batch 1. That
+  isn't a valid hardware comparison: an H200 with graphs would gain too, and we can't
+  measure it. But it shows the September eager MoE numbers were overhead-dominated.
+- With graphs, MoE reaches the 300 W cap from c=16 on.

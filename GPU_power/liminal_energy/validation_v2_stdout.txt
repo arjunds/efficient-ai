@@ -1,0 +1,196 @@
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+[skip: no binned_table] logs/A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/sharegpt_c16
+[skip: no binned_table] logs/A100_prov/a100_moe_graphs/Qwen3-30B-A3B/sharegpt_c16
+[skip: no binned_table] logs/A6000_prov/gpu_highconc/Qwen2-7B-Instruct/alpaca_c128
+runs: {'B200': 83, 'H200': 80, 'A100-80-PCIe': 129, 'A6000': 25}
+[cal] A100-80-PCIe: energy rule zeroshot_gemv (uncapped power MAPE zs 5.7 / gemv 4.3); ovh_scale 1.92 (n=27); cap fits {'roof': {'cap_scale': 1.171, 'rmsle': 0.103, 'rmsle_unscaled': 0.13}, 'roof_ovh': {'cap_scale': 0.869, 'rmsle': 0.116, 'rmsle_unscaled': 0.144}} -> roof
+[cal] A6000: energy rule zeroshot (uncapped power MAPE zs None / gemv None); ovh_scale 1.00 (n=0); cap fits {'roof': {'cap_scale': 1.282, 'rmsle': 0.118, 'rmsle_unscaled': 0.148}, 'roof_ovh': {'cap_scale': 1.185, 'rmsle': 0.116, 'rmsle_unscaled': 0.138}} -> roof_ovh
+[transfer] A100-80-PCIe -> A6000: {'zero-shot roof_ovh': {'n': 25, 'tok_mape': 10.4, 'j_mape': 8.2, 'j_bias': -7.6}, 'transfer A100-80-PCIe scale': {'n': 25, 'tok_mape': 9.3, 'j_mape': 7.3, 'j_bias': -6.2}}
+[transfer] A6000 -> A100-80-PCIe: {'zero-shot roof_ovh': {'n': 78, 'tok_mape': 7.7, 'j_mape': 7.2, 'j_bias': -2.1}, 'transfer A6000 scale': {'n': 78, 'tok_mape': 17.0, 'j_mape': 23.3, 'j_bias': 21.3}}
+[transfer] A100-80-PCIe -> B200: {'zero-shot roof_ovh': {'n': 7, 'tok_mape': 5.1, 'j_mape': 4.2, 'j_bias': 0.1}, 'transfer A100-80-PCIe scale': {'n': 7, 'tok_mape': 4.3, 'j_mape': 4.2, 'j_bias': -2.8}}
+[tp] A100 PCIe: tau_ar 185 us/layer + all-reduce at 5 GB/s (14B fit); 32B held-out tok/s MAPE: fit 16.3%, tau-only 27.4%, B200-NVLink sync 27.4%
+[H200] e_kv prior 1.25*e_w = 1.332e-10; refit e_gemm = 1.2 pJ (was 0.794)
+
+group                                           n | J zero-shot     J zs-roof       J zs-GEMV       J calibrated    | tok/s zs        tok/s cal       | J LIMINAL-TDP  
+A6000 all (eager+graphs+highconc+longctx)      25 |   8.2 ( -7.6)   8.4 ( -7.8)  17.2 (-17.2)   7.5 ( -1.4) |  10.4 ( +9.6)   8.4 ( +2.9) |   9.5 ( -6.2)
+A6000 c<=64 short ctx                          19 |   6.4 ( -5.7)   6.4 ( -5.7)  16.5 (-16.5)   5.2 ( +0.8) |   7.6 ( +6.5)   5.3 ( -0.3) |   7.3 ( -3.2)
+A6000 highconc                                  3 |  27.0 (-27.0)  29.3 (-29.3)  27.0 (-27.0)  22.8 (-22.8) |  38.1 (+38.1)  30.8 (+30.8) |  25.4 (-25.4)
+A6000 longctx                                   3 |   0.7 ( +0.0)   0.7 ( +0.0)  11.5 (-11.5)   6.3 ( +5.6) |   0.9 ( +0.4)   5.5 ( -4.7) |   7.4 ( -6.4)
+A100 dense TP1 (all arms)                     109 |  12.0 ( -7.7)  15.4 (-15.0)  12.3 ( -5.1)   7.0 ( +1.0) |  24.2 (+21.5)   7.4 ( +1.6) |  10.4 ( +0.8)
+A100 7-14B graphs/eager c<=64                  14 |   6.3 ( +1.2)  10.0 ( -9.6)   7.7 ( +5.8)   8.0 ( +5.1) |   5.8 ( -0.2)   7.5 ( -3.5) |  12.3 ( +8.5)
+A100 highconc                                   4 |  18.2 (-18.2)  25.0 (-25.0)  18.2 (-18.2)  20.1 (-20.1) |  23.9 (+23.9)  26.7 (+26.7) |  14.9 (-14.9)
+A100 longctx                                    8 |  10.2 ( -5.0)  14.5 (-14.5)  10.2 ( -5.0)   9.5 ( -5.7) |  11.4 ( +7.0)  10.6 ( +7.5) |  10.6 ( +0.5)
+A100 ladder (0.5-14B, eager)                   39 |  20.6 (-18.3)  23.0 (-23.0)  19.5 (-16.1)   5.3 ( +2.3) |  53.9 (+52.0)   6.5 ( -0.6) |  12.5 ( -3.7)
+A100 ladder <=3B (uncapped)                    23 |  30.7 (-30.7)  31.7 (-31.7)  28.7 (-28.7)   3.8 ( +1.2) |  87.1 (+87.1)   6.1 ( +0.7) |  12.5 (-12.5)
+A100 Sept eager (ragged_a100)                  40 |   6.2 ( -0.9)  10.2 ( -9.6)   7.5 ( +2.3)   6.7 ( +1.7) |   6.3 ( +4.4)   5.9 ( +2.0) |   7.9 ( +3.8)
+A100 prefill (per gen token)                    4 |   3.5 ( +2.2)   3.9 ( +0.2)   3.5 ( +2.2)   3.5 ( +1.0) |   3.4 ( -1.4)   3.5 ( -0.1) |   3.3 ( +3.1)
+A100 MoE Qwen3-30B-A3B                         14 |  34.0 (+27.4)  31.6 (+24.6)  34.4 (+28.6)  39.5 (+35.5) |  37.9 ( -2.2)  35.5 ( -9.3) |  33.1 (+13.3)
+A100 TP2 PCIe                                   6 |  15.9 (-15.9)  22.5 (-22.5)  17.2 ( -5.2)   9.1 ( +1.6) |  36.0 (+36.0)  13.1 ( +5.8) |  13.4 (-11.2)
+B200 Oct graphs/highconc/tp                    28 |   4.3 ( -1.1)   4.1 ( -1.3)   4.7 ( -2.6)   5.6 ( -4.3) |   7.6 ( +6.6)   7.1 ( +6.4) |  27.9 (+19.4)
+B200 Oct longctx (7B, 32B)                     13 |   5.6 ( -1.0)   5.6 ( -1.0)   5.1 ( -3.1)   6.4 ( -6.0) |   8.0 ( +4.9)   8.0 ( +4.9) |  22.0 ( +4.4)
+B200 Sept eager                                28 |   3.6 ( +2.5)   3.6 ( +2.5)   2.8 ( +0.4)   3.3 ( -0.8) |   4.1 ( +3.1)   4.1 ( +3.1) |  28.2 (+25.7)
+B200 capped runs (cap>=50%)                     8 |  11.0 ( -5.7)  10.6 ( -8.0)  11.0 ( -5.6)   4.2 ( -1.6) |  15.0 (+13.0)   6.4 ( +5.4) |   4.3 ( -1.9)
+H200 Sept eager                                80 |       -               -               -           2.7 ( -1.3) |       -           4.7 ( +2.5) |  87.5 (+86.9)
+B200 capped: roof J 4.2% (-1.6) tok/s 6.4% | stretch J 4.2% (-1.6) tok/s 6.4%
+B200 Oct longctx (7B, 32B): settled/prior-KV J 6.4% (-6.0) vs Sept per-bin J 4.3% (-2.1)
+B200 Sept eager: settled/prior-KV J 3.3% (-0.8) vs Sept per-bin J 3.9% (-3.3)
+H200 Sept eager: settled/prior-KV J 2.7% (-1.3) vs Sept per-bin J 3.8% (-2.8)
+prefill per prompt token: meas ['0.0142', '0.0190', '0.0158', '0.0175'] | cal ['0.0147', '0.0186', '0.0143', '0.0157']
+a100_prefill per prompt token: meas ['0.0216', '0.0269', '0.0198', '0.0235'] | cal ['0.0222', '0.0255', '0.0205', '0.0241']
+
+per-run A100/A6000 (meas | zero-shot | calibrated):
+  A100_prov/a100_eager/Qwen2-7B-Instruct/alpaca_c1               c=  1 tok/s    84.0 |    94.0   |    79.2   J  3.5367 |  3.1533 |  3.7883  cap%=-
+  A100_prov/a100_eager/Qwen2-7B-Instruct/alpaca_c16              c= 16 tok/s  1205.7 |  1201.6 C |  1228.3   J  0.2466 |  0.2497 |  0.2442  cap%=-
+  A100_prov/a100_eager/Qwen2-7B-Instruct/alpaca_c64              c= 64 tok/s  3909.0 |  4113.6 C |  4227.0   J  0.0759 |  0.0729 |  0.0710  cap%=-
+  A100_prov/a100_graphs/Qwen2-7B-Instruct/alpaca_c1              c=  1 tok/s    89.4 |    94.0   |    79.2   J  3.3338 |  3.1533 |  3.7883  cap%=-
+  A100_prov/a100_graphs/Qwen2-7B-Instruct/alpaca_c16             c= 16 tok/s  1285.6 |  1201.6 C |  1231.3   J  0.2318 |  0.2497 |  0.2436  cap%=-
+  A100_prov/a100_graphs/Qwen2-7B-Instruct/alpaca_c4              c=  4 tok/s   340.9 |   308.0 C |   315.5   J  0.8761 |  0.9740 |  0.9507  cap%=-
+  A100_prov/a100_graphs/Qwen2-7B-Instruct/alpaca_c64             c= 64 tok/s  4123.8 |  4112.5 C |  4226.0   J  0.0722 |  0.0729 |  0.0710  cap%=-
+  A100_prov/a100_graphs/Qwen2-7B-Instruct/sharegpt_c1            c=  1 tok/s    89.0 |    93.9   |    79.2   J  3.3554 |  3.1588 |  3.7900  cap%=-
+  A100_prov/a100_graphs/Qwen2-7B-Instruct/sharegpt_c16           c= 16 tok/s  1189.0 |  1171.2 C |  1199.1   J  0.2496 |  0.2561 |  0.2502  cap%=-
+  A100_prov/a100_graphs/Qwen2-7B-Instruct/sharegpt_c4            c=  4 tok/s   335.3 |   306.7 C |   314.1   J  0.8884 |  0.9782 |  0.9551  cap%=-
+  A100_prov/a100_graphs/Qwen2-7B-Instruct/sharegpt_c64           c= 64 tok/s  3188.2 |  3557.4 C |  3641.4   J  0.0929 |  0.0843 |  0.0824  cap%=-
+  A100_prov/a100_graphs/Qwen2.5-14B-Instruct/alpaca_c1           c=  1 tok/s    47.8 |    42.5 C |    40.0   J  6.2477 |  7.0517 |  7.5005  cap%=-
+  A100_prov/a100_graphs/Qwen2.5-14B-Instruct/alpaca_c16          c= 16 tok/s   671.0 |   656.3 C |   618.2   J  0.4452 |  0.4571 |  0.4853  cap%=-
+  A100_prov/a100_graphs/Qwen2.5-14B-Instruct/alpaca_c64          c= 64 tok/s  2246.8 |  2196.3 C |  2095.3   J  0.1324 |  0.1366 |  0.1432  cap%=-
+  A100_prov/a100_highconc/Qwen2-7B-Instruct/alpaca_c128          c=128 tok/s  5535.3 |  6543.2 C |  6734.6   J  0.0538 |  0.0458 |  0.0445  cap%=-
+  A100_prov/a100_highconc/Qwen2-7B-Instruct/alpaca_c256          c=256 tok/s  6838.7 |  8908.9 C |  9145.9   J  0.0433 |  0.0337 |  0.0328  cap%=-
+  A100_prov/a100_highconc/Qwen2-7B-Instruct/sharegpt_c128        c=128 tok/s  4385.5 |  5245.8 C |  5359.1   J  0.0677 |  0.0572 |  0.0560  cap%=-
+  A100_prov/a100_highconc/Qwen2-7B-Instruct/sharegpt_c256        c=256 tok/s  5299.0 |  6748.9 C |  6854.0   J  0.0559 |  0.0445 |  0.0438  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/alpaca_c1    c=  1 tok/s   125.4 |   208.9   |   108.6   J  1.0051 |  0.7299 |  1.1272  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/alpaca_c16   c= 16 tok/s  1734.3 |  3301.3   |  1726.0   J  0.0710 |  0.0478 |  0.0727  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/alpaca_c4    c=  4 tok/s   446.6 |   833.3   |   433.7   J  0.2729 |  0.1843 |  0.2836  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/alpaca_c64   c= 64 tok/s  6877.4 | 12707.1   |  6765.2   J  0.0203 |  0.0137 |  0.0200  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/sharegpt_c1  c=  1 tok/s   126.5 |   208.7   |   108.5   J  0.9764 |  0.7311 |  1.1284  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/sharegpt_c16 c= 16 tok/s  1772.4 |  3260.6   |  1714.8   J  0.0717 |  0.0494 |  0.0744  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/sharegpt_c4  c=  4 tok/s   461.5 |   831.4   |   433.2   J  0.2629 |  0.1855 |  0.2849  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-0.5B-Instruct/sharegpt_c64 c= 64 tok/s  6866.7 | 12145.3   |  6602.6   J  0.0220 |  0.0152 |  0.0215  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/alpaca_c1    c=  1 tok/s   105.9 |   191.1   |    99.4   J  1.5362 |  1.0551 |  1.6023  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/alpaca_c16   c= 16 tok/s  1526.1 |  2981.2   |  1569.2   J  0.1080 |  0.0723 |  0.1065  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/alpaca_c4    c=  4 tok/s   381.9 |   760.4   |   396.5   J  0.4049 |  0.2690 |  0.4058  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/alpaca_c64   c= 64 tok/s  6162.1 | 11034.8   |  6021.3   J  0.0322 |  0.0231 |  0.0317  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/sharegpt_c1  c=  1 tok/s   104.8 |   191.0   |    99.3   J  1.5812 |  1.0574 |  1.6047  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/sharegpt_c4  c=  4 tok/s   396.9 |   755.9   |   395.2   J  0.3978 |  0.2727 |  0.4097  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-1.5B-Instruct/sharegpt_c64 c= 64 tok/s  5785.6 |  9924.6   |  5674.9   J  0.0366 |  0.0274 |  0.0362  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-14B-Instruct/alpaca_c1     c=  1 tok/s    46.5 |    42.5 C |    40.0   J  6.4226 |  7.0514 |  7.5002  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-14B-Instruct/alpaca_c16    c= 16 tok/s   644.0 |   656.3 C |   618.2   J  0.4636 |  0.4571 |  0.4852  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-14B-Instruct/alpaca_c4     c=  4 tok/s   171.2 |   169.3 C |   159.2   J  1.7461 |  1.7720 |  1.8846  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-14B-Instruct/alpaca_c64    c= 64 tok/s  2202.5 |  2196.2 C |  2095.2   J  0.1355 |  0.1366 |  0.1432  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-14B-Instruct/sharegpt_c1   c=  1 tok/s    46.3 |    42.5 C |    40.0   J  6.4476 |  7.0564 |  7.5058  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-14B-Instruct/sharegpt_c16  c= 16 tok/s   580.3 |   634.1 C |   597.7   J  0.5138 |  0.4731 |  0.5020  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-14B-Instruct/sharegpt_c4   c=  4 tok/s   177.3 |   168.1 C |   158.1   J  1.6858 |  1.7844 |  1.8979  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-14B-Instruct/sharegpt_c64  c= 64 tok/s  1641.0 |  1892.1 C |  1811.0   J  0.1817 |  0.1586 |  0.1657  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/alpaca_c1      c=  1 tok/s    84.6 |   163.4   |    85.1   J  2.3546 |  1.5622 |  2.3461  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/alpaca_c16     c= 16 tok/s  1216.7 |  2519.0   |  1334.5   J  0.1618 |  0.1096 |  0.1586  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/alpaca_c4      c=  4 tok/s   300.7 |   648.9   |   338.9   J  0.6195 |  0.4002 |  0.5962  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/alpaca_c64     c= 64 tok/s  4689.1 |  7682.8 C |  5026.3   J  0.0500 |  0.0390 |  0.0491  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/sharegpt_c1    c=  1 tok/s    84.8 |   163.3   |    85.0   J  2.4152 |  1.5651 |  2.3490  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/sharegpt_c16   c= 16 tok/s  1138.0 |  2446.1   |  1313.8   J  0.1721 |  0.1171 |  0.1661  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/sharegpt_c4    c=  4 tok/s   287.0 |   644.5   |   337.7   J  0.6488 |  0.4067 |  0.6028  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-3B-Instruct/sharegpt_c64   c= 64 tok/s  4328.0 |  6835.1 C |  4705.3   J  0.0559 |  0.0439 |  0.0571  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/alpaca_c1      c=  1 tok/s    85.4 |    94.0   |    79.2   J  3.5008 |  3.1533 |  3.7890  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/alpaca_c16     c= 16 tok/s  1235.1 |  1200.9 C |  1224.3   J  0.2415 |  0.2498 |  0.2450  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/alpaca_c4      c=  4 tok/s   328.7 |   307.9 C |   314.5   J  0.9083 |  0.9743 |  0.9539  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/alpaca_c64     c= 64 tok/s  4111.4 |  4117.5 C |  4224.6   J  0.0725 |  0.0729 |  0.0710  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/sharegpt_c1    c=  1 tok/s    85.3 |    93.9   |    79.1   J  3.5037 |  3.1592 |  3.7917  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/sharegpt_c16   c= 16 tok/s  1142.1 |  1170.1 C |  1192.6   J  0.2599 |  0.2564 |  0.2515  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/sharegpt_c4    c=  4 tok/s   323.2 |   306.8 C |   312.7   J  0.9233 |  0.9780 |  0.9594  cap%=-
+  A100_prov/a100_ladder_eager/Qwen2.5-7B-Instruct/sharegpt_c64   c= 64 tok/s  3221.7 |  3616.2 C |  3700.6   J  0.0915 |  0.0830 |  0.0811  cap%=-
+  A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx1024_c16           c= 16 tok/s  1114.0 |  1070.8 C |  1088.1   J  0.2677 |  0.2802 |  0.2757  cap%=1.00
+  A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx1024_c4            c=  4 tok/s   334.6 |   300.6 C |   307.2   J  0.8911 |  0.9979 |  0.9766  cap%=1.00
+  A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx16384_c16          c= 16 tok/s   321.5 |   394.7 C |   386.6   J  0.9288 |  0.7602 |  0.7759  cap%=-
+  A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx16384_c4           c=  4 tok/s   171.4 |   191.6 C |   192.8   J  1.7361 |  1.5657 |  1.5564  cap%=1.00
+  A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx4096_c16           c= 16 tok/s   668.9 |   783.7 C |   786.4   J  0.4459 |  0.3828 |  0.3815  cap%=1.00
+  A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx4096_c4            c=  4 tok/s   286.6 |   276.6 C |   281.2   J  1.0403 |  1.0847 |  1.0669  cap%=1.00
+  A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx8192_c16           c= 16 tok/s   501.2 |   574.9 C |   571.0   J  0.5963 |  0.5218 |  0.5254  cap%=-
+  A100_prov/a100_longctx/Qwen2-7B-Instruct/ctx8192_c4            c=  4 tok/s   227.7 |   244.3 C |   247.2   J  1.3101 |  1.2282 |  1.2137  cap%=1.00
+  A100_prov/a100_moe/Qwen3-30B-A3B/alpaca_c1                     c=  1 tok/s    26.8 |    39.3   |    36.5   J  4.6225 |  4.0271 |  4.0001  cap%=-
+  A100_prov/a100_moe/Qwen3-30B-A3B/alpaca_c16                    c= 16 tok/s   383.8 |   466.6 C |   425.4   J  0.5521 |  0.6430 |  0.7052  cap%=-
+  A100_prov/a100_moe/Qwen3-30B-A3B/alpaca_c4                     c=  4 tok/s    98.3 |   156.8   |   145.4   J  1.5685 |  1.3461 |  1.4858  cap%=-
+  A100_prov/a100_moe/Qwen3-30B-A3B/alpaca_c64                    c= 64 tok/s  1528.1 |  1312.5 C |  1174.3   J  0.1909 |  0.2286 |  0.2555  cap%=-
+  A100_prov/a100_moe/Qwen3-30B-A3B/sharegpt_c1                   c=  1 tok/s    27.0 |    39.3   |    36.5   J  4.7476 |  4.2262 |  4.2848  cap%=-
+  A100_prov/a100_moe/Qwen3-30B-A3B/sharegpt_c16                  c= 16 tok/s   383.4 |   402.3 C |   363.3   J  0.6140 |  0.7458 |  0.8257  cap%=-
+  A100_prov/a100_moe/Qwen3-30B-A3B/sharegpt_c4                   c=  4 tok/s    94.4 |   156.3   |   145.0   J  1.6477 |  1.5116 |  1.7218  cap%=-
+  A100_prov/a100_moe/Qwen3-30B-A3B/sharegpt_c64                  c= 64 tok/s  1202.2 |  1274.9 C |  1140.5   J  0.2315 |  0.2353 |  0.2630  cap%=-
+  A100_prov/a100_moe_graphs/Qwen3-30B-A3B/alpaca_c1              c=  1 tok/s   121.1 |    42.1   |    42.1   J  1.9116 |  3.8178 |  3.6252  cap%=-
+  A100_prov/a100_moe_graphs/Qwen3-30B-A3B/alpaca_c16             c= 16 tok/s   680.4 |   468.6 C |   427.3   J  0.4370 |  0.6402 |  0.7021  cap%=-
+  A100_prov/a100_moe_graphs/Qwen3-30B-A3B/alpaca_c4              c=  4 tok/s   276.4 |   167.7   |   167.7   J  1.0156 |  1.2960 |  1.3954  cap%=-
+  A100_prov/a100_moe_graphs/Qwen3-30B-A3B/alpaca_c64             c= 64 tok/s  1850.4 |  1312.5 C |  1174.3   J  0.1606 |  0.2286 |  0.2555  cap%=-
+  A100_prov/a100_moe_graphs/Qwen3-30B-A3B/sharegpt_c1            c=  1 tok/s   120.5 |    42.1   |    42.1   J  1.8868 |  3.9334 |  3.7906  cap%=-
+  A100_prov/a100_moe_graphs/Qwen3-30B-A3B/sharegpt_c4            c=  4 tok/s   265.6 |   167.0   |   167.0   J  1.0226 |  1.4866 |  1.6670  cap%=-
+  A100_prov/a100_prefill/Qwen2-7B-Instruct/in2048_c16            c= 16 tok/s   107.8 |   104.3 C |   105.4   J  2.7640 |  2.8763 |  2.8475  cap%=-
+  A100_prov/a100_prefill/Qwen2-7B-Instruct/in2048_c4             c=  4 tok/s    86.1 |    89.5 C |    91.9   J  3.4394 |  3.3506 |  3.2648  cap%=-
+  A100_prov/a100_prefill/Qwen2-7B-Instruct/in8192_c16            c= 16 tok/s    29.5 |    28.6 C |    28.6   J 10.1379 | 10.5037 | 10.4729  cap%=-
+  A100_prov/a100_prefill/Qwen2-7B-Instruct/in8192_c4             c=  4 tok/s    24.8 |    24.1 C |    24.3   J 12.0129 | 12.4558 | 12.3388  cap%=-
+  A100_prov/a100_tp2/Qwen2.5-14B-Instruct/alpaca_c1              c=  1 tok/s    73.0 |    82.4   |    67.1   J  7.1405 |  6.6484 |  8.2291  cap%=-
+  A100_prov/a100_tp2/Qwen2.5-14B-Instruct/alpaca_c16             c= 16 tok/s   735.7 |  1252.4   |   854.7   J  0.6204 |  0.4724 |  0.6120  cap%=-
+  A100_prov/a100_tp2/Qwen2.5-14B-Instruct/alpaca_c64             c= 64 tok/s  2198.8 |  3642.5 C |  2073.7   J  0.2163 |  0.1647 |  0.2305  cap%=-
+  A100_prov/a100_tp2/Qwen2.5-32B-Instruct/alpaca_c1              c=  1 tok/s    38.1 |    40.7   |    35.0   J 15.5448 | 14.3911 | 17.1385  cap%=-
+  A100_prov/a100_tp2/Qwen2.5-32B-Instruct/alpaca_c16             c= 16 tok/s   438.1 |   520.2 C |   544.1   J  1.2855 |  1.1533 |  1.1028  cap%=-
+  A100_prov/a100_tp2/Qwen2.5-32B-Instruct/alpaca_c64             c= 64 tok/s  1245.9 |  1762.9 C |  1451.5   J  0.4429 |  0.3403 |  0.4134  cap%=-
+  ragged_a100/Meta-Llama-3-8B/alpaca_c1                          c=  1 tok/s    82.7 |    89.6   |    74.6   J  3.5429 |  3.3330 |  4.0225  cap%=-
+  ragged_a100/Meta-Llama-3-8B/alpaca_c16                         c= 16 tok/s  1150.4 |  1135.6 C |  1151.7   J  0.2592 |  0.2642 |  0.2605  cap%=-
+  ragged_a100/Meta-Llama-3-8B/alpaca_c4                          c=  4 tok/s   309.5 |   292.5 C |   296.7   J  0.9305 |  1.0256 |  1.0111  cap%=-
+  ragged_a100/Meta-Llama-3-8B/alpaca_c64                         c= 64 tok/s  3578.4 |  3802.2 C |  3864.6   J  0.0825 |  0.0789 |  0.0776  cap%=-
+  ragged_a100/Meta-Llama-3-8B/alpaca_poisson8                    c=None tok/s  1037.7 |  1037.6 C |  1037.6   J  0.2859 |  0.2891 |  0.2891  cap%=-
+  ragged_a100/Meta-Llama-3-8B/sharegpt_c1                        c=  1 tok/s    82.5 |    89.4   |    74.5   J  3.5974 |  3.3452 |  4.0264  cap%=-
+  ragged_a100/Meta-Llama-3-8B/sharegpt_c16                       c= 16 tok/s  1059.6 |  1095.7 C |  1109.4   J  0.2786 |  0.2738 |  0.2704  cap%=-
+  ragged_a100/Meta-Llama-3-8B/sharegpt_c4                        c=  4 tok/s   305.8 |   290.6 C |   294.6   J  0.9412 |  1.0323 |  1.0182  cap%=-
+  ragged_a100/Meta-Llama-3-8B/sharegpt_c64                       c= 64 tok/s  2717.8 |  3042.6 C |  3077.0   J  0.1088 |  0.0986 |  0.0975  cap%=-
+  ragged_a100/Meta-Llama-3-8B/sharegpt_poisson8                  c=None tok/s  1292.7 |  1292.5 C |  1292.6   J  0.2266 |  0.2321 |  0.2321  cap%=-
+  ragged_a100/Mistral-7B-v0.1/alpaca_c1                          c=  1 tok/s    87.1 |    93.4   |    78.7   J  3.2955 |  3.1747 |  3.8138  cap%=-
+  ragged_a100/Mistral-7B-v0.1/alpaca_c16                         c= 16 tok/s  1191.5 |  1180.9 C |  1190.1   J  0.2494 |  0.2540 |  0.2521  cap%=-
+  ragged_a100/Mistral-7B-v0.1/alpaca_c4                          c=  4 tok/s   326.1 |   305.5 C |   311.3   J  0.8840 |  0.9820 |  0.9638  cap%=-
+  ragged_a100/Mistral-7B-v0.1/alpaca_c64                         c= 64 tok/s  3449.6 |  3928.8 C |  3997.9   J  0.0861 |  0.0764 |  0.0750  cap%=-
+  ragged_a100/Mistral-7B-v0.1/alpaca_poisson8                    c=None tok/s  1816.0 |  1815.9 C |  1815.9   J  0.1635 |  0.1652 |  0.1652  cap%=-
+  ragged_a100/Mistral-7B-v0.1/sharegpt_c1                        c=  1 tok/s    86.5 |    93.3   |    78.6   J  3.3687 |  3.1824 |  3.8163  cap%=-
+  ragged_a100/Mistral-7B-v0.1/sharegpt_c16                       c= 16 tok/s  1009.7 |  1132.0 C |  1129.2   J  0.2887 |  0.2650 |  0.2657  cap%=-
+  ragged_a100/Mistral-7B-v0.1/sharegpt_c4                        c=  4 tok/s   312.9 |   303.5 C |   307.8   J  0.9086 |  0.9883 |  0.9745  cap%=-
+  ragged_a100/Mistral-7B-v0.1/sharegpt_c64                       c= 64 tok/s  2390.7 |  3200.0 C |  3234.6   J  0.1238 |  0.0938 |  0.0927  cap%=-
+  ragged_a100/Mistral-7B-v0.1/sharegpt_poisson8                  c=None tok/s  1724.3 |  1724.2 C |  1724.2   J  0.1705 |  0.1740 |  0.1740  cap%=-
+  ragged_a100/Qwen2-7B-Instruct/alpaca_c1                        c=  1 tok/s    86.1 |    94.0   |    79.2   J  3.3817 |  3.1533 |  3.7883  cap%=-
+  ragged_a100/Qwen2-7B-Instruct/alpaca_c16                       c= 16 tok/s  1243.4 |  1201.3 C |  1228.1   J  0.2402 |  0.2497 |  0.2443  cap%=-
+  ragged_a100/Qwen2-7B-Instruct/alpaca_c4                        c=  4 tok/s   328.5 |   308.0 C |   314.8   J  0.8952 |  0.9740 |  0.9531  cap%=-
+  ragged_a100/Qwen2-7B-Instruct/alpaca_c64                       c= 64 tok/s  4021.5 |  4092.5 C |  4206.1   J  0.0740 |  0.0733 |  0.0713  cap%=-
+  ragged_a100/Qwen2-7B-Instruct/alpaca_poisson8                  c=None tok/s  1132.7 |  1132.7 C |  1132.6   J  0.2632 |  0.2649 |  0.2649  cap%=-
+  ragged_a100/Qwen2-7B-Instruct/sharegpt_c1                      c=  1 tok/s    86.3 |    93.9   |    79.1   J  3.4326 |  3.1588 |  3.7915  cap%=-
+  ragged_a100/Qwen2-7B-Instruct/sharegpt_c16                     c= 16 tok/s  1172.7 |  1169.9 C |  1193.5   J  0.2531 |  0.2564 |  0.2514  cap%=-
+  ragged_a100/Qwen2-7B-Instruct/sharegpt_c4                      c=  4 tok/s   327.3 |   306.8 C |   312.7   J  0.8995 |  0.9779 |  0.9593  cap%=-
+  ragged_a100/Qwen2-7B-Instruct/sharegpt_c64                     c= 64 tok/s  3148.2 |  3479.7 C |  3564.9   J  0.0938 |  0.0862 |  0.0842  cap%=-
+  ragged_a100/Qwen2-7B-Instruct/sharegpt_poisson8                c=None tok/s  1685.9 |  1685.7 C |  1685.8   J  0.1753 |  0.1780 |  0.1780  cap%=-
+  ragged_a100/gemma-7b/alpaca_c1                                 c=  1 tok/s    64.9 |    65.7 C |    65.4   J  4.1560 |  4.5647 |  4.5885  cap%=-
+  ragged_a100/gemma-7b/alpaca_c16                                c= 16 tok/s   889.2 |   982.9 C |   972.6   J  0.3256 |  0.3052 |  0.3084  cap%=-
+  ragged_a100/gemma-7b/alpaca_c4                                 c=  4 tok/s   250.7 |   259.8 C |   258.1   J  1.0810 |  1.1549 |  1.1624  cap%=-
+  ragged_a100/gemma-7b/alpaca_c64                                c= 64 tok/s  2825.6 |  3089.7 C |  2958.7   J  0.1055 |  0.0971 |  0.1014  cap%=-
+  ragged_a100/gemma-7b/alpaca_poisson8                           c=None tok/s  1483.0 |  1482.9 C |  1482.9   J  0.1990 |  0.2023 |  0.2023  cap%=-
+  ragged_a100/gemma-7b/sharegpt_c1                               c=  1 tok/s    64.1 |    65.6 C |    65.3   J  4.2345 |  4.5717 |  4.5965  cap%=-
+  ragged_a100/gemma-7b/sharegpt_c16                              c= 16 tok/s   756.0 |   917.6 C |   882.9   J  0.3713 |  0.3269 |  0.3398  cap%=-
+  ragged_a100/gemma-7b/sharegpt_c4                               c=  4 tok/s   234.1 |   255.7 C |   253.6   J  1.1532 |  1.1731 |  1.1830  cap%=-
+  ragged_a100/gemma-7b/sharegpt_c64                              c= 64 tok/s  2014.7 |  2280.2 C |  2129.2   J  0.1472 |  0.1316 |  0.1409  cap%=-
+  ragged_a100/gemma-7b/sharegpt_poisson8                         c=None tok/s  1501.3 |  1501.1 C |  1501.1   J  0.1953 |  0.1998 |  0.1998  cap%=-
+  A6000_prov/gpu_eager/Qwen2-7B-Instruct/alpaca_c1               c=  1 tok/s    42.8 |    42.5   |    42.5   J  6.9939 |  6.9267 |  6.9267  cap%=1.00
+  A6000_prov/gpu_eager/Qwen2-7B-Instruct/alpaca_c16              c= 16 tok/s   605.0 |   656.3 C |   576.2   J  0.4935 |  0.4571 |  0.5207  cap%=1.00
+  A6000_prov/gpu_eager/Qwen2-7B-Instruct/alpaca_c4               c=  4 tok/s   160.1 |   168.8   |   168.8   J  1.8671 |  1.7736 |  1.7736  cap%=1.00
+  A6000_prov/gpu_eager/Qwen2-7B-Instruct/alpaca_c64              c= 64 tok/s  2142.4 |  2356.1 C |  2142.1   J  0.1394 |  0.1273 |  0.1400  cap%=1.00
+  A6000_prov/gpu_eager/Qwen2-7B-Instruct/sharegpt_c1             c=  1 tok/s    42.7 |    42.5   |    42.5   J  7.0048 |  6.9432 |  6.9432  cap%=1.00
+  A6000_prov/gpu_eager/Qwen2-7B-Instruct/sharegpt_c16            c= 16 tok/s   580.6 |   633.6 C |   568.0   J  0.5136 |  0.4735 |  0.5282  cap%=1.00
+  A6000_prov/gpu_eager/Qwen2-7B-Instruct/sharegpt_c4             c=  4 tok/s   160.3 |   167.2 C |   144.8   J  1.8611 |  1.7946 |  2.0718  cap%=1.00
+  A6000_prov/gpu_eager/Qwen2-7B-Instruct/sharegpt_c64            c= 64 tok/s  1775.1 |  2067.3 C |  1948.8   J  0.1680 |  0.1451 |  0.1539  cap%=1.00
+  A6000_prov/gpu_graphs/Qwen2-7B-Instruct/alpaca_c1              c=  1 tok/s    43.6 |    42.5   |    42.5   J  6.8547 |  6.9267 |  6.9267  cap%=1.00
+  A6000_prov/gpu_graphs/Qwen2-7B-Instruct/alpaca_c16             c= 16 tok/s   621.8 |   656.3 C |   576.2   J  0.4803 |  0.4571 |  0.5206  cap%=1.00
+  A6000_prov/gpu_graphs/Qwen2-7B-Instruct/alpaca_c4              c=  4 tok/s   163.2 |   168.8   |   168.8   J  1.8324 |  1.7736 |  1.7736  cap%=1.00
+  A6000_prov/gpu_graphs/Qwen2-7B-Instruct/alpaca_c64             c= 64 tok/s  2177.5 |  2356.1 C |  2142.0   J  0.1371 |  0.1273 |  0.1401  cap%=1.00
+  A6000_prov/gpu_graphs/Qwen2-7B-Instruct/sharegpt_c1            c=  1 tok/s    43.5 |    42.5   |    42.5   J  6.8769 |  6.9432 |  6.9432  cap%=1.00
+  A6000_prov/gpu_graphs/Qwen2-7B-Instruct/sharegpt_c16           c= 16 tok/s   585.7 |   633.7 C |   568.0   J  0.5093 |  0.4734 |  0.5282  cap%=1.00
+  A6000_prov/gpu_graphs/Qwen2-7B-Instruct/sharegpt_c4            c=  4 tok/s   162.3 |   167.2 C |   144.8   J  1.8399 |  1.7941 |  2.0717  cap%=1.00
+  A6000_prov/gpu_graphs/Qwen2-7B-Instruct/sharegpt_c64           c= 64 tok/s  1789.2 |  2067.3 C |  1948.7   J  0.1667 |  0.1451 |  0.1539  cap%=1.00
+  A6000_prov/gpu_graphs/Qwen2.5-14B-Instruct/alpaca_c1           c=  1 tok/s    23.4 |    22.5   |    22.5   J 12.7799 | 13.3228 | 13.3228  cap%=1.00
+  A6000_prov/gpu_graphs/Qwen2.5-14B-Instruct/alpaca_c16          c= 16 tok/s   312.4 |   340.6 C |   300.6   J  0.9571 |  0.8808 |  0.9979  cap%=1.00
+  A6000_prov/gpu_graphs/Qwen2.5-14B-Instruct/alpaca_c64          c= 64 tok/s   916.4 |  1165.3 C |  1097.8   J  0.3261 |  0.2574 |  0.2733  cap%=1.00
+  A6000_prov/gpu_highconc/Qwen2-7B-Instruct/alpaca_c256          c=256 tok/s  3720.2 |  5465.5 C |  5191.6   J  0.0802 |  0.0549 |  0.0578  cap%=1.00
+  A6000_prov/gpu_highconc/Qwen2-7B-Instruct/sharegpt_c128        c=128 tok/s  2515.5 |  3219.2 C |  2980.2   J  0.1188 |  0.0932 |  0.1007  cap%=1.00
+  A6000_prov/gpu_highconc/Qwen2-7B-Instruct/sharegpt_c256        c=256 tok/s  2797.6 |  3903.5 C |  3757.3   J  0.1067 |  0.0769 |  0.0798  cap%=1.00
+  A6000_prov/gpu_longctx/Qwen2-7B-Instruct/ctx1024_c4            c=  4 tok/s   161.5 |   160.3 C |   142.6   J  1.8501 |  1.8709 |  2.1041  cap%=1.00
+  A6000_prov/gpu_longctx/Qwen2-7B-Instruct/ctx4096_c4            c=  4 tok/s   140.2 |   141.0 C |   135.2   J  2.1318 |  2.1280 |  2.2197  cap%=1.00
+  A6000_prov/gpu_longctx/Qwen2-7B-Instruct/ctx8192_c4            c=  4 tok/s   120.1 |   121.6 C |   121.6   J  2.4897 |  2.4666 |  2.4666  cap%=1.00

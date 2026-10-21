@@ -19,7 +19,7 @@ export PROV_ARMS="${PROV_ARMS:-a100_graphs,a100_eager,a100_highconc}"
 export VLLM_CACHE_ROOT=/tmp/vllm_cache TRITON_CACHE_DIR=/tmp/triton_cache
 export PYTHONNOUSERSITE=1 TOKENIZERS_PARALLELISM=false PYTHONUNBUFFERED=1
 mkdir -p "$PROV_LOG_ROOT" runai
-LOG=runai/a100_job_$(date +%Y%m%d_%H%M%S).log
+LOG=runai/job_$(hostname)_$(date +%Y%m%d_%H%M%S).log   # pod name: no collisions between jobs
 exec > >(tee -a "$LOG") 2>&1
 echo "==== A100 job $(date) host=$(hostname) stages=$STAGES arms=$PROV_ARMS ===="
 
