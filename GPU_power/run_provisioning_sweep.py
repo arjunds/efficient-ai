@@ -83,6 +83,28 @@ ARMS = {
                     (Q14, GRAPHS, _ragged(["alpaca"], [1, 16, 64]))],
     "a100_eager": [(Q7, {}, _ragged(["alpaca"], [1, 16, 64]))],
     "a100_highconc": [(Q7, dict(GRAPHS, max_num_seqs=256), _ragged(["alpaca", "sharegpt"], [128, 256]))],
+    # A100 follow-ups (2026-10-21). ladder_eager = the H200 size ladder grid
+    # (logs/ragged_ladder, eager) so A100 vs H200 is measured-vs-measured.
+    "a100_ladder_eager": [(m, {}, _ragged(["alpaca", "sharegpt"], [1, 4, 16, 64]))
+                          for m in (Q05, "Qwen/Qwen2.5-1.5B-Instruct", "Qwen/Qwen2.5-3B-Instruct",
+                                    "Qwen/Qwen2.5-7B-Instruct", Q14)],
+    "a100_longctx": [(Q7, dict(GRAPHS, max_model_len=32768),
+                      [(f"ctx{n}_c{c}", {"input_len": n, "output_len": 512, "concurrency": c,
+                                         "unique_prompts": None})
+                       for c in (4, 16) for n in (1024, 4096, 8192, 16384, 30720)])],
+    "a100_prefill": [(Q7, dict(GRAPHS, max_num_batched_tokens=8192, max_model_len=10240),
+                      [(f"in{n}_c{c}", {"input_len": n, "output_len": 16, "concurrency": c,
+                                        "unique_prompts": None})
+                       for n in (2048, 8192) for c in (4, 16)])],
+    # Generic arms for another GPU type (A6000 etc.; set PROV_LOG_ROOT per GPU).
+    "gpu_graphs": [(Q7, GRAPHS, _ragged(["alpaca", "sharegpt"], [1, 4, 16, 64])),
+                   (Q14, GRAPHS, _ragged(["alpaca"], [1, 16, 64]))],
+    "gpu_eager": [(Q7, {}, _ragged(["alpaca", "sharegpt"], [1, 4, 16, 64]))],
+    "gpu_highconc": [(Q7, dict(GRAPHS, max_num_seqs=256), _ragged(["alpaca", "sharegpt"], [128, 256]))],
+    "gpu_longctx": [(Q7, dict(GRAPHS, max_model_len=32768),
+                     [(f"ctx{n}_c4", {"input_len": n, "output_len": 512, "concurrency": 4,
+                                      "unique_prompts": None})
+                      for n in (1024, 4096, 8192, 16384, 30720)])],
     # pipeline smoke tests (A5000, 0.5B): every code path in ~5 min
     "smoke": [(Q05, dict(GRAPHS, max_num_seqs=512), _ragged(["alpaca"], [4])
                + [("in1024_c4", {"input_len": 1024, "output_len": 16, "concurrency": 4,
