@@ -122,3 +122,28 @@ from September vs `logs/ragged`):
 - **CUDA graphs barely help a power-capped GPU:** A100 +5–7% throughput, −4–6% J/token,
   against B200's +40–50% / −13–16%. When power sets the step time, launch overhead
   doesn't matter.
+
+## Tensor parallelism on PCIe A100s: a poor trade (2026-10-21)
+**Topology** (`logs/A100_prov/a100_topology.txt`): the two A100 80GB PCIe cards have
+**no active NVLink** ("all links are inActive"). They're connected over PCIe Gen4 x16
+through the CPU's host bridges (`nvidia-smi topo`: NODE), so TP all-reduces cross
+PCIe (~25 GB/s per direction).
+
+| Qwen2.5-14B, CUDA graphs | TP=1 | TP=2 (2 GPUs, both metered) | TP=2 ÷ TP=1 |
+|---|---|---|---|
+| batch 1 | 47.8 tok/s, 6.25 J/tok, 20.9 ms/step | 73.0 tok/s, 7.14 J/tok, 13.6 ms/step | 1.53× speed, **1.14× energy** |
+| 16 concurrent | 671, 0.445, 22.5 ms | 736, 0.620, 17.5 ms | 1.10×, **1.39×** |
+| 64 concurrent | 2247, 0.132, 25.4 ms | 2199, 0.216, 27.6 ms | 0.98×, **1.64×** |
+
+- The pair draws only 456–521 W of its combined 600 W cap, so the GPUs spend much of
+  each step waiting on PCIe all-reduce.
+- On B200 (NVLink), TP=2 cost 3–13% more energy for 1.4–1.6× throughput.
+
+**32B needs TP=2 on 80 GB A100s:**
+- A100 TP=2 costs **1.36–1.71× B200 (TP=1)** per token: 15.6 / 1.28 / 0.44 J/tok at
+  concurrency 1/16/64.
+- Against H200 (TP=1, eager, measured) it's **1.73–1.92×**.
+- Two idle GPUs (199 W) plus PCIe sync make the A100 the worst choice for 32B.
+
+**Provisioning rule:** on PCIe-only A100s, use TP > 1 only when the model doesn't fit
+on one GPU. It buys latency at batch 1 and nothing beyond.
