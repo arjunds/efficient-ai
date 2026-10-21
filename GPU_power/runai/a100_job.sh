@@ -1,16 +1,18 @@
 #!/bin/bash
-# Runs INSIDE the RunAI/KAI A100 pod (submitted by runai/launch_a100.sh), from /workspace
-# (= GPU_power). Stages (env STAGES): probe,microbench,serve,analyze. Resume-safe.
+# Runs INSIDE the A100 pod (submitted by runai/launch_a100_kai.sh via the KAI CLI, or the
+# older runai/launch_a100.sh), from the GPU_power checkout. Stages (env STAGES):
+# probe,microbench,serve,analyze. Resume-safe.
 # Output: logs/A100_prov/ (serving), microbench/results_A100_steady.json,
 #         runai/a100_job_<date>.log (everything printed).
 set -u
-cd /workspace
+cd "$(dirname "$0")/.."            # GPU_power (works under kai --mount-home or runai /workspace)
 STAGES="${STAGES:-probe,microbench,serve,analyze}"
 export PROV_LOG_ROOT="${PROV_LOG_ROOT:-logs/A100_prov}"
 export PROV_ARMS="${PROV_ARMS:-a100_graphs,a100_eager,a100_highconc}"
-export HOME=/tmp/home; mkdir -p $HOME
-export HF_HOME="${HF_HOME:-/hfcache}"                 # host ~/.cache/huggingface mounted here
-export HF_XET_CACHE=/shared_data0/adsampat/hf_cache/xet
+# kai --mount-home: $HOME is the real home, so HF_HOME defaults to ~/.cache/huggingface
+# (models already cached there). runai launcher mounts that cache at /hfcache instead.
+[ -d /hfcache ] && export HF_HOME=/hfcache
+[ -w "${HOME:-/nonexistent}" ] || { export HOME=/tmp/home; mkdir -p $HOME; }
 export VLLM_CACHE_ROOT=/tmp/vllm_cache TRITON_CACHE_DIR=/tmp/triton_cache
 export PYTHONNOUSERSITE=1 TOKENIZERS_PARALLELISM=false PYTHONUNBUFFERED=1
 mkdir -p "$PROV_LOG_ROOT" runai
