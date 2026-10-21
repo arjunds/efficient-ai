@@ -147,3 +147,26 @@ PCIe (~25 GB/s per direction).
 
 **Provisioning rule:** on PCIe-only A100s, use TP > 1 only when the model doesn't fit
 on one GPU. It buys latency at batch 1 and nothing beyond.
+
+## MoE (Qwen3-30B-A3B), A100 vs H200, both eager and measured (2026-10-21)
+| run | A100 J/tok (tok/s, W) | H200 J/tok (tok/s, W) | A100 / H200 |
+|---|---|---|---|
+| alpaca c=1 | 4.62 (27, 124 W) | 3.83 (39, 149 W) | 1.20 |
+| alpaca c=4 | 1.57 (98, 154 W) | 1.23 (150, 184 W) | 1.27 |
+| alpaca c=16 | 0.552 (384, 212 W) | 0.422 (601, 253 W) | 1.31 |
+| alpaca c=64 | 0.191 (1528, 292 W) | 0.142 (2298, 326 W) | 1.34 |
+| sharegpt c=1 | 4.74 (27, 128 W) | 3.65 (42, 152 W) | 1.30 |
+| sharegpt c=4 | 1.65 (94, 156 W) | 1.25 (153, 191 W) | 1.32 |
+| sharegpt c=16 | 0.616 (383, 235 W) | 0.468 (609, 285 W) | 1.32 |
+| sharegpt c=64 | 0.232 (1202, 278 W) | 0.160 (2356, 376 W) | 1.45 |
+
+- **Unlike dense models, MoE does not power-cap the A100** (124–292 W): only about 3B
+  parameters are active per token.
+- Both GPUs are limited by per-step overhead, not bandwidth. In eager mode the H200 does
+  only 39 tok/s at batch 1.
+- When both GPUs mostly wait on fixed per-step work, idle power dominates. The A100's
+  idle is close to the H200's (about 98 vs 116 W), so the gap narrows to **1.20–1.45×**,
+  against ~1.5× for dense 7–8B models.
+- **Provisioning implication:** for MoE, the older GPU's disadvantage is smaller.
+  Eager-mode overhead dominates on both GPUs, so CUDA graphs and a newer vLLM would
+  change both columns, and that should be re-measured before drawing conclusions.
