@@ -1,0 +1,41 @@
+{
+  "gpu_name": "NVIDIA A100 80GB PCIe",
+  "power_limit_w": 300.0,
+  "dtype": "float16",
+  "model": "Qwen/Qwen2.5-14B-Instruct",
+  "model_key": null,
+  "tp_degree": 1,
+  "vllm_version": "0.10.2",
+  "engine_api": "v1",
+  "max_num_seqs": null,
+  "block_size": null,
+  "gpu_mem_util": 0.9,
+  "input_len": 512,
+  "output_len": 256,
+  "concurrency_or_rate": 16,
+  "arrival_rate": 0.0,
+  "concurrency_schedule": null,
+  "task": "alpaca",
+  "segments": [
+    {
+      "concurrency": 16,
+      "t0": 1792604014.956795,
+      "t1": 1792604065.1566064
+    }
+  ],
+  "idle_power_w": 105.766,
+  "prefill_ceiling_power_w": null,
+  "kv_cache_dtype": "auto",
+  "enforce_eager": false,
+  "max_num_seqs_resolved": 128,
+  "max_num_batched_tokens_resolved": 2048,
+  "chunked_prefill": true,
+  "prefix_caching": true,
+  "unique_prompts": false,
+  "metered_gpus": [
+    0
+  ],
+  "power_limit_total_w": 300.0,
+  "window_wall_t0": 1792604014.9567928,
+  "window_wall_t1": 1792604065.1566088
+}
