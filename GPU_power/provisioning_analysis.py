@@ -56,6 +56,18 @@ def pct(a, q):
     return float(np.percentile(a, q)) if a else None
 
 
+PEAK_BW = {"B200": 8.0e12, "H200": 4.8e12, "H100": 3.35e12, "A100 80GB PCIe": 1.935e12,
+           "A100-SXM4-80GB": 2.039e12, "RTX A6000": 0.768e12, "RTX A5000": 0.768e12, "L40S": 0.864e12}
+
+
+def peak_bw(name):
+    """Datasheet peak DRAM bandwidth by NVML name (MBU was hard-coded to B200's 8 TB/s)."""
+    for k, v in PEAK_BW.items():
+        if k in (name or ""):
+            return v
+    return 8.0e12
+
+
 def run_summary(rd):
     res, meta = jload(os.path.join(rd, "results.json")), jload(os.path.join(rd, "run_meta.json"))
     if res.get("aggregate_tokens_per_sec") is None:
@@ -96,7 +108,7 @@ def run_summary(rd):
                 tok_s=res["aggregate_tokens_per_sec"], req_s=(res.get("completed_requests") or 0) / win if win else None,
                 j_tok=(p_avg * win / gen) if (p_avg and gen) else None, p_avg=p_avg,
                 energy_source=res.get("energy_window_source") or "GetPowerUsage",
-                idle=meta.get("idle_power_w"), mbu=(B / T / 8e12 / (meta.get("tp_degree") or 1)) if T else None,
+                idle=meta.get("idle_power_w"), mbu=(B / T / peak_bw(meta.get("gpu_name")) / (meta.get("tp_degree") or 1)) if T else None,
                 step_ms=pct(steps, 50) * 1e3 if steps else None, cap_frac=cap_frac,
                 kv_max=kvmax, wait_frac=waitf, hit_rate=(h / q) if q else None,
                 ttft_p50=pct(ttft, 50), ttft_p99=pct(ttft, 99), tpot_p50=pct(tpot, 50), tpot_p99=pct(tpot, 99),
