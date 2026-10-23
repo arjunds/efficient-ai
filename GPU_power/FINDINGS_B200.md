@@ -1055,3 +1055,79 @@ of its prefill window (from `requests.csv`) before binning. Run totals don't cha
 `nvml_logger.py` now reads power, POWER_INSTANT and the energy counter every sample,
 but clocks, util, temperature and throttle reasons only every 10th sample (100 ms).
 `NVML_LOGGER_FULL=1` restores the old behaviour.
+
+---
+
+# UPDATE 7: Poisson load + long outputs (2026-10-23, B200)
+
+`logs/B200_prov/{b200_poisson,longout}`. Jobs 9376764 (poisson, 18 min) and
+9378203 (longout, 11 min), 1 GPU each, CUDA graphs, slim logger. TP4/TP8 still
+queued — multi-GPU allocations are scarce here.
+
+## Arrival-rate serving: energy falls 27× with no latency cost
+
+Offered load as requests/s rather than fixed concurrency (7B, alpaca):
+
+| req/s offered | achieved | mJ/tok | MBU | TTFT p99 | cap% | wait% |
+|---|---|---|---|---|---|---|
+| 2 | 1.8 | 2177 | 0.32 | 0.04 s | 0 | 0 |
+| 8 | 7.6 | 590 | 0.39 | 0.01 s | 0 | 0 |
+| 16 | 15.5 | 290 | 0.38 | 0.01 s | 0 | 0 |
+| 32 | 30.3 | 154 | 0.37 | 0.01 s | 0 | 0 |
+| 48 | 44.6 | 106 | 0.35 | 0.01 s | 0 | 0 |
+| 64 | 59.4 | 81 | 0.33 | 0.01 s | 0 | 0 |
+
+Energy per token falls **27×** from 2 → 64 req/s while TTFT p99 stays at 10 ms and
+nothing queues. A 7B on a B200 has enormous headroom before latency degrades, so
+the batching efficiency gain is essentially free up to ~60 req/s. MBU peaks at
+0.38–0.39 mid-range and *falls* at r64 — consistent with UPDATE 5: step overhead,
+not bandwidth, binds at low load. sharegpt behaves the same (1497 → 103 mJ/tok
+over 2 → 32 req/s).
+
+## Long outputs give a clean, independent KV measurement
+
+This arm is the one place in the corpus where the **chunked-prefill contamination
+cannot occur**: prompts are 256 tokens, well under the 2048-token step budget, so
+prefill never splits into hidden steps. KV grows during *generation* instead of
+arriving with a long prompt.
+
+| run | tok/s | P | dyn mJ/tok | mean ctx | KV/tok | KV share of bytes |
+|---|---|---|---|---|---|---|
+| out2048_c4 | 856 | 657 W | 484.0 | 1280 | 73.4 MB | 2.0% |
+| out8192_c4 | 833 | 674 W | 518.5 | 4352 | 249.6 MB | 6.6% |
+| out2048_c16 | 3222 | 687 W | 138.0 | 1280 | 73.4 MB | 7.7% |
+| out8192_c16 | 2991 | 738 W | 165.8 | 4352 | 249.6 MB | 22.0% |
+
+Slope of dynamic J/token against KV bytes/token, with weight bytes and GEMM FLOPs
+per step held fixed:
+
+| | `e_kvbyte` | ratio to `e_w` = 1.25e-10 |
+|---|---|---|
+| **c=16** | **1.576e-10** | **1.26** |
+| c=4 | 1.960e-10 | 1.57 |
+| other session, clean long-prompt bins | 1.53–1.61e-10 | 1.2–1.3 |
+
+**The c=16 slope reproduces the corrected value almost exactly** — 1.576e-10
+against their 1.53–1.61e-10 — by a completely different mechanism (KV growth
+during generation vs long prompts) on bins that cannot carry the chunked-prefill
+artifact. That is a genuine independent corroboration of **e_kv ≈ 1.2–1.3× a
+weight byte**.
+
+Prefer c=16 over c=4, on leverage: at c=4 the KV term is only 2.0–6.6% of bytes
+per token, so a two-point slope is dominated by any misattribution of the weight
+term; at c=16 it is 7.7–22.0%. The c=4 figure of 1.96e-10 should not be read as
+disagreement — it is the poorly-conditioned end of the same measurement.
+
+## Operational: a silent arm drop (worth knowing for future handoffs)
+
+The documented invocation
+`sbatch --export=ALL,PROV_ARMS=b200_poisson,longout` **silently ran only
+`b200_poisson`** and exited 0. SLURM's `--export` splits on commas, so it parsed
+as `ALL` / `PROV_ARMS=b200_poisson` / a bogus variable `longout`.
+
+Two things hid it: the job header read `arms=b200_poisson`, and the printed
+summary *looked* complete because `provisioning_analysis.py` re-scans all of
+`logs/B200_prov/` and re-prints every earlier arm — sections 2–5 were entirely
+recycled from 2026-10-16. Fix: set multi-value variables in the environment
+(`PROV_ARMS=... sbatch --export=ALL ...`). Recorded in `b200_scale.sbatch`'s
+usage comments with the job number.

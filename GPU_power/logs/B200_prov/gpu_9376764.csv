@@ -1,0 +1,2 @@
+name, power.limit [W], enforced.power.limit [W], power.default_limit [W], memory.total [MiB], clocks.max.sm [MHz], driver_version
+NVIDIA B200, 1000.00 W, 1000.00 W, 1000.00 W, 183359 MiB, 1965 MHz, 580.95.05

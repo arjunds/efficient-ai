@@ -10,7 +10,11 @@
 #
 # Provisioning / "LIMINAL extended" runs (HANDOFF_B200_PROVISIONING.md).
 # Scale-out + realistic-load runs (HANDOFF_B200_SCALE.md). GPU count is set at submit time:
-#   sbatch --gres=gpu:1 --export=ALL,PROV_ARMS=b200_poisson,longout b200_scale.sbatch   (~1.5 h)
+#   PROV_ARMS=b200_poisson,longout sbatch --gres=gpu:1 --export=ALL b200_scale.sbatch   (~1.5 h)
+#     ^ NOTE: do NOT write --export=ALL,PROV_ARMS=b200_poisson,longout. SLURM's --export
+#       splits on commas, so that parses as ALL / PROV_ARMS=b200_poisson / "longout" and
+#       SILENTLY drops the second arm (job 9376764 ran poisson only and still exited 0).
+#       Set multi-value vars in the environment before sbatch instead.
 #   sbatch --gres=gpu:4 --export=ALL,PROV_ARMS=b200_tp4 b200_scale.sbatch               (~1 h)
 #   sbatch --gres=gpu:8 --export=ALL,PROV_ARMS=b200_tp8 b200_scale.sbatch               (~1 h)
 # Keep --cpus-per-task=28: PARCC cli_filter requires exactly DefCpuPerGPU and multiplies it.
