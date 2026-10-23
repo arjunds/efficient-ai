@@ -1,0 +1,41 @@
+{
+  "gpu_name": "NVIDIA RTX A6000",
+  "power_limit_w": 300.0,
+  "dtype": "float16",
+  "model": "Qwen/Qwen2-7B-Instruct",
+  "model_key": "Qwen2-7B-Instruct",
+  "tp_degree": 1,
+  "vllm_version": "0.10.2",
+  "engine_api": "v1",
+  "max_num_seqs": null,
+  "block_size": null,
+  "gpu_mem_util": 0.9,
+  "input_len": 256,
+  "output_len": 2048,
+  "concurrency_or_rate": 16,
+  "arrival_rate": 0.0,
+  "concurrency_schedule": null,
+  "task": null,
+  "segments": [
+    {
+      "concurrency": 16,
+      "t0": 1792729034.174679,
+      "t1": 1792729087.387435
+    }
+  ],
+  "idle_power_w": 126.161,
+  "prefill_ceiling_power_w": null,
+  "kv_cache_dtype": "auto",
+  "enforce_eager": false,
+  "max_num_seqs_resolved": 128,
+  "max_num_batched_tokens_resolved": 2048,
+  "chunked_prefill": true,
+  "prefix_caching": true,
+  "unique_prompts": true,
+  "metered_gpus": [
+    0
+  ],
+  "power_limit_total_w": 300.0,
+  "window_wall_t0": 1792729034.1746786,
+  "window_wall_t1": 1792729087.387437
+}

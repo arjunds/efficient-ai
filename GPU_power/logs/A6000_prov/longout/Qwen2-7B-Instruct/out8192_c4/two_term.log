@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/home/adsampat/efficient-ai/GPU_power/energy_model.py", line 733, in <module>
+    main()
+  File "/home/adsampat/efficient-ai/GPU_power/energy_model.py", line 720, in main
+    cal = calibrate_two_term(args.run_dir, args.bin_s,
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/adsampat/efficient-ai/GPU_power/energy_model.py", line 605, in calibrate_two_term
+    bins, info = bin_run(run_dir, bin_s, phase=None, spread_prefill=spread_prefill,
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/adsampat/efficient-ai/GPU_power/energy_model.py", line 401, in bin_run
+    efn, psrc = window_energy_fn(os.path.join(run_dir, "power_trace.csv"),
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/adsampat/efficient-ai/GPU_power/energy_model.py", line 118, in window_energy_fn
+    ti = [ti[i] for i in o]; pi = [pi[i] for i in o]
+                                   ~~^^^
+IndexError: list index out of range
