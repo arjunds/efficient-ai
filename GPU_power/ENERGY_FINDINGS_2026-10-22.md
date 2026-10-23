@@ -214,6 +214,7 @@ power roof    attainable FLOP/s at arithmetic intensity I = budget / (e_byte / I
   - So energy per token falls as 1/throughput: A100 2.04 J at 1 req/s vs 0.086 J at 24 req/s.
   - An under-loaded capped GPU is very inefficient. For capped parts, consolidating traffic onto fewer GPUs is the main energy lever.
   - Latency stays inside a 50 ms per-token target throughout (A100 TPOT p50 11–16 ms).
+- **Splitting a model across 4 PCIe A100s is worse than across 2.** For Qwen2.5-32B at 16–64 concurrent requests, 4 GPUs deliver 0.34–0.61× the throughput of 2 at 1.8–2.8× the energy per token, and 2.8–4.8× a single B200. The GPUs mostly wait on PCIe synchronization (they draw 539–631 W of a 1,200 W combined cap). On PCIe-only A100s, never go beyond 2 GPUs per model.
 - **Long outputs add modest cost.** Going from 2k to 8k generated tokens raises energy per token by 5–15% on A100 and about 4% on A6000, as the KV cache grows during each request.
 
 ## Appendix: where things are
