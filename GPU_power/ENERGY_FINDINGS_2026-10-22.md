@@ -56,7 +56,7 @@ These are the measured "energy constants" of each GPU. Memory and compute coeffi
 | KV-cache byte in serving | open | 1.53–1.61×10⁻¹⁰ J/B (1.2–1.3× a weight byte) | (capped) | (capped) |
 | L2-resident / L1-resident byte | not measured | 3.3 / 1.1×10⁻¹¹ J/B | 4.6 / 1.3×10⁻¹¹ J/B | 6.4 / 2.4×10⁻¹¹ J/B |
 | DRAM channel alone (per-channel solve) | not measured | 8.4×10⁻¹¹ J/B | ~7.4×10⁻¹¹ J/B (estimated) | not measured |
-| fp16 GEMM | 0.79–1.2 pJ/FLOP (serving fit) | 0.77 (4096³ GEMM) to 0.94 (LLM-shaped) pJ/FLOP | 1.47 pJ/FLOP | 2.64 pJ/FLOP |
+| fp16 GEMM | 0.79–1.2 pJ/FLOP (serving fit) | 0.94 pJ/FLOP (LLM-shaped steady loops; serving long-context fit with corrected prefill timing: 0.95); 0.77 for a square 4096³ GEMM | 1.47 pJ/FLOP | 2.64 pJ/FLOP |
 | Kernel launch | not measured | 17 µJ | 47–73 µJ | 470–490 µJ |
 | Fixed "memory awake" power | not measured | +39 W | +27 W | +80–190 W |
 
@@ -113,9 +113,13 @@ power roof    attainable FLOP/s at arithmetic intensity I = budget / (e_byte / I
 | Cross-GPU ratios, Qwen2-7B | A100/B200 predicted 1.11–1.18 (measured 1.13–1.14); A6000/H200 3.0–3.3 (measured 3.3–3.6) | — |
 
 **Where it misses:**
-- **Power is predicted to within about 2% at every load.**
-- **Time is the weak point at very high concurrency for small models:** throughput is over-predicted by 13% (B200) to 26–34% (A100/A6000) at 128+ concurrent 7B requests. Large models stay accurate (B200 32B at 128–512 concurrent: ±3%).
-- The cause appears to be a per-request host cost that grows with batch size. The fix is in progress (Section 7).
+- **Up to 64 concurrent requests, power and time are both predicted within a few percent.**
+- **At 128+ concurrent requests, small models ran slower than predicted.** The original model over-predicted 7B throughput by 13% (B200) to 26–34% (A100/A6000). Large models stayed accurate (B200 32B at 128–512 concurrent: ±3%).
+- **We traced the causes from per-step logs (`TIMEMODEL_HIGHC.md`):**
+  - B200: about 4.8 µs of host time per running request per step; an extra 0.28 ms on steps that admit new requests; and vLLM 0.10.2 only captures CUDA graphs up to 512 tokens per step, so steps above that run without graphs (+58 µs/layer).
+  - A100/A6000: steps that mix prefill and decode are much slower with the FlashAttention-2 backend. The mechanism is inferred, not yet traced.
+- **With these terms the high-load throughput error drops to 2% (B200 7B, fitted), and 5% (A100) and 10.5% (A6000) zero-shot.** Large models stay within 5%.
+- **One correction:** the earlier "power within 2% at every load" was partly two errors cancelling. With time fixed, B200 7B at high load is still about −10% in energy, because the compute coefficient differs between full-clock and power-capped operation. A regime-aware compute coefficient is the remaining fix.
 
 ## 4. Is the system well provisioned for energy?
 
@@ -167,7 +171,7 @@ power roof    attainable FLOP/s at arithmetic intensity I = budget / (e_byte / I
 |---|---|---|---|---|
 | Serving energy corpus | vLLM 0.10.2, closed-loop concurrency 1–512, Poisson arrivals, long context (to 30k), prefill-heavy, TP2, CUDA graphs vs eager | **445 runs:** H200 182, B200 85, A100 134, A6000 28, A5000 16; dense 0.5B–72B plus MoE 30B | Run totals vs per-bin model; repeat runs across months (A100 +4.5%) | High |
 | Byte counts (workload side) | NCU hardware counters on B200 | 4 serving captures (3k–9k kernels, context to 30k) plus 12 per-op captures | DRAM / analytic = 1.004–1.012 | High |
-| Hardware coefficients | Steady-state microbenchmarks: streaming, occupancy sweep, L2/L1, GEMV, GEMM, LLM-shaped GEMMs, launch, duty-cycle at full clock | B200 (steady + duty + NCU), A100, A6000, A5000; 10 s steady points, 2–3 repeats | Per-channel rebuild closes serving coefficient to −3% (B200); A100 matches the EnergAIzer database to 0.6% | High for bytes; medium for compute (B200 e_gemm 0.70–0.94 pJ) |
+| Hardware coefficients | Steady-state microbenchmarks: streaming, occupancy sweep, L2/L1, GEMV, GEMM, LLM-shaped GEMMs, launch, duty-cycle at full clock | B200 (steady + duty + NCU), A100, A6000, A5000; 10 s steady points, 2–3 repeats | Per-channel rebuild closes serving coefficient to −3% (B200); A100 matches the EnergAIzer database to 0.6% | High for bytes; compute now consistent at full clock (B200 0.94–0.95 pJ from two methods), but lower at the power cap, so it must be regime-aware |
 | Power measurement method | NVML square-wave test (0.1–2 s), energy counter vs POWER_INSTANT, logger A/B | B200, A100, A6000, A5000 | Smoothing fitted per GPU; counter rejected where it disagrees (GA102 parts) | High |
 | KV vs compute split | Long-context sweep at fixed concurrency, unique prompts | B200: 13 runs, 2 models; A100: 10 runs | Slope method R² 0.998–1.000; NCU at 30k context | High on B200; open on H200 |
 | LIMINAL-E | Energy + power-roofline model; zero-shot transfer test | 317 runs scored | Zero-shot on A100 and A6000 | Good (3–8%) except time at very high concurrency |
@@ -180,15 +184,20 @@ power roof    attainable FLOP/s at arithmetic intensity I = budget / (e_byte / I
 - **NVML power averaging.** NVML's default power reading (`GetPowerUsage`) is a 0.85–1.05 s moving average on B200, A6000 and A5000 (not on A100). Fixed by using the hardware energy counter, validated per run against the 0.1 s POWER_INSTANT reading.
 - **Broken energy counter on GA102 parts.** The counter is wrong on A5000 and A6000 (it reads 0.15–0.4× true power). It's rejected automatically there.
 - **Logger overhead.** Our first full NVML logger slowed vLLM serving by about 20%. Slow fields are now read every 10th sample.
-- **Hidden prefill steps.** vLLM reports a request's prompt tokens only on the step where its prefill finishes, so chunked-prefill steps look like decode. That made the first long-context fits degenerate; we now exclude each request's prefill window.
+- **Hidden prefill steps.** vLLM reports a request's prompt tokens only on the step where its prefill finishes, so chunked-prefill steps look like decode. That made the first long-context fits degenerate. We now spread each request's prompt tokens over its prefill steps; with that, the serving fit's compute energy moves from 0.42 to 0.95 pJ/FLOP and matches the steady microbenchmark (0.943).
+- **vLLM version effects.** In vLLM 0.10.2, CUDA graphs are captured only up to 512 tokens per step, and the FlashAttention-2 backend (A100/A6000) slows mixed prefill/decode steps. Both show up as throughput loss at high load and are specific to this version and configuration.
 - **Capped calibration points.** Microbenchmark points at the power cap run at throttled clocks and lower energy per FLOP. Including them made B200 look "balanced" (energy ridge 270 vs 281); excluding them gives 133.
 - **Eager mode.** Every early serving run had vLLM's CUDA graphs off. On B200 that inflated step time by about a third, but it didn't change energy per byte.
 - **Prefix-cache over-count.** Logged prompt tokens include prefix-cache hits that vLLM never computes (26–36% at 64 concurrent); FLOPs are now corrected.
 
 ## 7. In progress and next
 
-- **High-concurrency time model:** adding a per-running-sequence host cost to fix the 13–34% over-prediction for small models at large batch (CPU analysis, running).
-- **Prefill-token spreading in the binning,** so each request's prompt tokens and FLOPs are spread across its prefill steps (running).
+- **Done this week:**
+  - the high-concurrency time model (B200 host and graph-capture terms; the FA2 mixed-step term on A100/A6000);
+  - prefill-token spreading in the binning (old runs verified bit-identical).
+- **Next for the model:**
+  - make the compute coefficient regime-aware (full clock vs at the power cap);
+  - confirm the FA2 mechanism with one profiler capture on A100.
 - **Realistic load on A100 / A6000 (running now):**
   - Poisson arrivals up to saturation;
   - long outputs (2k–8k tokens);
@@ -196,7 +205,7 @@ power roof    attainable FLOP/s at arithmetic intensity I = budget / (e_byte / I
 - **B200 handoff ready:** 72B on 4 and 8 GPUs over NVLink, the same Poisson and long-output runs.
 - **Gaps:**
   - H200 high-concurrency, CUDA-graph and long-context runs, if access returns;
-  - B200 compute energy (0.70–0.94 pJ) still not pinned;
+  - B200 compute energy at the power cap (0.6–0.7 pJ) vs full clock (0.94–0.95 pJ) needs one regime-aware coefficient;
   - H100 and L40S are priors only.
 
 ## Appendix: where things are
