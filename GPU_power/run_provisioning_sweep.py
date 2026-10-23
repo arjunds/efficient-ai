@@ -123,6 +123,8 @@ ARMS = {
     # 70B-class multi-GPU (B200 node: NVLink). 72B at TP4 / TP8.
     "b200_tp4": [(Q72, dict(GRAPHS, tensor_parallel_size=4, max_model_len=8192), _ragged(["alpaca", "sharegpt"], [1, 16, 64, 256]))],
     "b200_tp8": [(Q72, dict(GRAPHS, tensor_parallel_size=8, max_model_len=8192), _ragged(["alpaca", "sharegpt"], [1, 16, 64, 256]))],
+    # 32B at TP4 over PCIe (cached; the 72B snapshot here is incomplete): TP2 -> TP4 scaling
+    "a100_tp4_32b": [(Q32, dict(GRAPHS, tensor_parallel_size=4, max_model_len=8192), _ragged(["alpaca"], [1, 16, 64]))],
     "a100_tp4": [(Q72, dict(GRAPHS, tensor_parallel_size=4, max_model_len=8192), _ragged(["alpaca"], [1, 16, 64]))],
     # Generic arms for another GPU type (A6000 etc.; set PROV_LOG_ROOT per GPU).
     "gpu_graphs": [(Q7, GRAPHS, _ragged(["alpaca", "sharegpt"], [1, 4, 16, 64])),

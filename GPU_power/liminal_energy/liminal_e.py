@@ -63,6 +63,72 @@ TP_SYNC = {"B200": dict(tau_ar=15.5e-6, pen=1.0)}  # validate.py fit (72B), 32B 
 # fitted by validate_v2.py on 14B TP=2, tested on 32B TP=2 -> read from gpus_measured.json
 TP_SYNC_PRIOR = None                            # None -> rg.central_draw (25 us, x1.15)
 
+# High-concurrency step-time terms (TIMEMODEL_HIGHC.md, ../timemodel_highc.py).  OPT-IN: pass
+# highc=True (or a dict of overrides) to step()/step_work()/serving(); the default highc=None
+# leaves every earlier prediction bit-identical.  Per-step evidence (iter_log.csv, B200/A100/A6000):
+#   tau_seq     serial host cost per RUNNING sequence per step (vLLM scheduler + output
+#               processing; not KV- or context-dependent).  Fitted on B200 7B high-c only.
+#   t_mix       extra cost of a step that admits >=1 new request (prefill-plan / admission),
+#               charged with the steady-state probability f_mix = 1 - exp(-n/G).  B200 7B fit.
+#   capture_max vLLM 0.10.2 max_capture_size: a step with more scheduled tokens runs WITHOUT CUDA
+#   dtau_eager  graphs and pays dtau_eager per layer (measured at the 512-token step discontinuity,
+#               B200 7B c=512; 32B c=512 is the held-out check).
+#   attn        attention backend.  FlashAttention-2 (vLLM's default on SM8x: A100, A6000, A5000,
+#               L40S) packs the g = n_heads/n_kv_heads query heads of a KV head into one tile only
+#               when max_seqlen_q == 1 (its "seqlenq_ngroups_swapped" decode path).  A step that
+#               mixes prefill and decode loses it: each query head is its own CTA and re-streams
+#               its KV head, i.e. (g-1) * K_decode EXTRA KV bytes on mixed steps.  No fitted
+#               constant (g from the model config).  B200 uses FlashInfer (separate decode kernel:
+#               no penalty); H100/H200 (FA3) assumed no penalty [P].
+HIGHC = dict(
+    # timemodel_highc.py fit, B200 Qwen2-7B c=128-512 (6 runs, 26.6k steps, LAD); leave-one-run-out
+    # ranges 3.8-5.5 us, 0.27-0.34 ms, 53-64 us/layer.  Host terms are node properties: other
+    # GPUs/nodes use the B200 node's values as a zero-shot prior (A100/A6000/H200 unmeasured).
+    tau_seq={"_default": 4.80e-6},          # s per running sequence per step
+    t_mix={"_default": 0.280e-3},           # s per step that admits >= 1 request
+    capture_max=512,                        # vLLM 0.10.2 max_capture_size (run.log)
+    dtau_eager={"_default": 58.5e-6},       # s/layer when a step exceeds capture_max
+    attn={"A100-80-PCIe": "fa2", "A100-80-SXM": "fa2", "A6000": "fa2", "A5000": "fa2", "L40S": "fa2",
+          "B200": "flashinfer", "H200": "fa3", "H100-SXM": "fa3"},
+)
+
+
+def highc_params(g, highc):
+    """Resolve the opt-in high-concurrency terms for GPU g.  highc: None/False -> None (off);
+    True -> HIGHC; dict -> HIGHC updated with the dict (scalars apply to every GPU)."""
+    if not highc:
+        return None
+    src = dict(HIGHC)
+    if isinstance(highc, dict):
+        src.update(highc)
+
+    def pick(v):
+        if isinstance(v, dict):
+            return v.get(g["name"], v.get("_default"))
+        return v
+    p = {k: pick(v) for k, v in src.items()}
+    p["fa2"] = (p.get("attn") == "fa2")
+    return p
+
+
+def steady_mix(n, P, G, cached_frac=0.0, capture_max=None):
+    """Steady-state continuous batching at n running sequences: lam = n/G requests are admitted per
+    step (Poisson).  Returns (f_mix, f_eager): the probability that a step contains >=1 prefill,
+    and that its scheduled tokens n + K*P_c exceed capture_max (P_c computed prompt tokens)."""
+    lam = n / max(G, 1.0)
+    f_mix = 1.0 - math.exp(-lam)
+    if capture_max is None:
+        return f_mix, 0.0
+    if n > capture_max:
+        return f_mix, 1.0
+    pc = max(1.0, P * (1.0 - cached_frac))
+    kmin = int(math.floor((capture_max - n) / pc)) + 1      # K >= kmin new requests -> T > cap
+    cdf, term = 0.0, math.exp(-lam)
+    for k in range(kmin):
+        cdf += term
+        term *= lam / (k + 1)
+    return f_mix, max(0.0, 1.0 - cdf)
+
 # Coefficient profiles (J/B, J/B, J/FLOP).  'canonical' = gpu_coefficients.json via
 # rg.load_gpus() (same numbers as the recommender).  The others bracket the
 # KV-vs-compute split, which is UNDETERMINED (FINDINGS_B200.md "UPDATE 5 review"):
@@ -261,7 +327,10 @@ def work(m, batch, context, phase="decode", prefill_tokens=0.0, tp=1):
         out = float(batch)
     Fg = 2.0 * m.active_params() * T
     A = allreduce_bytes(m, T, tp) * tp
-    return dict(Wb=W, KVb=K, Fg=Fg, Fa=Fa, Fa_pf=Fa_pf, F=Fg + Fa, T=T, A=A, tokens_out=out)
+    w = dict(Wb=W, KVb=K, Fg=Fg, Fa=Fa, Fa_pf=Fa_pf, F=Fg + Fa, T=T, A=A, tokens_out=out)
+    if phase != "prefill":                             # used only by the opt-in highc terms
+        w.update(n_seq=float(batch), KV_dec=K, f_mix=1.0 if prefill_tokens else 0.0)
+    return w
 
 
 def intensity(w):
@@ -290,10 +359,35 @@ def time_params(g, time_model="eager", ovh_scale=1.0):
     return tp
 
 
-def step_time(g, m, w, tp_deg=1, time_model="eager", draw=None, ovh_scale=1.0):
+def highc_extra(g, m, w, tp_deg, time_model, hc):
+    """The opt-in high-concurrency additions for one (expected) step.  Returns
+    dict(t_host, t_eager, KV_mix, t_fa2): serial host time, CUDA-graph-capture fallback time,
+    FA2 mixed-batch extra KV bytes (all GPUs of the TP group) and their uncapped streaming time.
+    hc=None -> all zero."""
+    z = dict(t_host=0.0, t_eager=0.0, KV_mix=0.0, t_fa2=0.0)
+    if hc is None or "n_seq" not in w:
+        return z
+    n_seq = w["n_seq"]
+    f_mix = w.get("f_mix", 0.0)
+    z["t_host"] = (hc["tau_seq"] or 0.0) * n_seq + (hc["t_mix"] or 0.0) * f_mix
+    if time_model == "graphs" and hc.get("capture_max"):
+        f_e = w.get("f_eager")
+        if f_e is None:
+            f_e = 1.0 if w["T"] > hc["capture_max"] else 0.0
+        z["t_eager"] = f_e * m.L * (hc["dtau_eager"] or 0.0)
+    if hc["fa2"] and getattr(m, "n_kv_heads", 0) and m.n_heads > m.n_kv_heads:
+        grp = float(m.n_heads) / m.n_kv_heads
+        z["KV_mix"] = f_mix * (grp - 1.0) * w.get("KV_dec", w["KVb"])
+        # re-reads stream each KV head sequentially per CTA: weight-streaming efficiency eta
+        z["t_fa2"] = z["KV_mix"] / (g["bw"] * tp_deg * time_params(g, time_model)["eta"])
+    return z
+
+
+def step_time(g, m, w, tp_deg=1, time_model="eager", draw=None, ovh_scale=1.0, highc=None):
     """Uncapped step time and its decomposition {overhead, bandwidth, compute}.
     time_model: 'eager' (recommender fit, eager-mode vLLM), 'graphs' (CUDA graphs),
-    'liminal' (LIMINAL v2 as published: peak BW, no t0, 114 us/layer exposed)."""
+    'liminal' (LIMINAL v2 as published: peak BW, no t0, 114 us/layer exposed).
+    highc: opt-in high-concurrency terms (HIGHC); None -> unchanged."""
     L = m.L
     n = tp_deg
     if time_model == "liminal":
@@ -301,6 +395,14 @@ def step_time(g, m, w, tp_deg=1, time_model="eager", draw=None, ovh_scale=1.0):
         t_cmp = w["F"] / (g["peak_flops"] * n)
         ovh = LIMINAL_T_EXPOSED * L
         return max(t_mem, t_cmp) + ovh, dict(overhead=ovh, bandwidth=t_mem, compute=t_cmp)
+    hc = highc_params(g, highc)
+    if hc is not None:
+        t, parts = step_time(g, m, w, tp_deg, time_model, draw, ovh_scale, None)
+        x = highc_extra(g, m, w, tp_deg, time_model, hc)
+        parts = dict(parts, overhead=parts["overhead"] + x["t_host"] + x["t_eager"],
+                     compute=parts["compute"] + x["t_fa2"])
+        parts["_highc"] = x                                       # not a time part (see step_work)
+        return t + x["t_host"] + x["t_eager"] + x["t_fa2"], parts
     d = draw or dict(rg.central_draw(g))
     sync = TP_SYNC.get(g["name"]) if draw is None else None
     if sync and sync.get("tau_ar") is not None:
@@ -333,7 +435,7 @@ def step_time(g, m, w, tp_deg=1, time_model="eager", draw=None, ovh_scale=1.0):
 # ---------------------------------------------------------------------------
 # 3. Energy, power, power cap
 # ---------------------------------------------------------------------------
-def at_cap_time(g, w, n, cap_scale=1.0):
+def at_cap_time(g, w, n, cap_scale=1.0, KV_extra=0.0):
     """Step time when the GPU sits at its power cap, from the AT-CAP ROOFLINE fitted on
     capped LLM-shaped microbench kernels (gpus_measured.json at_cap):
         seconds per DRAM byte = softmax_k(cap_scale*tau_b, I*tau_f),  I = FLOP/byte of the step.
@@ -341,14 +443,15 @@ def at_cap_time(g, w, n, cap_scale=1.0):
     calibrated, 1 for zero-shot) stretches only the streaming term: in decode the non-GEMM
     kernels of a step share the capped power; compute-bound prefill is left as measured."""
     ac = g["at_cap"]
-    byts = (w["Wb"] + w["KVb"]) / n
+    byts = (w["Wb"] + w["KVb"] + KV_extra) / n
     F_e = (w["Fg"] + w.get("Fa_pf", 0.0)) / n
     I = F_e / byts if byts > 0 else 0.0
     return byts * rg.softmax_k(cap_scale * ac["tau_b"], I * ac["tau_f"], ac["k"])
 
 
 def step_work(g, m, w, tp_deg=1, profile="canonical", time_model="eager",
-              cap_regime=False, cap_mode="auto", power_model="measured", draw=None, coef=None):
+              cap_regime=False, cap_mode="auto", power_model="measured", draw=None, coef=None,
+              highc=None):
     """Predict one step from a precomputed work dict.  Returns time, power, energy split,
     bound and per-token metrics.  power_model='tdp' gives LIMINAL's STPS/W convention
     (power = n*TDP, no activity dependence).
@@ -359,7 +462,12 @@ def step_work(g, m, w, tp_deg=1, profile="canonical", time_model="eager",
     at_cap_time + overhead part of the time model) and power = P_cap; 'roof': without the
     overhead term; 'stretch': t = E_dyn/(n*(P_cap-P_s-P_0)) at full-clock J (recommender
     convention, default otherwise); 'dvfs' (or cap_regime=True): stretch with the capped-regime
-    coefficients (capped_coefficients())."""
+    coefficients (capped_coefficients()).
+    highc (opt-in, HIGHC): host time (tau_seq, t_mix) and the CUDA-graph-capture fallback enter
+    the uncapped time and the 'overhead' part exactly like t0 and tau do (so roof_ovh keeps them
+    serial at the cap, stretch does not), and the GPU idles at P_s + P_0 during them when
+    uncapped; FA2 mixed-batch extra KV bytes are added to the GPU work (time, e_kv energy,
+    at-cap roofline).  highc=None -> unchanged."""
     g, m = gpu(g), model(m)
     n = tp_deg
     if coef is None:
@@ -370,13 +478,16 @@ def step_work(g, m, w, tp_deg=1, profile="canonical", time_model="eager",
     e_w, e_kv, e_g, p_s, p0 = pp["e_w"], pp["e_kv"], pp["e_g"], pp["p_s"], pp["p0"]
     src = pp["src"]
     e_link = e_w                                              # PRIOR: an all-reduce byte ~ a DRAM byte
-    t_unc, parts = step_time(g, m, w, n, time_model, draw, pp["ovh_scale"])
+    t_unc, parts = step_time(g, m, w, n, time_model, draw, pp["ovh_scale"], highc)
+    hx = parts.pop("_highc", None)
+    KV_mix = hx["KV_mix"] if hx else 0.0
     # e_g multiplies dense GEMM FLOPs (the fit's convention); decode attention is
     # KV-byte-bound and absorbed in e_kv.  Prefill attention (FLOP-bound, ~ctx^2) is
     # charged at e_g.
     F_e = w["Fg"] + w.get("Fa_pf", 0.0)
-    E_full = e_w * w["Wb"] + e_kv * w["KVb"] + e_g * F_e + e_link * w["A"]
-    split = dict(weights=e_w * w["Wb"], kv=e_kv * w["KVb"], compute=e_g * F_e, link=e_link * w["A"])
+    KV_e = w["KVb"] + KV_mix if KV_mix else w["KVb"]
+    E_full = e_w * w["Wb"] + e_kv * KV_e + e_g * F_e + e_link * w["A"]
+    split = dict(weights=e_w * w["Wb"], kv=e_kv * KV_e, compute=e_g * F_e, link=e_link * w["A"])
     budget = n * (g["p_cap"] - p_s - p0)                      # dynamic budget above idle + activity
     mode = "dvfs" if cap_regime else (cap_mode if cap_mode != "auto" else pp.get("cap_mode", "auto"))
     if mode == "auto":
@@ -385,7 +496,7 @@ def step_work(g, m, w, tp_deg=1, profile="canonical", time_model="eager",
     if E_full / t_unc > budget:                               # demanded power exceeds the cap
         capped = True
         if mode in ("roof", "roof_ovh"):
-            t_c = at_cap_time(g, w, n, pp["cap_scale"])
+            t_c = at_cap_time(g, w, n, pp["cap_scale"], KV_mix) if KV_mix else at_cap_time(g, w, n, pp["cap_scale"])
             if mode == "roof_ovh":                            # host/launch overhead is not throttled
                 t_c += parts["overhead"]
             t = max(t_unc, t_c)
@@ -398,7 +509,7 @@ def step_work(g, m, w, tp_deg=1, profile="canonical", time_model="eager",
                 cw, ckv, cg = capped_coefficients(g, e_w, e_kv, e_g)
             else:
                 cw, ckv, cg = e_w, e_kv, e_g
-            E_cap = cw * w["Wb"] + ckv * w["KVb"] + cg * F_e + cw * w["A"]
+            E_cap = cw * w["Wb"] + ckv * KV_e + cg * F_e + cw * w["A"]
             t = max(t_unc, E_cap / budget)                    # time stretches only if needed
             s_ = min(E_full, budget * t) / E_full
             split = {k: v * s_ for k, v in split.items()}
@@ -452,13 +563,19 @@ def serving_work(m, n, P, G, cached_frac=0.0, prefill_attn=True):
 def serving(g, m, P, G, conc=None, rate=None, cached_frac=0.0, tp=1, prefill_attn=True, **kw):
     """Steady-state continuous-batching prediction (same workload as
     rg.predict_serving: n running sequences + their share of prefill per step).
-    Closed loop (conc) or open loop (rate, Little's law)."""
+    Closed loop (conc) or open loop (rate, Little's law).
+    kw highc (opt-in): adds the high-concurrency terms with steady-state mixing probabilities
+    (steady_mix: f_mix = 1 - exp(-n/G); f_eager = P(n + K*P_c > capture_max))."""
     g, m = gpu(g), model(m)
+    hc = highc_params(g, kw.get("highc"))
 
     def at(n):
         w = serving_work(m, n, P, G, cached_frac, prefill_attn)
         w["A"] = allreduce_bytes(m, w["T"], tp) * tp
         w["tokens_out"] = n
+        if hc is not None:
+            f_mix, f_eager = steady_mix(n, P, G, cached_frac, hc.get("capture_max"))
+            w.update(n_seq=n, KV_dec=w["KVb"], f_mix=f_mix, f_eager=f_eager)
         return step_work(g, m, w, tp, **kw)
 
     if conc is not None:

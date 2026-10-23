@@ -72,3 +72,10 @@ The GDDR6 A6000 costs about 2× per byte, mostly as fixed memory-activity power,
 
 This is the second GDDR6 part we've measured, after the 100 W-capped A5000, and it
 confirms the GDDR6 prior (2.3e-10 [1.3, 3.1]) for boost-clock serving.
+
+## Poisson load and long outputs (2026-10-22/23)
+- **Poisson arrivals** (Qwen2-7B, graphs): 293–299 W from 0.5 to 12 req/s, so J/token
+  falls as 1/throughput, from 2.80 J (sharegpt 0.5 req/s) to 0.187 J (alpaca 12 req/s).
+  Idle is about 40% of energy throughout.
+- **Latency:** TPOT p50 23–28 ms (about 2× A100); p99 up to 35 ms at sharegpt 6 req/s.
+- **Long outputs** (c=4, 2k → 8k tokens): J/token 1.80 → 1.88 (+4%), TPOT 24.0 → 25.1 ms.

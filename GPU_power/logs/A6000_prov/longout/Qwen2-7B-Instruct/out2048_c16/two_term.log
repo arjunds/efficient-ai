@@ -1,0 +1,38 @@
+[energy_model] energy counter rejected for logs/A6000_prov/longout/Qwen2-7B-Instruct/out2048_c16/power_trace.csv: counter/POWER_INSTANT = 0.25304018447110616; using POWER_INSTANT
+{
+  "run_dir": "logs/A6000_prov/longout/Qwen2-7B-Instruct/out2048_c16",
+  "model": "two_term",
+  "bin_s": 0.2,
+  "n_bins": 267,
+  "n_iters_total": 4101,
+  "weight_bytes": 14140571648.0,
+  "kv_bytes_per_token": 57344.0,
+  "matmul_flops_per_token": 14140571648.0,
+  "attn_flops_per_resident_token": 401408.0,
+  "active_params": 7070285824.0,
+  "idle_power_w": 126.161,
+  "task": null,
+  "concurrency_or_rate": 16,
+  "power_source": "inst",
+  "prefill_spread": {
+    "spread_mode": "budget",
+    "requests_total": 16,
+    "requests_attributed": 16,
+    "tokens_attributed": 4096.0,
+    "tokens_moved_off_report_row": 0.0,
+    "computed_overflow": 0.0,
+    "budget": 2048.0
+  },
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 2.8912192135802476e-10,
+  "e_flop_j_per_flop": 1.3793002527191625e-13,
+  "p_static_w": 126.161,
+  "r2_energy": 0.7011574907108638,
+  "r2_power": -27.41851124042171,
+  "bytes_flops_pearson": -0.16994396814570464,
+  "identifiable": true,
+  "arithmetic_intensity_min": 0.0,
+  "arithmetic_intensity_max": 691.0775846450609,
+  "binned_table": "logs/A6000_prov/longout/Qwen2-7B-Instruct/out2048_c16/binned_table.csv",
+  "e_flop_pJ_per_flop": 0.13793002527191625
+}

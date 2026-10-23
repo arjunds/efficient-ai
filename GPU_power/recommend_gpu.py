@@ -342,10 +342,13 @@ def softmax_k(a, b, k):
     return mx * ((a / mx) ** k + (b / mx) ** k) ** (1.0 / k)
 
 
-def iter_time(g, tp, work, L, moe=False, mfu_pf=None, n_gpu=1, tau_ar=0.0):
+def iter_time(g, tp, work, L, moe=False, mfu_pf=None, n_gpu=1, tau_ar=0.0, tau_seq=0.0):
     """Uncapped iteration time (s) from the realized-utilization model, and which
     resource dominates it ("memory": weight/KV streaming + per-layer floors;
-    "compute": the FLOP terms)."""
+    "compute": the FLOP terms).
+    tau_seq [s per running sequence per step]: optional serial host cost (vLLM scheduler /
+    output processing), added after the max() as tau_seq * work["n_seq"] (n_seq defaults to 0).
+    Default 0 -> unchanged.  Fitted value and evidence: TIMEMODEL_HIGHC.md (liminal_e.HIGHC)."""
     bw = g["bw"] * n_gpu
     pk = g["peak_flops"] * n_gpu
     tau = (tp["tau_moe"] if (moe and tp.get("tau_moe")) else tp["tau"]) + tau_ar
@@ -356,6 +359,8 @@ def iter_time(g, tp, work, L, moe=False, mfu_pf=None, n_gpu=1, tau_ar=0.0):
     t_cmp = tp["t0"] + work["F"] / (pk * mfu)
     t = max(t_stream + t_tok, t_cmp)
     bound = "compute" if max(t_tok, t_cmp - tp["t0"]) > t_stream - tp["t0"] else "memory"
+    if tau_seq:
+        t += tau_seq * work.get("n_seq", 0.0)
     return t, bound
 
 

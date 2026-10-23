@@ -28,6 +28,12 @@ treatment.
 Writes calibration.json. Helpers (bin_run, load_power_samples) are reused by
 validate_waveform.py.
 
+PREFILL SPREADING (2026-10-23, TIMEMODEL_HIGHC.md §5): when a run has requests.csv and all
+phases are binned, each request's prompt tokens are moved from the step that reported them
+back over its [t_submit, t_first_token] window before binning (spread_prefill_rows; run totals
+unchanged). Runs without requests.csv bin exactly as before. Disable with --no_spread_prefill
+or ENERGY_SPREAD_PREFILL=0.
+
 Usage: python energy_model.py --run_dir logs/<run> [--bin_s 0.2] [--phase decode]
 """
 
@@ -257,6 +263,111 @@ def iter_rows(iter_csv: str) -> List[dict]:
         return list(csv.DictReader(f))
 
 
+# ---------------- prefill spreading (hidden chunked-prefill steps) ----------------
+# vLLM reports a request's prompt tokens (IterationStats.num_prompt_tokens) -- and, in our logs,
+# its prefix-cache queries/hits -- only on the step where its prefill FINISHES.  With chunked
+# prefill a long prompt's earlier chunk steps report prefill_tokens = 0, so their GEMM FLOPs land
+# in the bin of the last chunk while their energy is spent earlier (FINDINGS_B200 UPDATE 6
+# review).  spread_prefill_rows() moves each request's tokens back over the steps of its
+# [t_submit, t_first_token] window BEFORE binning; run totals are unchanged.
+SPREAD_MODES = ("budget", "duration")
+
+
+def _requests_windows(run_dir):
+    """[(t_submit, t_first_token, prompt_tokens)] from requests.csv, or None if the file or the
+    columns are missing (-> spreading stays off: old runs bin exactly as before)."""
+    p = os.path.join(run_dir, "requests.csv")
+    if not os.path.exists(p):
+        return None
+    out = []
+    with open(p) as f:
+        rd = csv.DictReader(f)
+        if not rd.fieldnames or not {"t_submit", "t_first_token", "prompt_tokens"} <= set(rd.fieldnames):
+            return None
+        for r in rd:
+            s, ft, pt = _f(r.get("t_submit")), _f(r.get("t_first_token")), _f(r.get("prompt_tokens"))
+            if s is not None and ft is not None and pt:
+                out.append((s, ft, pt))
+    return out
+
+
+def spread_prefill_rows(t_start, t_end, pref, hits, dec, reqs, budget=2048, mode="budget"):
+    """Redistribute each request's prompt tokens over the logged steps of its prefill window.
+
+    Inputs are per-row lists in TIME ORDER (t_end ascending).  A request is attributed to the
+    reporting row = last row with t_end <= t_first_token (this reproduces the logged
+    prefill_tokens on >99% of rows of the B200/A100/A6000 provisioning runs), only if that row
+    still has that many unattributed prompt tokens.  Its computed tokens C = P * (1 - hits/pref of
+    the reporting row) are placed over rows (t_end > t_submit) .. reporting row:
+      mode 'budget'  : backward fill from the reporting row, each row taking at most its free
+                       chunked-prefill budget (max_num_batched_tokens - decode tokens - what is
+                       already placed there); requests are placed in finish order (vLLM schedules
+                       prefills FCFS, so an earlier request owns the steps just before its finish).
+                       Tokens that do not fit stay on the reporting row.
+      mode 'duration': proportional to step duration over the window.
+    Raw prompt tokens and hits move with the same per-row shares, so per-row computed tokens
+    (pref - hits) stay >= 0 and the run totals of prompt tokens, hits and computed tokens are
+    unchanged.  Returns (pref', hits', info)."""
+    n = len(t_end)
+    pref2, hits2 = list(pref), list(hits)
+    avail = list(pref)
+    jobs = []
+    for s, ft, P in reqs:
+        r = bisect.bisect_right(t_end, ft) - 1
+        if r < 0 or avail[r] + 1e-9 < P:
+            continue
+        avail[r] -= P
+        lo = bisect.bisect_right(t_end, s)
+        C = P * (1.0 - hits[r] / pref[r]) if pref[r] > 0 else P
+        jobs.append((r, C, P, max(0, min(lo, r)), s))
+    info = {"spread_mode": mode, "requests_total": len(reqs), "requests_attributed": len(jobs),
+            "tokens_attributed": sum(j[2] for j in jobs), "tokens_moved_off_report_row": 0.0,
+            "computed_overflow": 0.0, "budget": budget}
+    free = [max(0.0, budget - d) for d in dec]
+    jobs.sort(key=lambda j: (j[0], j[1], j[4]))         # finish order; short ones claim the row first
+    for r, C, P, lo, _s in jobs:
+        alloc = {}
+        if C <= 0 or lo >= r:
+            alloc[r] = C
+            if lo >= r:
+                free[r] -= C
+        elif mode == "duration":
+            w = [max(0.0, t_end[k] - t_start[k]) for k in range(lo, r + 1)]
+            tot = sum(w)
+            for k, wk in zip(range(lo, r + 1), w):
+                alloc[k] = C * (wk / tot) if tot > 0 else (C if k == r else 0.0)
+        else:
+            rem = C
+            k = r
+            while rem > 1e-9 and k >= lo:
+                a = min(rem, free[k])
+                if a > 0:
+                    alloc[k] = alloc.get(k, 0.0) + a
+                    free[k] -= a
+                    rem -= a
+                k -= 1
+            if rem > 1e-9:
+                alloc[r] = alloc.get(r, 0.0) + rem
+                info["computed_overflow"] += rem
+        if C <= 0:
+            continue
+        h = P - C
+        pref2[r] -= P
+        hits2[r] -= h
+        for k, a in alloc.items():
+            f = a / C
+            pref2[k] += P * f
+            hits2[k] += h * f
+            if k != r:
+                info["tokens_moved_off_report_row"] += P * f
+    for k in range(n):                                   # float dust from the subtraction
+        if abs(pref2[k]) < 1e-6:
+            pref2[k] = 0.0
+        if abs(hits2[k]) < 1e-6:
+            hits2[k] = 0.0
+    return pref2, hits2, info
+
+
 def _f(x):
     try:
         return float(x)
@@ -264,11 +375,27 @@ def _f(x):
         return None
 
 
+def spread_enabled(run_dir, phase=None, spread_prefill=None):
+    """Prefill spreading is ON by default when the run has requests.csv with t_submit /
+    t_first_token / prompt_tokens and all phases are binned (phase=None); OFF for runs without
+    it (old runs bin exactly as before), for phase-filtered binning (the logged phase tags
+    would no longer match), with spread_prefill=False, or with env ENERGY_SPREAD_PREFILL=0."""
+    if spread_prefill is False or phase:
+        return None
+    if os.environ.get("ENERGY_SPREAD_PREFILL", "").strip() in ("0", "false", "off", "no"):
+        return None
+    return _requests_windows(run_dir)
+
+
 def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
-            include_empty: bool = False, power_source: str = "auto"):
+            include_empty: bool = False, power_source: str = "auto",
+            spread_prefill=None, spread_mode: str = "budget"):
     """Bin a run into fixed-width time bins. phase=None includes ALL phases
     (needed for the two-term fit: prefill bins are the high-arithmetic-intensity
-    points that pin e_flop). Each bin: {b0,b1,dt,E,bytes,flops,n,prefill,decode}."""
+    points that pin e_flop). Each bin: {b0,b1,dt,E,bytes,flops,n,prefill,decode}.
+    spread_prefill: None = auto (on iff requests.csv exists and phase is None; see
+    spread_enabled), False = off, True = on when possible.  spread_mode: 'budget' | 'duration'
+    (spread_prefill_rows)."""
     meta = json.load(open(os.path.join(run_dir, "run_meta.json")))
     ts, ps = load_power_samples(os.path.join(run_dir, "power_trace.csv"))
     efn, psrc = window_energy_fn(os.path.join(run_dir, "power_trace.csv"),
@@ -280,9 +407,30 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
     m_obj, _key = get_model_obj(meta)
     dtype_b = DTYPE_BYTES.get(meta.get("dtype", "float16"), 2)
 
+    # optional: move each request's prompt tokens (and hits) over its prefill window
+    spread = {}
+    spread_info = None
+    reqs = spread_enabled(run_dir, phase, spread_prefill)
+    if reqs:
+        if spread_mode not in SPREAD_MODES:
+            raise ValueError("spread_mode must be one of %s" % (SPREAD_MODES,))
+        idx = []
+        for i, r in enumerate(rows):
+            a, b = _f(r.get("t_start")), _f(r.get("t_end"))
+            if a is not None and b is not None:
+                idx.append((b, i, a))
+        idx.sort()
+        p0 = [_f(rows[i].get("prefill_tokens")) or 0.0 for _, i, _ in idx]
+        h0 = [((_f(rows[i].get("prefix_hits")) or 0.0) if have_hits else 0.0) for _, i, _ in idx]
+        d0 = [_f(rows[i].get("decode_tokens")) or 0.0 for _, i, _ in idx]
+        budget = meta.get("max_num_batched_tokens_resolved") or meta.get("max_num_batched_tokens") or 2048
+        p1, h1, spread_info = spread_prefill_rows([a for _, _, a in idx], [b for b, _, _ in idx],
+                                                  p0, h0, d0, reqs, float(budget), spread_mode)
+        spread = {i: (p1[k], h1[k]) for k, (_, i, _) in enumerate(idx)}
+
     tms, byts, flps, flps1, prefs, decs, hits = [], [], [], [], [], [], []
     wbyt_l, kvbyt_l, gemm_l, attn_l = [], [], [], []   # physical channels
-    for r in rows:
+    for ri, r in enumerate(rows):
         if phase and (r.get("phase") or "").strip() != phase:
             continue
         t0 = _f(r.get("t_start")); t1 = _f(r.get("t_end"))
@@ -290,6 +438,8 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
             continue
         kv = _f(r.get("kv_tokens_resident")) or 0.0
         pref = _f(r.get("prefill_tokens")) or 0.0
+        if spread:
+            pref = spread[ri][0]
         dec = _f(r.get("decode_tokens")) or 0.0
         nr = _f(r.get("n_running")) or 1.0
         tms.append(0.5 * (t0 + t1))
@@ -307,7 +457,10 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
         flps1.append(matmul + attn)
         flps.append(matmul + attn_per_resident * (pref + dec) * kv / max(nr, 1.0))
         prefs.append(pref); decs.append(dec)
-        hits.append((_f(r.get("prefix_hits")) or 0.0) if have_hits else 0.0)
+        if spread:
+            hits.append(spread[ri][1])
+        else:
+            hits.append((_f(r.get("prefix_hits")) or 0.0) if have_hits else 0.0)
         wbyt_l.append(wbytes); kvbyt_l.append(kvbytes)
         gemm_l.append(matmul); attn_l.append(attn)
 
@@ -318,6 +471,8 @@ def bin_run(run_dir: str, bin_s: float = DEFAULT_BIN_S, phase=None,
             "idle_power_w": meta.get("idle_power_w"), "meta": meta,
             "n_iters_total": len(tms), "bin_s": bin_s, "phase": phase,
             "power_source": psrc, "prefix_hits_logged": have_hits}
+    if spread_info is not None:
+        info["prefill_spread"] = spread_info
     if not ts or not tms:
         return [], info
 
@@ -441,11 +596,14 @@ def _pearson(x, y):
     return (sxy / d) if d else None
 
 
-def calibrate_two_term(run_dir: str, bin_s: float = DEFAULT_BIN_S) -> dict:
+def calibrate_two_term(run_dir: str, bin_s: float = DEFAULT_BIN_S, spread_prefill=None,
+                       spread_mode: str = "budget", binned_name: str = "binned_table.csv") -> dict:
     """Fit E_bin = e_bit·bytes + e_flop·flops + P_static·dt over ALL-phase bins.
     P_static anchored from idle; (e_bit, e_flop) by 2-feature LS on the dynamic
-    energy. Also exports binned_table.csv for independent re-fitting."""
-    bins, info = bin_run(run_dir, bin_s, phase=None)
+    energy. Also exports binned_table.csv (or binned_name) for independent re-fitting.
+    Prefill spreading: see bin_run / spread_enabled (auto-on when requests.csv exists)."""
+    bins, info = bin_run(run_dir, bin_s, phase=None, spread_prefill=spread_prefill,
+                         spread_mode=spread_mode)
     result = {"run_dir": run_dir, "model": "two_term", "bin_s": bin_s,
               "n_bins": len(bins), "n_iters_total": info["n_iters_total"],
               "weight_bytes": info["weight_bytes"],
@@ -457,9 +615,12 @@ def calibrate_two_term(run_dir: str, bin_s: float = DEFAULT_BIN_S) -> dict:
               "task": info["meta"].get("task"),
               "concurrency_or_rate": info["meta"].get("concurrency_or_rate"),
               "power_source": info.get("power_source")}
+    if info.get("prefill_spread") is not None:
+        result["prefill_spread"] = info["prefill_spread"]
 
     # always export the binned table (analysis side re-fits independently)
-    _export_binned_table(run_dir, bins, info.get("power_source"))
+    _export_binned_table(run_dir, bins, info.get("power_source"),
+                         spread=(info.get("prefill_spread") or {}).get("spread_mode"), name=binned_name)
 
     if len(bins) < 4:
         result["error"] = f"too few bins ({len(bins)})"
@@ -508,29 +669,33 @@ def calibrate_two_term(run_dir: str, bin_s: float = DEFAULT_BIN_S) -> dict:
     return result
 
 
-def _export_binned_table(run_dir, bins, power_source=None):
+def _export_binned_table(run_dir, bins, power_source=None, spread=None, name="binned_table.csv"):
     """Columns are additive: prefill_tokens_computed / gemm_flops_bin_computed only
     when prefix hits were logged (same names controls/prefix_cache_refit.py adds to
-    old runs), and power_source records which NVML reading produced energy_bin_j."""
+    old runs), and power_source records which NVML reading produced energy_bin_j.
+    With prefill spreading (spread = mode) prefill_tokens is written with one decimal (spread
+    tokens are fractional) and a trailing prefill_spread column names the mode."""
     have_c = bool(bins) and bins[0].get("prefill_computed") is not None
-    with open(os.path.join(run_dir, "binned_table.csv"), "w", newline="") as f:
+    with open(os.path.join(run_dir, name), "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["t_mid", "dt_s", "energy_bin_j", "bytes_bin", "flops_bin",
                     "flops_bin_v1", "weight_bytes_bin", "kv_bytes_bin",
                     "gemm_flops_bin", "attn_flops_bin",
                     "prefill_tokens", "decode_tokens", "n_iters"]
                    + (["prefill_tokens_computed", "gemm_flops_bin_computed"] if have_c else [])
-                   + (["power_source"] if power_source else []))
+                   + (["power_source"] if power_source else [])
+                   + (["prefill_spread"] if spread else []))
         for b in bins:
             w.writerow([f"{0.5*(b['b0']+b['b1']):.6f}", f"{b['dt']:.4f}",
                         f"{b['E']:.4f}", f"{b['bytes']:.6e}", f"{b['flops']:.6e}",
                         f"{b.get('flops_v1', b['flops']):.6e}",
                         f"{b.get('weight_bytes', 0):.6e}", f"{b.get('kv_bytes', 0):.6e}",
                         f"{b.get('gemm_flops', 0):.6e}", f"{b.get('attn_flops', 0):.6e}",
-                        int(b["prefill"]), int(b["decode"]), b["n"]]
+                        (f"{b['prefill']:.1f}" if spread else int(b["prefill"])), int(b["decode"]), b["n"]]
                        + ([f"{b['prefill_computed']:.1f}", f"{b['gemm_flops_computed']:.6e}"]
                           if have_c else [])
-                       + ([power_source] if power_source else []))
+                       + ([power_source] if power_source else [])
+                       + ([spread] if spread else []))
 
 
 def main():
@@ -543,10 +708,18 @@ def main():
                          "POWER_INSTANT > GetPowerUsage, whichever was logged)")
     ap.add_argument("--two_term", action="store_true",
                     help="fit E = e_bit·bytes + e_flop·flops + P_static·dt (all phases)")
+    ap.add_argument("--no_spread_prefill", action="store_true",
+                    help="do NOT redistribute prompt tokens over their prefill windows (default: on "
+                         "when the run has requests.csv; env ENERGY_SPREAD_PREFILL=0 also disables)")
+    ap.add_argument("--spread_mode", default="budget", choices=SPREAD_MODES)
+    ap.add_argument("--binned_out", default="binned_table.csv",
+                    help="file name (in run_dir) for the exported binned table")
     args = ap.parse_args()
     os.environ.setdefault("ENERGY_POWER_SOURCE", args.power_source)
     if args.two_term:
-        cal = calibrate_two_term(args.run_dir, args.bin_s)
+        cal = calibrate_two_term(args.run_dir, args.bin_s,
+                                 spread_prefill=False if args.no_spread_prefill else None,
+                                 spread_mode=args.spread_mode, binned_name=args.binned_out)
         out = os.path.join(args.run_dir, "calibration_two_term.json")
     else:
         cal = calibrate(args.run_dir, args.phase, args.bin_s)
