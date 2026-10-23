@@ -230,3 +230,36 @@ B200 prefill is 1.25–1.52× cheaper per prompt token and 4–5× faster, in li
   isn't a valid hardware comparison: an H200 with graphs would gain too, and we can't
   measure it. But it shows the September eager MoE numbers were overhead-dominated.
 - With graphs, MoE reaches the 300 W cap from c=16 on.
+
+## Open-loop (Poisson) load and long outputs (2026-10-22/23)
+**Poisson arrivals** (Qwen2-7B, CUDA graphs; J/token from the energy counter; per-request
+latency from `requests.csv`):
+
+| arrivals | tok/s | J/token | power | TTFT p50 / p99 | TPOT p50 / p99 |
+|---|---|---|---|---|---|
+| alpaca 1 req/s | 137 | 2.04 | 279 W | 0.02 / 0.15 s | 11.3 / 11.9 ms |
+| alpaca 8 req/s | 1130 | 0.264 | 298 W | 0.02 / 0.03 s | 12.0 / 12.3 ms |
+| alpaca 24 req/s | 3478 | 0.086 | 298 W | 0.03 / 0.04 s | 13.9 / 16.4 ms |
+| sharegpt 1 req/s | 201 | 1.45 | 291 W | 0.02 / 0.13 s | 11.5 / 11.8 ms |
+| sharegpt 12 req/s | 2514 | 0.118 | 296 W | 0.03 / 0.35 s | 15.6 / 20.7 ms |
+
+- **There is no energy proportionality on a power-capped GPU.** Power is 279–298 W from
+  1 to 24 req/s, so J/token falls as 1/throughput (24× from 1 to 24 req/s).
+- Even at 1 req/s, the GPU decodes small batches back-to-back at full power, and idle is
+  33–35% of energy throughout.
+- **Implication:** an under-loaded A100 is very inefficient, which strengthens the case
+  for consolidating load onto fewer GPUs.
+- Latency stays well inside a 50 ms per-token SLO up to 24 req/s (alpaca), so the GPU
+  isn't saturated yet; closed-loop c=64 corresponds to ~30 req/s.
+
+**Long outputs** (256-token prompts, 2048 / 8192 generated tokens): KV grows over each
+request.
+
+| | c=4 | c=16 |
+|---|---|---|
+| J/token, 2k → 8k outputs | 0.882 → 0.924 (+5%) | 0.239 → 0.275 (+15%) |
+| TPOT, 2k → 8k outputs | 11.8 → 12.4 ms | 12.8 → 14.7 ms |
+
+**TP4 note:** the planned 72B TP4 run was cancelled. The local 72B snapshot was
+incomplete (33 of ~145 GB) and `/shared_data0` is 99% full. It was replaced by 32B TP4,
+which is cached and tests TP2 → TP4 scaling over PCIe.

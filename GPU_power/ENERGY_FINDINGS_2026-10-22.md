@@ -208,6 +208,14 @@ power roof    attainable FLOP/s at arithmetic intensity I = budget / (e_byte / I
   - B200 compute energy at the power cap (0.6–0.7 pJ) vs full clock (0.94–0.95 pJ) needs one regime-aware coefficient;
   - H100 and L40S are priors only.
 
+## 8. Addendum: new overnight results (A100 / A6000)
+
+- **Power-capped GPUs are not energy-proportional.** Under realistic open-loop (Poisson) arrivals, the A100 draws 279–298 W whether it serves 1 or 24 requests per second, and the A6000 293–299 W from 0.5 to 12 req/s.
+  - So energy per token falls as 1/throughput: A100 2.04 J at 1 req/s vs 0.086 J at 24 req/s.
+  - An under-loaded capped GPU is very inefficient. For capped parts, consolidating traffic onto fewer GPUs is the main energy lever.
+  - Latency stays inside a 50 ms per-token target throughout (A100 TPOT p50 11–16 ms).
+- **Long outputs add modest cost.** Going from 2k to 8k generated tokens raises energy per token by 5–15% on A100 and about 4% on A6000, as the KV cache grows during each request.
+
 ## Appendix: where things are
 
 - **Findings:**
