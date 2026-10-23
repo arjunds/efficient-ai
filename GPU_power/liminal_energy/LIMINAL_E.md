@@ -252,6 +252,9 @@ within 8%.
 - **c = 128–256 on A100 and A6000:** throughput over-predicted by 24–38%. The same pattern
   appears on B200 at c=512. The time model is extrapolated past ~110 tokens per step, and
   chunked-prefill steps that vLLM hides are not modelled.
+  **Diagnosed in `TIMEMODEL_HIGHC.md` (2026-10-23):** on A100/A6000 the cause is FlashAttention-2
+  losing GQA packing on steps that mix prefill and decode; on B200 it is a ~4.8 µs per-sequence
+  host cost plus the 512-token CUDA-graph capture limit. Opt-in fix: `highc=True`.
 - **MoE on A100:** J/token +27%. The fused-MoE layer floor is an in-sample H200 prior, and
   graphs mode makes MoE 4.5× faster at c=1. This is not modelled.
 - **B200 long-context J/token −6% with the settled KV.** The Sept per-bin coefficients get
