@@ -104,6 +104,26 @@ ARMS = {
     # cross-GPU MoE comparison). ~61 GB of weights leaves ~11 GB KV on 80 GB.
     "a100_moe": [("Qwen/Qwen3-30B-A3B", {}, _ragged(["alpaca", "sharegpt"], [1, 4, 16, 64]))],
     "a100_moe_graphs": [("Qwen/Qwen3-30B-A3B", GRAPHS, _ragged(["alpaca", "sharegpt"], [1, 4, 16, 64]))],
+    # Open-loop Poisson arrivals up to near saturation (provisioning is specified as a
+    # request rate at an SLO; queueing + idle gaps) and long OUTPUTS (KV grows during
+    # each request). Rates scaled to each GPU's measured closed-loop capacity
+    # (Qwen2-7B c=64: B200 ~70 req/s alpaca, A100 ~30, A6000 ~14).
+    "a100_poisson": [(Q7, GRAPHS, [(f"{t}_r{r:g}", {"task": t, "arrival_rate": r})
+                                   for t, rates in (("alpaca", (1, 4, 8, 16, 24)), ("sharegpt", (1, 2, 4, 8, 12)))
+                                   for r in rates])],
+    "a6000_poisson": [(Q7, GRAPHS, [(f"{t}_r{r:g}", {"task": t, "arrival_rate": r})
+                                    for t, rates in (("alpaca", (1, 2, 4, 8, 12)), ("sharegpt", (0.5, 1, 2, 4, 6)))
+                                    for r in rates])],
+    "b200_poisson": [(Q7, GRAPHS, [(f"{t}_r{r:g}", {"task": t, "arrival_rate": r})
+                                   for t, rates in (("alpaca", (2, 8, 16, 32, 48, 64)), ("sharegpt", (2, 8, 16, 24, 32)))
+                                   for r in rates])],
+    "longout": [(Q7, dict(GRAPHS, max_model_len=10240),
+                 [(f"out{n}_c{c}", {"input_len": 256, "output_len": n, "concurrency": c, "unique_prompts": None})
+                  for n in (2048, 8192) for c in (4, 16)])],
+    # 70B-class multi-GPU (B200 node: NVLink). 72B at TP4 / TP8.
+    "b200_tp4": [(Q72, dict(GRAPHS, tensor_parallel_size=4, max_model_len=8192), _ragged(["alpaca", "sharegpt"], [1, 16, 64, 256]))],
+    "b200_tp8": [(Q72, dict(GRAPHS, tensor_parallel_size=8, max_model_len=8192), _ragged(["alpaca", "sharegpt"], [1, 16, 64, 256]))],
+    "a100_tp4": [(Q72, dict(GRAPHS, tensor_parallel_size=4, max_model_len=8192), _ragged(["alpaca"], [1, 16, 64]))],
     # Generic arms for another GPU type (A6000 etc.; set PROV_LOG_ROOT per GPU).
     "gpu_graphs": [(Q7, GRAPHS, _ragged(["alpaca", "sharegpt"], [1, 4, 16, 64])),
                    (Q14, GRAPHS, _ragged(["alpaca"], [1, 16, 64]))],
