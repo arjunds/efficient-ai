@@ -210,10 +210,18 @@ power roof    attainable FLOP/s at arithmetic intensity I = budget / (e_byte / I
 
 ## 8. Addendum: new overnight results (A100 / A6000)
 
-- **Power-capped GPUs are not energy-proportional.** Under realistic open-loop (Poisson) arrivals, the A100 draws 279–298 W whether it serves 1 or 24 requests per second, and the A6000 293–299 W from 0.5 to 12 req/s.
-  - So energy per token falls as 1/throughput: A100 2.04 J at 1 req/s vs 0.086 J at 24 req/s.
-  - An under-loaded capped GPU is very inefficient. For capped parts, consolidating traffic onto fewer GPUs is the main energy lever.
-  - Latency stays inside a 50 ms per-token target throughout (A100 TPOT p50 11–16 ms).
+- **No GPU we measured is energy-proportional.** Under realistic open-loop (Poisson) arrivals, power barely tracks load:
+
+| Qwen2-7B, Poisson arrivals | Power at the lowest rate | Power at the highest rate | Throughput increase | Energy per token, lowest → highest rate |
+|---|---|---|---|---|
+| B200 (not capped), 2 → 64 req/s | 534 W (53% of limit) | 709 W (71%) | 36× | 2.18 → 0.081 J |
+| A100 (capped), 1 → 24 req/s | 279 W | 298 W | 25× | 2.04 → 0.086 J |
+| A6000 (capped), 0.5 → 12 req/s | 293 W | 299 W | 15× | 2.80 → 0.187 J |
+
+  - Energy per token is therefore set almost entirely by how full the GPU is kept. Idle plus "clocks up" activity power is a floor of 34–45% of energy even at high load.
+  - For provisioning, consolidating traffic onto fewer, fuller GPUs is the main energy lever, on every GPU type.
+  - Latency stays well inside a 50 ms per-token target in all of these runs (B200 first-token p99 ≈ 10 ms at 64 req/s; A100 TPOT p50 11–16 ms).
+- **KV energy independently confirmed on B200.** Long-output runs (short prompts, KV growing during generation, so no hidden prefill steps) give 1.58×10⁻¹⁰ J/B, or 1.26× a weight byte. That's the same as the long-context method (1.2–1.3×).
 - **Splitting a model across 4 PCIe A100s is worse than across 2.** For Qwen2.5-32B at 16–64 concurrent requests, 4 GPUs deliver 0.34–0.61× the throughput of 2 at 1.8–2.8× the energy per token, and 2.8–4.8× a single B200. The GPUs mostly wait on PCIe synchronization (they draw 539–631 W of a 1,200 W combined cap). On PCIe-only A100s, never go beyond 2 GPUs per model.
 - **Long outputs add modest cost.** Going from 2k to 8k generated tokens raises energy per token by 5–15% on A100 and about 4% on A6000, as the KV cache grows during each request.
 
