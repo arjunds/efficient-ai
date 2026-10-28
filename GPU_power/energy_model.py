@@ -110,10 +110,11 @@ def window_energy_fn(power_csv: str, source: str = "auto"):
                 if frac("power_inst_w") >= 0.8:
                     ti, pi = [], []
                     for r in rows:
-                        try:
-                            ti.append(float(r["t_wall"])); pi.append(float(r["power_inst_w"]))
-                        except (ValueError, KeyError, TypeError):
-                            pass
+                        try:      # parse both before appending: a bad power_inst_w used to
+                            tv, pv = float(r["t_wall"]), float(r["power_inst_w"])   # misalign
+                        except (ValueError, KeyError, TypeError):          # (2026-10-28)
+                            continue
+                        ti.append(tv); pi.append(pv)
                     o = sorted(range(len(ti)), key=lambda i: ti[i])
                     ti = [ti[i] for i in o]; pi = [pi[i] for i in o]
                     e_inst = integrate_window(ti, pi, ct[0], ct[-1])
