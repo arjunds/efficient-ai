@@ -420,6 +420,9 @@ async def _run_trace_async(args, engine, tokenizer, meta):
                                  return_exceptions=True)
             lv["warm_s"] = time.time() - tw0
         await asyncio.sleep(args.warm_settle_s)   # let power fall back before the window
+        prof = args.torch_profile_level and abs(speedup - args.torch_profile_level) < 1e-9
+        if prof:      # needs VLLM_TORCH_PROFILER_DIR set before the engine is built
+            await engine.start_profile()
         t0 = time.time()
         tasks = []
         for rec in recs:
@@ -435,6 +438,9 @@ async def _run_trace_async(args, engine, tokenizer, meta):
             t.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
         lv["aborted"] = len(pending)
+        if prof:
+            await engine.stop_profile()
+            lv["torch_profile"] = os.environ.get("VLLM_TORCH_PROFILER_DIR")
         lv.update({"trace": os.path.basename(args.trace_file), "t0": t0, "t1": time.time(),
                    "t_last_arrival": t0 + (info["trace_span_s"] or 0.0) / speedup})
         print(f"[trace] level x{speedup:g}: {lv['t1'] - t0:.1f} s", flush=True)
@@ -852,6 +858,9 @@ def build_arg_parser():
     ap.add_argument("--trace_drain_max_s", type=float, default=0.0,
                     help="after the last arrival, abort requests still running after this "
                          "many seconds (0 = drain fully)")
+    ap.add_argument("--torch_profile_level", type=float, default=0.0,
+                    help="torch-profile (vLLM start_profile) the level with this speedup; "
+                         "set VLLM_TORCH_PROFILER_DIR. Diagnostic only: perturbs timing")
     ap.add_argument("--prefix_warm", action="store_true",
                     help="prefill every replayed prompt before the window (decode-only)")
     ap.add_argument("--warm_frac", type=float, default=0.8,

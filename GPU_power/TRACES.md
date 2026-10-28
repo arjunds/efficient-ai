@@ -50,9 +50,34 @@ runs from 21 req/s (Sunday 04:00) to 57 req/s (Monday 08:00), 2.7× peak/trough.
      - A6000 code trace: ~40–70 ms vs ~25 ms.
 
      Those steps recompute ≤16 tokens per request (0.5% of prompt tokens).
-     **Open:** iter_log step times are frontend-observed (the stat logger runs in the
-     API process), so the extra time may be frontend output/input processing rather
-     than GPU work. Check with nsys before attributing it.
+   - **Cause: on mixed batches FlashAttention-2 (Ampere) loses both GQA packing and
+     split-KV for every decode sequence.** Measured with the torch profiler
+     (`--torch_profile_level`, A5000, Qwen2.5-7B, azure23_code, `logs/diag_admission/`).
+     - The window is GPU-bound: 27.8 s of kernel time in 28.8 s. Scheduling, hashing
+       and allocation total <0.5 s.
+     - Admission steps: 182 ms wall, 171 ms GPU, attention 79 ms.
+       - Kernel: `flash_fwd_splitkv_kernel`, causal variant, grid `[1, b, 28]`.
+       - That is one split, all 28 query heads, no combine kernel.
+     - Pure decode steps: 93 ms wall, 91 ms GPU, attention 7 ms (5.5 split + 1.4
+       combine).
+       - Grid `[1, 32, 4]`: 32 KV splits over the 4 KV heads, with the 7 query heads
+         per KV head packed into the tile.
+     - GEMM time is the same in both (89 vs 82 ms).
+     - So once any request in the batch has >1 query token (here the ≤16-token
+       recompute of an admitted prompt), every sequence's KV head is re-streamed by
+       each of its 7 query heads, with no split parallelism.
+     - This **directly confirms the GQA-unpacking mechanism TIMEMODEL_HIGHC.md
+       inferred** ((g−1)·K_decode extra bytes) and adds the lost split-KV
+       parallelism.
+     - Small sample: 6 admission steps vs 294 pure decode steps, at a profiled level.
+       Kernel times are GPU-side, so the Python tracing doesn't distort them.
+     - **Systems implication:** a decode server admitting short-output requests at a
+       high rate (code completion) spends much of its time in such steps. That's the
+       ~650 tok/s A100 plateau on azure23_code vs ~3000 tok/s on chat. Fixes:
+       - run the chunk's attention separately from the decode sequences' attention
+         (keeping pack-GQA + split-KV for the decodes);
+       - admit without recompute (KV transfer of the full prompt);
+       - batch admissions.
 3. **Fitting the cache.** The request set is cut so warmed prompts plus *all* generated
    tokens fit in 80% of the KV cache. vLLM evicts the least recently freed block once
    the never-used blocks run out, so this guarantees nothing warmed is evicted.
