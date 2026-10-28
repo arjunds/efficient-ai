@@ -1,0 +1,59 @@
+{
+  "gpu_name": "NVIDIA A100 80GB PCIe",
+  "power_limit_w": 300.0,
+  "dtype": "float16",
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "model_key": null,
+  "tp_degree": 1,
+  "vllm_version": "0.10.2",
+  "engine_api": "v1",
+  "max_num_seqs": 256,
+  "block_size": null,
+  "gpu_mem_util": 0.9,
+  "input_len": 512,
+  "output_len": 256,
+  "concurrency_or_rate": "trace:reasoning_math.jsonl.gzx0.05",
+  "arrival_rate": 0.0,
+  "concurrency_schedule": null,
+  "task": null,
+  "segments": [
+    {
+      "trace_speedup": 0.05,
+      "aborted": 6,
+      "trace": "reasoning_math.jsonl.gz",
+      "t0": 1793212451.791104,
+      "t1": 1793213135.5157323,
+      "t_last_arrival": 1793213045.513104
+    }
+  ],
+  "idle_power_w": 105.824,
+  "prefill_ceiling_power_w": null,
+  "kv_cache_dtype": "auto",
+  "enforce_eager": false,
+  "max_num_seqs_resolved": 256,
+  "max_num_batched_tokens_resolved": 2048,
+  "chunked_prefill": true,
+  "prefix_caching": true,
+  "unique_prompts": false,
+  "metered_gpus": [
+    0
+  ],
+  "power_limit_total_w": 300.0,
+  "window_wall_t0": 1793212451.791104,
+  "window_wall_t1": 1793213135.5157323,
+  "trace": {
+    "trace_file": "traces/reasoning_math.jsonl.gz",
+    "trace_speedups": [
+      0.05
+    ],
+    "trace_offset_s": 0.0,
+    "trace_requests_in_window": 59,
+    "trace_clipped": 0,
+    "prefix_warm": false,
+    "kv_cache_tokens": 1042128,
+    "trace_requests": 59,
+    "trace_span_s": 29.6861,
+    "trace_in_tokens": 4629,
+    "trace_out_tokens": 313773
+  }
+}
