@@ -16,7 +16,7 @@ These are public production traces, normalized by `traces/prepare_traces.py` to
 | `burstgpt` | BurstGPT v2 (Azure OpenAI GPT use), hour 521 | 4.6 | — / 409 | — / 98 | ~19% |
 | `mooncake_conv` | Mooncake (Kimi) FAST'25 conversation, 1 h, shared-prefix blocks | 3.4 | 6909 / 12035 | 350 / 343 | 2.8% |
 | `mooncake_tool` | Mooncake tool-agent, 1 h | 6.7 | 6346 / 8596 | 30 / 182 | 2.1% |
-| `reasoning` | Azure 2023 chat arrivals × measured reasoning lengths (Qwen3-30B-A3B thinking, MATH-500) | 5.5 | ~100–300 | see `traces/reasoning_lengths_*.json` | ~95% |
+| `reasoning` | Azure 2023 chat arrivals × measured reasoning lengths (Qwen3-30B-A3B thinking, MATH-500) | 5.5 | 74 / ~90 | 3476 / 4865 (p90 9570; 3.6% hit the 16k cap) | ~98% |
 
 **Observation already:** in every non-reasoning trace, decode is 1–19% of tokens. But
 decode is most of the GPU-seconds, since a decode step processes one token per sequence.

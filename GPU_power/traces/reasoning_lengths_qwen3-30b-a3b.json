@@ -1,0 +1,4532 @@
+{
+"meta": {
+"model": "Qwen/Qwen3-30B-A3B",
+"dataset": "HuggingFaceH4/MATH-500 test",
+"max_tokens": 16384,
+"sampling": "T0.6 top_p0.95 top_k20 seed0, thinking on",
+"wall_s": 3106.1857001781464,
+"gen_tokens": 2432352,
+"tok_per_s": 783.0671552768076,
+"truncated": 18,
+"window_wall_t0": 1793205191.9862669,
+"window_wall_t1": 1793208298.171967,
+"power_summary": {
+"gpu_name": "NVIDIA A100 80GB PCIe",
+"power_limit_w": 300.0,
+"metered_gpus": [
+0
+],
+"power_limit_total_w": 300.0,
+"have_power_instant": true,
+"have_energy_counter": true,
+"n_samples": 309995,
+"duration_s": 3106.186220407486,
+"mean_power_w": 297.16658352231485,
+"median_power_w": 298.993,
+"max_power_w": 407.979,
+"min_power_w": 96.533
+}
+},
+"rows": [
+{
+"unique_id": "test/precalculus/807.json",
+"level": 2,
+"subject": "Precalculus",
+"prompt_tokens": 71,
+"gen_tokens": 1292,
+"think_tokens": 902,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1994.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 134,
+"gen_tokens": 8121,
+"think_tokens": 7585,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2584.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 70,
+"gen_tokens": 2109,
+"think_tokens": 1688,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/572.json",
+"level": 3,
+"subject": "Number Theory",
+"prompt_tokens": 37,
+"gen_tokens": 2118,
+"think_tokens": 1666,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1349.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 362,
+"gen_tokens": 4225,
+"think_tokens": 3622,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1622.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 64,
+"gen_tokens": 1609,
+"think_tokens": 1217,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/515.json",
+"level": 3,
+"subject": "Number Theory",
+"prompt_tokens": 42,
+"gen_tokens": 3355,
+"think_tokens": 2699,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/927.json",
+"level": 4,
+"subject": "Precalculus",
+"prompt_tokens": 89,
+"gen_tokens": 4235,
+"think_tokens": 3619,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2036.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 57,
+"gen_tokens": 2079,
+"think_tokens": 1735,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1139.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 172,
+"gen_tokens": 13620,
+"think_tokens": 12777,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/1032.json",
+"level": 3,
+"subject": "Number Theory",
+"prompt_tokens": 48,
+"gen_tokens": 5812,
+"think_tokens": 5100,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1197.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 82,
+"gen_tokens": 8164,
+"think_tokens": 6505,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/737.json",
+"level": 5,
+"subject": "Number Theory",
+"prompt_tokens": 94,
+"gen_tokens": 3435,
+"think_tokens": 2901,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/248.json",
+"level": 2,
+"subject": "Geometry",
+"prompt_tokens": 198,
+"gen_tokens": 795,
+"think_tokens": 544,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/1303.json",
+"level": 1,
+"subject": "Precalculus",
+"prompt_tokens": 136,
+"gen_tokens": 2414,
+"think_tokens": 1844,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/990.json",
+"level": 5,
+"subject": "Precalculus",
+"prompt_tokens": 202,
+"gen_tokens": 4326,
+"think_tokens": 3682,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/134.json",
+"level": 1,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 47,
+"gen_tokens": 4530,
+"think_tokens": 3903,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/1199.json",
+"level": 4,
+"subject": "Precalculus",
+"prompt_tokens": 234,
+"gen_tokens": 9330,
+"think_tokens": 8302,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/434.json",
+"level": 1,
+"subject": "Geometry",
+"prompt_tokens": 173,
+"gen_tokens": 13043,
+"think_tokens": 11017,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1000.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 71,
+"gen_tokens": 6335,
+"think_tokens": 5692,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1098.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 36,
+"gen_tokens": 2806,
+"think_tokens": 2611,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/607.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 52,
+"gen_tokens": 7388,
+"think_tokens": 6563,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1837.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 151,
+"gen_tokens": 2255,
+"think_tokens": 1439,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2193.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 52,
+"gen_tokens": 3002,
+"think_tokens": 2390,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2427.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 126,
+"gen_tokens": 4034,
+"think_tokens": 3141,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1388.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 102,
+"gen_tokens": 3917,
+"think_tokens": 2881,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/525.json",
+"level": 5,
+"subject": "Counting & Probability",
+"prompt_tokens": 75,
+"gen_tokens": 16384,
+"think_tokens": null,
+"finish": "length"
+},
+{
+"unique_id": "test/prealgebra/1840.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 104,
+"gen_tokens": 1142,
+"think_tokens": 811,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/779.json",
+"level": 2,
+"subject": "Precalculus",
+"prompt_tokens": 58,
+"gen_tokens": 1737,
+"think_tokens": 1292,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/666.json",
+"level": 2,
+"subject": "Counting & Probability",
+"prompt_tokens": 101,
+"gen_tokens": 1603,
+"think_tokens": 1208,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/864.json",
+"level": 3,
+"subject": "Number Theory",
+"prompt_tokens": 47,
+"gen_tokens": 4733,
+"think_tokens": 4399,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1302.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 33,
+"gen_tokens": 1596,
+"think_tokens": 1183,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/134.json",
+"level": 4,
+"subject": "Counting & Probability",
+"prompt_tokens": 74,
+"gen_tokens": 16044,
+"think_tokens": 15649,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1072.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 71,
+"gen_tokens": 2785,
+"think_tokens": 2163,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/119.json",
+"level": 4,
+"subject": "Counting & Probability",
+"prompt_tokens": 57,
+"gen_tokens": 3967,
+"think_tokens": 3432,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/627.json",
+"level": 2,
+"subject": "Number Theory",
+"prompt_tokens": 64,
+"gen_tokens": 4716,
+"think_tokens": 4169,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/428.json",
+"level": 2,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 53,
+"gen_tokens": 4148,
+"think_tokens": 3469,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/967.json",
+"level": 3,
+"subject": "Geometry",
+"prompt_tokens": 57,
+"gen_tokens": 2242,
+"think_tokens": 1844,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/24.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 65,
+"gen_tokens": 1529,
+"think_tokens": 1230,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/45.json",
+"level": 3,
+"subject": "Number Theory",
+"prompt_tokens": 50,
+"gen_tokens": 2473,
+"think_tokens": 1959,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/930.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 134,
+"gen_tokens": 1698,
+"think_tokens": 1401,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/627.json",
+"level": 4,
+"subject": "Geometry",
+"prompt_tokens": 73,
+"gen_tokens": 9440,
+"think_tokens": 8730,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2214.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 63,
+"gen_tokens": 1528,
+"think_tokens": 1232,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1454.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 108,
+"gen_tokens": 16384,
+"think_tokens": null,
+"finish": "length"
+},
+{
+"unique_id": "test/prealgebra/1558.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 87,
+"gen_tokens": 1796,
+"think_tokens": 1341,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/178.json",
+"level": 3,
+"subject": "Geometry",
+"prompt_tokens": 60,
+"gen_tokens": 2109,
+"think_tokens": 1526,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/285.json",
+"level": 2,
+"subject": "Precalculus",
+"prompt_tokens": 67,
+"gen_tokens": 6957,
+"think_tokens": 6094,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/305.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 75,
+"gen_tokens": 2867,
+"think_tokens": 2400,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1265.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 42,
+"gen_tokens": 1634,
+"think_tokens": 1281,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1388.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 49,
+"gen_tokens": 2163,
+"think_tokens": 1784,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/1055.json",
+"level": 5,
+"subject": "Number Theory",
+"prompt_tokens": 123,
+"gen_tokens": 4497,
+"think_tokens": 3730,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1217.json",
+"level": 2,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 45,
+"gen_tokens": 3490,
+"think_tokens": 2785,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/951.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 53,
+"gen_tokens": 2745,
+"think_tokens": 2460,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/1105.json",
+"level": 2,
+"subject": "Precalculus",
+"prompt_tokens": 50,
+"gen_tokens": 1556,
+"think_tokens": 1142,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/572.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 36,
+"gen_tokens": 1095,
+"think_tokens": 708,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/187.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 76,
+"gen_tokens": 2657,
+"think_tokens": 1877,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/769.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 49,
+"gen_tokens": 1789,
+"think_tokens": 1286,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1168.json",
+"level": 2,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 77,
+"gen_tokens": 2036,
+"think_tokens": 1582,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/722.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 39,
+"gen_tokens": 2066,
+"think_tokens": 1763,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1247.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 72,
+"gen_tokens": 2378,
+"think_tokens": 1904,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/956.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 73,
+"gen_tokens": 6946,
+"think_tokens": 5275,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1247.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 92,
+"gen_tokens": 5527,
+"think_tokens": 4928,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/675.json",
+"level": 5,
+"subject": "Precalculus",
+"prompt_tokens": 129,
+"gen_tokens": 7141,
+"think_tokens": 6151,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/279.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 112,
+"gen_tokens": 5483,
+"think_tokens": 4666,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/1146.json",
+"level": 4,
+"subject": "Precalculus",
+"prompt_tokens": 89,
+"gen_tokens": 6068,
+"think_tokens": 5350,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1747.json",
+"level": 1,
+"subject": "Prealgebra",
+"prompt_tokens": 43,
+"gen_tokens": 2086,
+"think_tokens": 1529,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2046.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 61,
+"gen_tokens": 2074,
+"think_tokens": 1647,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1233.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 73,
+"gen_tokens": 3072,
+"think_tokens": 2663,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/1313.json",
+"level": 4,
+"subject": "Precalculus",
+"prompt_tokens": 90,
+"gen_tokens": 4211,
+"think_tokens": 3457,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/207.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 79,
+"gen_tokens": 7611,
+"think_tokens": 7005,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/46.json",
+"level": 2,
+"subject": "Number Theory",
+"prompt_tokens": 45,
+"gen_tokens": 2670,
+"think_tokens": 2258,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/516.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 50,
+"gen_tokens": 11786,
+"think_tokens": 11340,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/456.json",
+"level": 2,
+"subject": "Geometry",
+"prompt_tokens": 57,
+"gen_tokens": 1851,
+"think_tokens": 1350,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2253.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 94,
+"gen_tokens": 1780,
+"think_tokens": 1463,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/24313.json",
+"level": 2,
+"subject": "Precalculus",
+"prompt_tokens": 50,
+"gen_tokens": 3090,
+"think_tokens": 2659,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/1114.json",
+"level": 4,
+"subject": "Counting & Probability",
+"prompt_tokens": 61,
+"gen_tokens": 2618,
+"think_tokens": 2204,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/623.json",
+"level": 2,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 63,
+"gen_tokens": 4758,
+"think_tokens": 4390,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1004.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 42,
+"gen_tokens": 840,
+"think_tokens": 539,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/47.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 92,
+"gen_tokens": 2362,
+"think_tokens": 1287,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/192.json",
+"level": 1,
+"subject": "Prealgebra",
+"prompt_tokens": 45,
+"gen_tokens": 1337,
+"think_tokens": 1051,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1849.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 69,
+"gen_tokens": 12966,
+"think_tokens": 11635,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1035.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 72,
+"gen_tokens": 2236,
+"think_tokens": 1828,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2700.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 110,
+"gen_tokens": 8368,
+"think_tokens": 7554,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/2046.json",
+"level": 2,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 47,
+"gen_tokens": 9965,
+"think_tokens": 9363,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/893.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 79,
+"gen_tokens": 3000,
+"think_tokens": 2199,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/353.json",
+"level": 4,
+"subject": "Geometry",
+"prompt_tokens": 84,
+"gen_tokens": 1414,
+"think_tokens": 1045,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/307.json",
+"level": 1,
+"subject": "Prealgebra",
+"prompt_tokens": 61,
+"gen_tokens": 1281,
+"think_tokens": 1051,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/567.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 47,
+"gen_tokens": 3754,
+"think_tokens": 3164,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/892.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 110,
+"gen_tokens": 9062,
+"think_tokens": 7909,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/357.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 49,
+"gen_tokens": 3735,
+"think_tokens": 3121,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1761.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 66,
+"gen_tokens": 1677,
+"think_tokens": 1331,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2023.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 66,
+"gen_tokens": 4442,
+"think_tokens": 3970,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/377.json",
+"level": 4,
+"subject": "Counting & Probability",
+"prompt_tokens": 63,
+"gen_tokens": 3614,
+"think_tokens": 2960,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/873.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 66,
+"gen_tokens": 1830,
+"think_tokens": 1277,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1646.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 371,
+"gen_tokens": 16384,
+"think_tokens": null,
+"finish": "length"
+},
+{
+"unique_id": "test/precalculus/34.json",
+"level": 2,
+"subject": "Precalculus",
+"prompt_tokens": 103,
+"gen_tokens": 2375,
+"think_tokens": 1556,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/662.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 131,
+"gen_tokens": 9345,
+"think_tokens": 8425,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/105.json",
+"level": 1,
+"subject": "Prealgebra",
+"prompt_tokens": 68,
+"gen_tokens": 2481,
+"think_tokens": 2057,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1924.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 41,
+"gen_tokens": 1242,
+"think_tokens": 1023,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/1300.json",
+"level": 3,
+"subject": "Precalculus",
+"prompt_tokens": 120,
+"gen_tokens": 3848,
+"think_tokens": 2776,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/183.json",
+"level": 5,
+"subject": "Geometry",
+"prompt_tokens": 224,
+"gen_tokens": 8241,
+"think_tokens": 7153,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/582.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 214,
+"gen_tokens": 11121,
+"think_tokens": 9607,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/431.json",
+"level": 1,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 39,
+"gen_tokens": 1744,
+"think_tokens": 1408,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/558.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 130,
+"gen_tokens": 16384,
+"think_tokens": null,
+"finish": "length"
+},
+{
+"unique_id": "test/intermediate_algebra/362.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 103,
+"gen_tokens": 8299,
+"think_tokens": 6528,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1804.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 338,
+"gen_tokens": 3041,
+"think_tokens": 2673,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/515.json",
+"level": 2,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 73,
+"gen_tokens": 2313,
+"think_tokens": 1782,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/914.json",
+"level": 2,
+"subject": "Number Theory",
+"prompt_tokens": 55,
+"gen_tokens": 1973,
+"think_tokens": 1591,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/894.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 109,
+"gen_tokens": 7006,
+"think_tokens": 5436,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/44.json",
+"level": 5,
+"subject": "Precalculus",
+"prompt_tokens": 164,
+"gen_tokens": 4506,
+"think_tokens": 3357,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/345.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 141,
+"gen_tokens": 16384,
+"think_tokens": null,
+"finish": "length"
+},
+{
+"unique_id": "test/counting_and_probability/23957.json",
+"level": 3,
+"subject": "Counting & Probability",
+"prompt_tokens": 75,
+"gen_tokens": 1694,
+"think_tokens": 1368,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2058.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 99,
+"gen_tokens": 4092,
+"think_tokens": 3530,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2593.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 53,
+"gen_tokens": 1468,
+"think_tokens": 1215,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1898.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 99,
+"gen_tokens": 2000,
+"think_tokens": 1449,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/1060.json",
+"level": 2,
+"subject": "Counting & Probability",
+"prompt_tokens": 41,
+"gen_tokens": 2002,
+"think_tokens": 1543,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2157.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 48,
+"gen_tokens": 2161,
+"think_tokens": 1613,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2251.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 43,
+"gen_tokens": 1340,
+"think_tokens": 980,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/232.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 49,
+"gen_tokens": 7772,
+"think_tokens": 6999,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1733.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 176,
+"gen_tokens": 10959,
+"think_tokens": 10344,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/128.json",
+"level": 2,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 76,
+"gen_tokens": 4429,
+"think_tokens": 3943,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/505.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 44,
+"gen_tokens": 1824,
+"think_tokens": 1348,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1332.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 94,
+"gen_tokens": 1347,
+"think_tokens": 961,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/283.json",
+"level": 4,
+"subject": "Geometry",
+"prompt_tokens": 272,
+"gen_tokens": 11362,
+"think_tokens": 10441,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/972.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 55,
+"gen_tokens": 2847,
+"think_tokens": 2203,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2232.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 53,
+"gen_tokens": 2322,
+"think_tokens": 2033,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1063.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 97,
+"gen_tokens": 16384,
+"think_tokens": null,
+"finish": "length"
+},
+{
+"unique_id": "test/number_theory/847.json",
+"level": 3,
+"subject": "Number Theory",
+"prompt_tokens": 38,
+"gen_tokens": 2518,
+"think_tokens": 2124,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/661.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 47,
+"gen_tokens": 7173,
+"think_tokens": 6416,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/1140.json",
+"level": 5,
+"subject": "Geometry",
+"prompt_tokens": 79,
+"gen_tokens": 7449,
+"think_tokens": 6826,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/753.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 63,
+"gen_tokens": 4756,
+"think_tokens": 4082,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/246.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 59,
+"gen_tokens": 2599,
+"think_tokens": 2011,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1686.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 70,
+"gen_tokens": 3055,
+"think_tokens": 2539,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1807.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 63,
+"gen_tokens": 3667,
+"think_tokens": 3255,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1126.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 140,
+"gen_tokens": 2855,
+"think_tokens": 2118,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1297.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 93,
+"gen_tokens": 2772,
+"think_tokens": 2114,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/2022.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 125,
+"gen_tokens": 16384,
+"think_tokens": null,
+"finish": "length"
+},
+{
+"unique_id": "test/number_theory/1257.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 44,
+"gen_tokens": 3292,
+"think_tokens": 2718,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/430.json",
+"level": 4,
+"subject": "Counting & Probability",
+"prompt_tokens": 104,
+"gen_tokens": 8390,
+"think_tokens": 7779,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1151.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 74,
+"gen_tokens": 7818,
+"think_tokens": 6731,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/156.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 55,
+"gen_tokens": 2111,
+"think_tokens": 1474,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/612.json",
+"level": 1,
+"subject": "Number Theory",
+"prompt_tokens": 83,
+"gen_tokens": 3948,
+"think_tokens": 3478,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/159.json",
+"level": 5,
+"subject": "Counting & Probability",
+"prompt_tokens": 83,
+"gen_tokens": 7551,
+"think_tokens": 7078,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/477.json",
+"level": 3,
+"subject": "Precalculus",
+"prompt_tokens": 103,
+"gen_tokens": 2940,
+"think_tokens": 2305,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/43.json",
+"level": 1,
+"subject": "Precalculus",
+"prompt_tokens": 73,
+"gen_tokens": 1354,
+"think_tokens": 1067,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1408.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 81,
+"gen_tokens": 7452,
+"think_tokens": 6727,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1519.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 42,
+"gen_tokens": 1677,
+"think_tokens": 1404,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/966.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 71,
+"gen_tokens": 8425,
+"think_tokens": 7626,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/988.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 54,
+"gen_tokens": 1590,
+"think_tokens": 1264,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/931.json",
+"level": 2,
+"subject": "Number Theory",
+"prompt_tokens": 81,
+"gen_tokens": 3925,
+"think_tokens": 2968,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/964.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 247,
+"gen_tokens": 11454,
+"think_tokens": 9952,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/986.json",
+"level": 5,
+"subject": "Precalculus",
+"prompt_tokens": 198,
+"gen_tokens": 6511,
+"think_tokens": 5389,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/172.json",
+"level": 5,
+"subject": "Geometry",
+"prompt_tokens": 105,
+"gen_tokens": 7794,
+"think_tokens": 6403,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/230.json",
+"level": 4,
+"subject": "Counting & Probability",
+"prompt_tokens": 110,
+"gen_tokens": 6848,
+"think_tokens": 6244,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/880.json",
+"level": 5,
+"subject": "Geometry",
+"prompt_tokens": 167,
+"gen_tokens": 16384,
+"think_tokens": null,
+"finish": "length"
+},
+{
+"unique_id": "test/counting_and_probability/803.json",
+"level": 4,
+"subject": "Counting & Probability",
+"prompt_tokens": 77,
+"gen_tokens": 5885,
+"think_tokens": 5408,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/117.json",
+"level": 3,
+"subject": "Precalculus",
+"prompt_tokens": 217,
+"gen_tokens": 9505,
+"think_tokens": 7884,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1410.json",
+"level": 2,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 69,
+"gen_tokens": 2949,
+"think_tokens": 2419,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2570.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 46,
+"gen_tokens": 3264,
+"think_tokens": 2690,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/621.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 74,
+"gen_tokens": 3476,
+"think_tokens": 3066,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/521.json",
+"level": 2,
+"subject": "Number Theory",
+"prompt_tokens": 46,
+"gen_tokens": 1800,
+"think_tokens": 1354,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1255.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 32,
+"gen_tokens": 1393,
+"think_tokens": 996,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1655.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 74,
+"gen_tokens": 4716,
+"think_tokens": 4196,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2517.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 94,
+"gen_tokens": 10367,
+"think_tokens": 9670,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/697.json",
+"level": 2,
+"subject": "Precalculus",
+"prompt_tokens": 46,
+"gen_tokens": 5619,
+"think_tokens": 4440,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1356.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 98,
+"gen_tokens": 2045,
+"think_tokens": 1680,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1003.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 227,
+"gen_tokens": 12994,
+"think_tokens": 12192,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/478.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 100,
+"gen_tokens": 1645,
+"think_tokens": 1311,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/181.json",
+"level": 5,
+"subject": "Counting & Probability",
+"prompt_tokens": 690,
+"gen_tokens": 8069,
+"think_tokens": 7409,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/802.json",
+"level": 2,
+"subject": "Geometry",
+"prompt_tokens": 49,
+"gen_tokens": 1510,
+"think_tokens": 933,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/297.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 67,
+"gen_tokens": 6276,
+"think_tokens": 5048,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1272.json",
+"level": 1,
+"subject": "Prealgebra",
+"prompt_tokens": 72,
+"gen_tokens": 1338,
+"think_tokens": 990,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/841.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 53,
+"gen_tokens": 2151,
+"think_tokens": 1630,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/686.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 78,
+"gen_tokens": 8235,
+"think_tokens": 7323,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/351.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 55,
+"gen_tokens": 3023,
+"think_tokens": 2388,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/991.json",
+"level": 2,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 65,
+"gen_tokens": 5954,
+"think_tokens": 4995,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/598.json",
+"level": 3,
+"subject": "Number Theory",
+"prompt_tokens": 45,
+"gen_tokens": 4963,
+"think_tokens": 4479,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/65.json",
+"level": 3,
+"subject": "Geometry",
+"prompt_tokens": 274,
+"gen_tokens": 9137,
+"think_tokens": 8309,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1113.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 47,
+"gen_tokens": 1822,
+"think_tokens": 1353,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/659.json",
+"level": 4,
+"subject": "Precalculus",
+"prompt_tokens": 125,
+"gen_tokens": 4190,
+"think_tokens": 3243,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1908.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 43,
+"gen_tokens": 4070,
+"think_tokens": 3501,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1275.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 56,
+"gen_tokens": 3155,
+"think_tokens": 2807,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1922.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 56,
+"gen_tokens": 1219,
+"think_tokens": 893,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1082.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 116,
+"gen_tokens": 6042,
+"think_tokens": 5341,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/183.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 77,
+"gen_tokens": 12565,
+"think_tokens": 11621,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1214.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 41,
+"gen_tokens": 1443,
+"think_tokens": 1108,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/978.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 57,
+"gen_tokens": 3317,
+"think_tokens": 2618,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2199.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 55,
+"gen_tokens": 1516,
+"think_tokens": 1097,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/733.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 247,
+"gen_tokens": 8994,
+"think_tokens": 7983,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/702.json",
+"level": 5,
+"subject": "Geometry",
+"prompt_tokens": 483,
+"gen_tokens": 9018,
+"think_tokens": 7538,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/51.json",
+"level": 5,
+"subject": "Counting & Probability",
+"prompt_tokens": 53,
+"gen_tokens": 2368,
+"think_tokens": 1894,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/109.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 65,
+"gen_tokens": 1404,
+"think_tokens": 991,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/221.json",
+"level": 3,
+"subject": "Geometry",
+"prompt_tokens": 62,
+"gen_tokens": 2887,
+"think_tokens": 2209,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1422.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 77,
+"gen_tokens": 6754,
+"think_tokens": 5674,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/2196.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 60,
+"gen_tokens": 9177,
+"think_tokens": 8299,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/591.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 72,
+"gen_tokens": 2723,
+"think_tokens": 2273,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1937.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 47,
+"gen_tokens": 2655,
+"think_tokens": 2280,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/838.json",
+"level": 5,
+"subject": "Number Theory",
+"prompt_tokens": 88,
+"gen_tokens": 7637,
+"think_tokens": 6524,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/508.json",
+"level": 3,
+"subject": "Counting & Probability",
+"prompt_tokens": 52,
+"gen_tokens": 3349,
+"think_tokens": 3042,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1907.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 53,
+"gen_tokens": 1314,
+"think_tokens": 946,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/2086.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 56,
+"gen_tokens": 3192,
+"think_tokens": 2841,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/149.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 97,
+"gen_tokens": 3297,
+"think_tokens": 2610,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/291.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 101,
+"gen_tokens": 5861,
+"think_tokens": 5072,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1555.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 81,
+"gen_tokens": 2837,
+"think_tokens": 2312,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1510.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 110,
+"gen_tokens": 16384,
+"think_tokens": 15654,
+"finish": "length"
+},
+{
+"unique_id": "test/precalculus/263.json",
+"level": 3,
+"subject": "Precalculus",
+"prompt_tokens": 172,
+"gen_tokens": 4067,
+"think_tokens": 3202,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/541.json",
+"level": 2,
+"subject": "Precalculus",
+"prompt_tokens": 113,
+"gen_tokens": 2026,
+"think_tokens": 1403,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/389.json",
+"level": 2,
+"subject": "Counting & Probability",
+"prompt_tokens": 54,
+"gen_tokens": 1622,
+"think_tokens": 1171,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/1201.json",
+"level": 3,
+"subject": "Number Theory",
+"prompt_tokens": 46,
+"gen_tokens": 3605,
+"think_tokens": 3145,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/234.json",
+"level": 2,
+"subject": "Number Theory",
+"prompt_tokens": 61,
+"gen_tokens": 3173,
+"think_tokens": 2709,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/378.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 226,
+"gen_tokens": 6025,
+"think_tokens": 5527,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1555.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 51,
+"gen_tokens": 2547,
+"think_tokens": 2233,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2102.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 88,
+"gen_tokens": 2022,
+"think_tokens": 1441,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/102.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 92,
+"gen_tokens": 6086,
+"think_tokens": 5075,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/765.json",
+"level": 5,
+"subject": "Counting & Probability",
+"prompt_tokens": 114,
+"gen_tokens": 3256,
+"think_tokens": 2573,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/907.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 55,
+"gen_tokens": 2826,
+"think_tokens": 2455,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1436.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 76,
+"gen_tokens": 2058,
+"think_tokens": 1745,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/417.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 42,
+"gen_tokens": 10103,
+"think_tokens": 9386,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/864.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 57,
+"gen_tokens": 1533,
+"think_tokens": 1248,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/282.json",
+"level": 4,
+"subject": "Counting & Probability",
+"prompt_tokens": 723,
+"gen_tokens": 10405,
+"think_tokens": 9293,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1961.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 104,
+"gen_tokens": 3034,
+"think_tokens": 2625,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/89.json",
+"level": 3,
+"subject": "Number Theory",
+"prompt_tokens": 52,
+"gen_tokens": 5622,
+"think_tokens": 5018,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/547.json",
+"level": 4,
+"subject": "Geometry",
+"prompt_tokens": 160,
+"gen_tokens": 16384,
+"think_tokens": null,
+"finish": "length"
+},
+{
+"unique_id": "test/number_theory/183.json",
+"level": 3,
+"subject": "Number Theory",
+"prompt_tokens": 56,
+"gen_tokens": 7259,
+"think_tokens": 6728,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/190.json",
+"level": 4,
+"subject": "Precalculus",
+"prompt_tokens": 86,
+"gen_tokens": 6681,
+"think_tokens": 6050,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2159.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 59,
+"gen_tokens": 2781,
+"think_tokens": 2074,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/71.json",
+"level": 3,
+"subject": "Counting & Probability",
+"prompt_tokens": 50,
+"gen_tokens": 3712,
+"think_tokens": 3081,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/819.json",
+"level": 3,
+"subject": "Precalculus",
+"prompt_tokens": 84,
+"gen_tokens": 1663,
+"think_tokens": 1043,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/1056.json",
+"level": 4,
+"subject": "Precalculus",
+"prompt_tokens": 139,
+"gen_tokens": 5630,
+"think_tokens": 4390,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/2057.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 103,
+"gen_tokens": 1778,
+"think_tokens": 1195,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/986.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 106,
+"gen_tokens": 5171,
+"think_tokens": 4100,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1578.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 87,
+"gen_tokens": 2256,
+"think_tokens": 1444,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1354.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 93,
+"gen_tokens": 8630,
+"think_tokens": 7582,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/441.json",
+"level": 2,
+"subject": "Precalculus",
+"prompt_tokens": 129,
+"gen_tokens": 3499,
+"think_tokens": 2681,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1837.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 86,
+"gen_tokens": 2742,
+"think_tokens": 1887,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/153.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 57,
+"gen_tokens": 3364,
+"think_tokens": 2759,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/989.json",
+"level": 4,
+"subject": "Precalculus",
+"prompt_tokens": 75,
+"gen_tokens": 6624,
+"think_tokens": 5489,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/337.json",
+"level": 1,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 69,
+"gen_tokens": 2759,
+"think_tokens": 2344,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/975.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 69,
+"gen_tokens": 2974,
+"think_tokens": 2209,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/229.json",
+"level": 5,
+"subject": "Geometry",
+"prompt_tokens": 130,
+"gen_tokens": 16311,
+"think_tokens": 14984,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/874.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 249,
+"gen_tokens": 14150,
+"think_tokens": 13659,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1143.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 66,
+"gen_tokens": 3921,
+"think_tokens": 3324,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2626.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 98,
+"gen_tokens": 12034,
+"think_tokens": 11532,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/254.json",
+"level": 2,
+"subject": "Geometry",
+"prompt_tokens": 61,
+"gen_tokens": 1844,
+"think_tokens": 1343,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1251.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 55,
+"gen_tokens": 4003,
+"think_tokens": 3282,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1210.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 111,
+"gen_tokens": 5182,
+"think_tokens": 4363,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1787.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 85,
+"gen_tokens": 3791,
+"think_tokens": 3481,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1123.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 64,
+"gen_tokens": 3185,
+"think_tokens": 2650,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/920.json",
+"level": 4,
+"subject": "Precalculus",
+"prompt_tokens": 93,
+"gen_tokens": 4321,
+"think_tokens": 3526,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/1065.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 64,
+"gen_tokens": 5304,
+"think_tokens": 4439,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1934.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 92,
+"gen_tokens": 2249,
+"think_tokens": 1793,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/894.json",
+"level": 5,
+"subject": "Counting & Probability",
+"prompt_tokens": 130,
+"gen_tokens": 5635,
+"think_tokens": 5098,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2064.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 49,
+"gen_tokens": 3506,
+"think_tokens": 2807,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1458.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 42,
+"gen_tokens": 1420,
+"think_tokens": 1067,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/1009.json",
+"level": 5,
+"subject": "Counting & Probability",
+"prompt_tokens": 87,
+"gen_tokens": 2367,
+"think_tokens": 1747,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/452.json",
+"level": 2,
+"subject": "Precalculus",
+"prompt_tokens": 79,
+"gen_tokens": 2743,
+"think_tokens": 2133,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1995.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 51,
+"gen_tokens": 3079,
+"think_tokens": 2709,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/473.json",
+"level": 4,
+"subject": "Geometry",
+"prompt_tokens": 47,
+"gen_tokens": 1276,
+"think_tokens": 935,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/694.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 95,
+"gen_tokens": 1793,
+"think_tokens": 1228,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/149.json",
+"level": 1,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 42,
+"gen_tokens": 2245,
+"think_tokens": 1707,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/580.json",
+"level": 3,
+"subject": "Precalculus",
+"prompt_tokens": 66,
+"gen_tokens": 3076,
+"think_tokens": 2328,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/347.json",
+"level": 3,
+"subject": "Geometry",
+"prompt_tokens": 64,
+"gen_tokens": 5128,
+"think_tokens": 4792,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1317.json",
+"level": 1,
+"subject": "Prealgebra",
+"prompt_tokens": 48,
+"gen_tokens": 1444,
+"think_tokens": 1106,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/483.json",
+"level": 4,
+"subject": "Geometry",
+"prompt_tokens": 55,
+"gen_tokens": 1958,
+"think_tokens": 1527,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/826.json",
+"level": 5,
+"subject": "Geometry",
+"prompt_tokens": 268,
+"gen_tokens": 16384,
+"think_tokens": null,
+"finish": "length"
+},
+{
+"unique_id": "test/algebra/524.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 55,
+"gen_tokens": 3473,
+"think_tokens": 2949,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1742.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 55,
+"gen_tokens": 3523,
+"think_tokens": 3069,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/226.json",
+"level": 1,
+"subject": "Geometry",
+"prompt_tokens": 202,
+"gen_tokens": 4886,
+"think_tokens": 4189,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/466.json",
+"level": 1,
+"subject": "Number Theory",
+"prompt_tokens": 56,
+"gen_tokens": 2305,
+"think_tokens": 1698,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/913.json",
+"level": 3,
+"subject": "Counting & Probability",
+"prompt_tokens": 64,
+"gen_tokens": 2308,
+"think_tokens": 1787,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2551.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 90,
+"gen_tokens": 2400,
+"think_tokens": 2044,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/634.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 55,
+"gen_tokens": 4339,
+"think_tokens": 3584,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/533.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 74,
+"gen_tokens": 3335,
+"think_tokens": 2744,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/993.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 98,
+"gen_tokens": 2429,
+"think_tokens": 1956,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/686.json",
+"level": 5,
+"subject": "Geometry",
+"prompt_tokens": 86,
+"gen_tokens": 8930,
+"think_tokens": 8337,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/346.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 59,
+"gen_tokens": 1966,
+"think_tokens": 1754,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1282.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 47,
+"gen_tokens": 5200,
+"think_tokens": 4512,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1834.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 36,
+"gen_tokens": 2223,
+"think_tokens": 1612,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/691.json",
+"level": 3,
+"subject": "Number Theory",
+"prompt_tokens": 44,
+"gen_tokens": 2511,
+"think_tokens": 2112,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1512.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 198,
+"gen_tokens": 3218,
+"think_tokens": 2679,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/1287.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 68,
+"gen_tokens": 2624,
+"think_tokens": 2075,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/260.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 365,
+"gen_tokens": 5311,
+"think_tokens": 4785,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1184.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 151,
+"gen_tokens": 2426,
+"think_tokens": 2033,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1787.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 62,
+"gen_tokens": 2285,
+"think_tokens": 1890,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/768.json",
+"level": 5,
+"subject": "Precalculus",
+"prompt_tokens": 83,
+"gen_tokens": 6096,
+"think_tokens": 5125,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1411.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 180,
+"gen_tokens": 9336,
+"think_tokens": 8405,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/960.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 91,
+"gen_tokens": 12769,
+"think_tokens": 11264,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/631.json",
+"level": 5,
+"subject": "Number Theory",
+"prompt_tokens": 87,
+"gen_tokens": 4518,
+"think_tokens": 3918,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/1172.json",
+"level": 5,
+"subject": "Precalculus",
+"prompt_tokens": 142,
+"gen_tokens": 6369,
+"think_tokens": 5276,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1300.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 96,
+"gen_tokens": 6283,
+"think_tokens": 5329,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/634.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 61,
+"gen_tokens": 3236,
+"think_tokens": 2332,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/25149.json",
+"level": 4,
+"subject": "Counting & Probability",
+"prompt_tokens": 73,
+"gen_tokens": 5352,
+"think_tokens": 4605,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/90.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 148,
+"gen_tokens": 6542,
+"think_tokens": 5695,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2486.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 71,
+"gen_tokens": 2118,
+"think_tokens": 1659,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/488.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 81,
+"gen_tokens": 6069,
+"think_tokens": 5167,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/1201.json",
+"level": 3,
+"subject": "Precalculus",
+"prompt_tokens": 123,
+"gen_tokens": 9570,
+"think_tokens": 8769,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/754.json",
+"level": 2,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 165,
+"gen_tokens": 8798,
+"think_tokens": 8022,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/1172.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 117,
+"gen_tokens": 3177,
+"think_tokens": 2467,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/881.json",
+"level": 4,
+"subject": "Precalculus",
+"prompt_tokens": 197,
+"gen_tokens": 2557,
+"think_tokens": 1610,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/1097.json",
+"level": 4,
+"subject": "Geometry",
+"prompt_tokens": 64,
+"gen_tokens": 3716,
+"think_tokens": 3308,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/339.json",
+"level": 4,
+"subject": "Counting & Probability",
+"prompt_tokens": 48,
+"gen_tokens": 3369,
+"think_tokens": 2940,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1044.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 814,
+"gen_tokens": 8897,
+"think_tokens": 8213,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/465.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 113,
+"gen_tokens": 7404,
+"think_tokens": 6688,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/965.json",
+"level": 5,
+"subject": "Geometry",
+"prompt_tokens": 101,
+"gen_tokens": 6916,
+"think_tokens": 6025,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/446.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 58,
+"gen_tokens": 4024,
+"think_tokens": 3180,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2257.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 58,
+"gen_tokens": 1912,
+"think_tokens": 1288,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1544.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 73,
+"gen_tokens": 11887,
+"think_tokens": 10826,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/695.json",
+"level": 2,
+"subject": "Precalculus",
+"prompt_tokens": 59,
+"gen_tokens": 3861,
+"think_tokens": 3185,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/711.json",
+"level": 5,
+"subject": "Geometry",
+"prompt_tokens": 77,
+"gen_tokens": 16384,
+"think_tokens": null,
+"finish": "length"
+},
+{
+"unique_id": "test/number_theory/203.json",
+"level": 3,
+"subject": "Number Theory",
+"prompt_tokens": 47,
+"gen_tokens": 8197,
+"think_tokens": 7540,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1842.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 95,
+"gen_tokens": 4188,
+"think_tokens": 3799,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/911.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 98,
+"gen_tokens": 4176,
+"think_tokens": 3630,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1714.json",
+"level": 1,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 49,
+"gen_tokens": 1252,
+"think_tokens": 864,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1423.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 66,
+"gen_tokens": 1143,
+"think_tokens": 830,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/1108.json",
+"level": 2,
+"subject": "Geometry",
+"prompt_tokens": 85,
+"gen_tokens": 3125,
+"think_tokens": 2750,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/791.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 63,
+"gen_tokens": 4400,
+"think_tokens": 3647,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/276.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 69,
+"gen_tokens": 3576,
+"think_tokens": 2913,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/2152.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 116,
+"gen_tokens": 2783,
+"think_tokens": 2181,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2735.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 53,
+"gen_tokens": 2185,
+"think_tokens": 1668,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/425.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 52,
+"gen_tokens": 1965,
+"think_tokens": 1553,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/947.json",
+"level": 5,
+"subject": "Geometry",
+"prompt_tokens": 146,
+"gen_tokens": 5663,
+"think_tokens": 4811,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/954.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 77,
+"gen_tokens": 2186,
+"think_tokens": 1861,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1936.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 62,
+"gen_tokens": 1473,
+"think_tokens": 1130,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/870.json",
+"level": 5,
+"subject": "Counting & Probability",
+"prompt_tokens": 66,
+"gen_tokens": 8289,
+"think_tokens": 7548,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/465.json",
+"level": 4,
+"subject": "Geometry",
+"prompt_tokens": 297,
+"gen_tokens": 8328,
+"think_tokens": 7554,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/73.json",
+"level": 2,
+"subject": "Geometry",
+"prompt_tokens": 62,
+"gen_tokens": 1445,
+"think_tokens": 1041,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/742.json",
+"level": 2,
+"subject": "Precalculus",
+"prompt_tokens": 69,
+"gen_tokens": 4001,
+"think_tokens": 3650,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/117.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 110,
+"gen_tokens": 8805,
+"think_tokens": 7320,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2176.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 96,
+"gen_tokens": 7438,
+"think_tokens": 6472,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1973.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 47,
+"gen_tokens": 1465,
+"think_tokens": 1227,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/216.json",
+"level": 5,
+"subject": "Counting & Probability",
+"prompt_tokens": 60,
+"gen_tokens": 3524,
+"think_tokens": 2840,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/509.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 76,
+"gen_tokens": 3104,
+"think_tokens": 2396,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/190.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 70,
+"gen_tokens": 9350,
+"think_tokens": 8014,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/776.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 89,
+"gen_tokens": 6704,
+"think_tokens": 5999,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1457.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 55,
+"gen_tokens": 2603,
+"think_tokens": 2108,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/483.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 87,
+"gen_tokens": 6792,
+"think_tokens": 6269,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2592.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 43,
+"gen_tokens": 2233,
+"think_tokens": 2020,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1730.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 60,
+"gen_tokens": 3131,
+"think_tokens": 2537,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/368.json",
+"level": 3,
+"subject": "Number Theory",
+"prompt_tokens": 39,
+"gen_tokens": 3595,
+"think_tokens": 3206,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1566.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 90,
+"gen_tokens": 3353,
+"think_tokens": 2900,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/801.json",
+"level": 3,
+"subject": "Precalculus",
+"prompt_tokens": 122,
+"gen_tokens": 8771,
+"think_tokens": 7959,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/858.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 37,
+"gen_tokens": 2986,
+"think_tokens": 2450,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1238.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 50,
+"gen_tokens": 2598,
+"think_tokens": 2216,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/737.json",
+"level": 2,
+"subject": "Counting & Probability",
+"prompt_tokens": 58,
+"gen_tokens": 2411,
+"think_tokens": 1988,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1572.json",
+"level": 2,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 89,
+"gen_tokens": 1961,
+"think_tokens": 1195,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1529.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 57,
+"gen_tokens": 1951,
+"think_tokens": 1737,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1338.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 57,
+"gen_tokens": 3529,
+"think_tokens": 2922,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1547.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 82,
+"gen_tokens": 1982,
+"think_tokens": 1637,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/116.json",
+"level": 2,
+"subject": "Counting & Probability",
+"prompt_tokens": 36,
+"gen_tokens": 3784,
+"think_tokens": 3191,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/238.json",
+"level": 4,
+"subject": "Counting & Probability",
+"prompt_tokens": 60,
+"gen_tokens": 9356,
+"think_tokens": 8645,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/686.json",
+"level": 2,
+"subject": "Number Theory",
+"prompt_tokens": 35,
+"gen_tokens": 3119,
+"think_tokens": 2686,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/826.json",
+"level": 3,
+"subject": "Precalculus",
+"prompt_tokens": 100,
+"gen_tokens": 4228,
+"think_tokens": 3315,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/1281.json",
+"level": 4,
+"subject": "Precalculus",
+"prompt_tokens": 222,
+"gen_tokens": 16384,
+"think_tokens": null,
+"finish": "length"
+},
+{
+"unique_id": "test/counting_and_probability/1014.json",
+"level": 4,
+"subject": "Counting & Probability",
+"prompt_tokens": 73,
+"gen_tokens": 4225,
+"think_tokens": 3705,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/529.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 43,
+"gen_tokens": 1901,
+"think_tokens": 1346,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1166.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 79,
+"gen_tokens": 6884,
+"think_tokens": 5806,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1078.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 57,
+"gen_tokens": 3283,
+"think_tokens": 2670,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1353.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 88,
+"gen_tokens": 3289,
+"think_tokens": 2675,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/860.json",
+"level": 2,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 78,
+"gen_tokens": 2651,
+"think_tokens": 2141,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1407.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 120,
+"gen_tokens": 4049,
+"think_tokens": 3363,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/96.json",
+"level": 3,
+"subject": "Precalculus",
+"prompt_tokens": 250,
+"gen_tokens": 3277,
+"think_tokens": 2709,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1405.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 75,
+"gen_tokens": 10354,
+"think_tokens": 9481,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/14.json",
+"level": 1,
+"subject": "Counting & Probability",
+"prompt_tokens": 81,
+"gen_tokens": 1887,
+"think_tokens": 1492,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/251.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 44,
+"gen_tokens": 1429,
+"think_tokens": 1060,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/690.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 95,
+"gen_tokens": 3074,
+"think_tokens": 2377,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/820.json",
+"level": 5,
+"subject": "Number Theory",
+"prompt_tokens": 79,
+"gen_tokens": 7986,
+"think_tokens": 7016,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/109.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 59,
+"gen_tokens": 3565,
+"think_tokens": 3017,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1199.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 87,
+"gen_tokens": 1737,
+"think_tokens": 1442,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/106.json",
+"level": 2,
+"subject": "Geometry",
+"prompt_tokens": 60,
+"gen_tokens": 1609,
+"think_tokens": 1125,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1187.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 180,
+"gen_tokens": 3973,
+"think_tokens": 3396,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/1289.json",
+"level": 1,
+"subject": "Precalculus",
+"prompt_tokens": 71,
+"gen_tokens": 1254,
+"think_tokens": 884,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/955.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 88,
+"gen_tokens": 16310,
+"think_tokens": 15436,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/846.json",
+"level": 2,
+"subject": "Geometry",
+"prompt_tokens": 269,
+"gen_tokens": 6532,
+"think_tokens": 5696,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2264.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 92,
+"gen_tokens": 5665,
+"think_tokens": 5215,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1303.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 45,
+"gen_tokens": 1315,
+"think_tokens": 1039,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/427.json",
+"level": 5,
+"subject": "Number Theory",
+"prompt_tokens": 56,
+"gen_tokens": 2924,
+"think_tokens": 2380,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/538.json",
+"level": 4,
+"subject": "Geometry",
+"prompt_tokens": 97,
+"gen_tokens": 2844,
+"think_tokens": 2062,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/1185.json",
+"level": 3,
+"subject": "Number Theory",
+"prompt_tokens": 86,
+"gen_tokens": 7546,
+"think_tokens": 6693,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1743.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 40,
+"gen_tokens": 3384,
+"think_tokens": 2840,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1865.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 260,
+"gen_tokens": 6227,
+"think_tokens": 5329,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1992.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 53,
+"gen_tokens": 4457,
+"think_tokens": 3781,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/188.json",
+"level": 5,
+"subject": "Counting & Probability",
+"prompt_tokens": 70,
+"gen_tokens": 9134,
+"think_tokens": 8087,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1111.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 198,
+"gen_tokens": 6605,
+"think_tokens": 5968,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/101.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 59,
+"gen_tokens": 1984,
+"think_tokens": 1561,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1298.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 49,
+"gen_tokens": 1205,
+"think_tokens": 951,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/2066.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 103,
+"gen_tokens": 4686,
+"think_tokens": 4305,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/170.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 45,
+"gen_tokens": 3696,
+"think_tokens": 3263,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/849.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 49,
+"gen_tokens": 2553,
+"think_tokens": 2296,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1031.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 62,
+"gen_tokens": 2483,
+"think_tokens": 1879,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/795.json",
+"level": 3,
+"subject": "Geometry",
+"prompt_tokens": 147,
+"gen_tokens": 2908,
+"think_tokens": 2286,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/853.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 105,
+"gen_tokens": 5651,
+"think_tokens": 4831,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2277.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 109,
+"gen_tokens": 5536,
+"think_tokens": 4641,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/902.json",
+"level": 5,
+"subject": "Precalculus",
+"prompt_tokens": 301,
+"gen_tokens": 16384,
+"think_tokens": null,
+"finish": "length"
+},
+{
+"unique_id": "test/algebra/518.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 105,
+"gen_tokens": 1965,
+"think_tokens": 1578,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1791.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 137,
+"gen_tokens": 5583,
+"think_tokens": 4826,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/114.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 58,
+"gen_tokens": 2836,
+"think_tokens": 2551,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/631.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 245,
+"gen_tokens": 14305,
+"think_tokens": 13699,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/977.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 53,
+"gen_tokens": 1608,
+"think_tokens": 1298,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1991.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 141,
+"gen_tokens": 7320,
+"think_tokens": 6827,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1784.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 44,
+"gen_tokens": 1569,
+"think_tokens": 1176,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/817.json",
+"level": 5,
+"subject": "Geometry",
+"prompt_tokens": 94,
+"gen_tokens": 16384,
+"think_tokens": null,
+"finish": "length"
+},
+{
+"unique_id": "test/intermediate_algebra/1806.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 66,
+"gen_tokens": 10020,
+"think_tokens": 8823,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/1291.json",
+"level": 3,
+"subject": "Precalculus",
+"prompt_tokens": 64,
+"gen_tokens": 3155,
+"think_tokens": 2606,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/928.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 76,
+"gen_tokens": 6544,
+"think_tokens": 6059,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/761.json",
+"level": 1,
+"subject": "Counting & Probability",
+"prompt_tokens": 63,
+"gen_tokens": 2325,
+"think_tokens": 2040,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1572.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 54,
+"gen_tokens": 2366,
+"think_tokens": 1869,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/132.json",
+"level": 1,
+"subject": "Number Theory",
+"prompt_tokens": 39,
+"gen_tokens": 1802,
+"think_tokens": 1309,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1960.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 61,
+"gen_tokens": 2444,
+"think_tokens": 1845,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/398.json",
+"level": 5,
+"subject": "Precalculus",
+"prompt_tokens": 88,
+"gen_tokens": 5728,
+"think_tokens": 4661,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1797.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 85,
+"gen_tokens": 5523,
+"think_tokens": 4795,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/65.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 58,
+"gen_tokens": 1426,
+"think_tokens": 915,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1227.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 104,
+"gen_tokens": 1484,
+"think_tokens": 1151,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/2146.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 97,
+"gen_tokens": 5645,
+"think_tokens": 4248,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2680.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 46,
+"gen_tokens": 2424,
+"think_tokens": 2143,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2391.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 62,
+"gen_tokens": 2886,
+"think_tokens": 2448,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/769.json",
+"level": 5,
+"subject": "Number Theory",
+"prompt_tokens": 51,
+"gen_tokens": 4081,
+"think_tokens": 3514,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/681.json",
+"level": 3,
+"subject": "Precalculus",
+"prompt_tokens": 45,
+"gen_tokens": 8592,
+"think_tokens": 7933,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/776.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 81,
+"gen_tokens": 2495,
+"think_tokens": 2119,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1796.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 58,
+"gen_tokens": 2092,
+"think_tokens": 1671,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/145.json",
+"level": 4,
+"subject": "Precalculus",
+"prompt_tokens": 109,
+"gen_tokens": 7103,
+"think_tokens": 6063,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/625.json",
+"level": 3,
+"subject": "Precalculus",
+"prompt_tokens": 81,
+"gen_tokens": 4589,
+"think_tokens": 4142,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/1202.json",
+"level": 5,
+"subject": "Precalculus",
+"prompt_tokens": 129,
+"gen_tokens": 10901,
+"think_tokens": 9860,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/2015.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 133,
+"gen_tokens": 13026,
+"think_tokens": 11644,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/1002.json",
+"level": 5,
+"subject": "Number Theory",
+"prompt_tokens": 80,
+"gen_tokens": 8539,
+"think_tokens": 7691,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1339.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 63,
+"gen_tokens": 1803,
+"think_tokens": 1419,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/1133.json",
+"level": 5,
+"subject": "Precalculus",
+"prompt_tokens": 103,
+"gen_tokens": 16384,
+"think_tokens": null,
+"finish": "length"
+},
+{
+"unique_id": "test/geometry/843.json",
+"level": 3,
+"subject": "Geometry",
+"prompt_tokens": 165,
+"gen_tokens": 1615,
+"think_tokens": 1169,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2743.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 71,
+"gen_tokens": 1832,
+"think_tokens": 1360,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/121.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 96,
+"gen_tokens": 3817,
+"think_tokens": 3083,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1014.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 61,
+"gen_tokens": 4639,
+"think_tokens": 3902,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/2019.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 37,
+"gen_tokens": 1193,
+"think_tokens": 809,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/499.json",
+"level": 4,
+"subject": "Precalculus",
+"prompt_tokens": 63,
+"gen_tokens": 6584,
+"think_tokens": 5471,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1462.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 101,
+"gen_tokens": 6243,
+"think_tokens": 5517,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/410.json",
+"level": 2,
+"subject": "Number Theory",
+"prompt_tokens": 39,
+"gen_tokens": 3140,
+"think_tokens": 2535,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1640.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 59,
+"gen_tokens": 2754,
+"think_tokens": 2123,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2043.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 58,
+"gen_tokens": 2804,
+"think_tokens": 2082,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/10.json",
+"level": 4,
+"subject": "Counting & Probability",
+"prompt_tokens": 65,
+"gen_tokens": 4338,
+"think_tokens": 3241,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1553.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 120,
+"gen_tokens": 2034,
+"think_tokens": 1363,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/255.json",
+"level": 2,
+"subject": "Number Theory",
+"prompt_tokens": 53,
+"gen_tokens": 4088,
+"think_tokens": 3710,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/199.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 45,
+"gen_tokens": 4367,
+"think_tokens": 3583,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2080.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 45,
+"gen_tokens": 2042,
+"think_tokens": 1612,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/2037.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 77,
+"gen_tokens": 1783,
+"think_tokens": 1488,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1343.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 48,
+"gen_tokens": 1427,
+"think_tokens": 1157,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/668.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 49,
+"gen_tokens": 1016,
+"think_tokens": 719,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/731.json",
+"level": 5,
+"subject": "Counting & Probability",
+"prompt_tokens": 203,
+"gen_tokens": 16384,
+"think_tokens": null,
+"finish": "length"
+},
+{
+"unique_id": "test/intermediate_algebra/1779.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 257,
+"gen_tokens": 9375,
+"think_tokens": 7896,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2430.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 86,
+"gen_tokens": 2702,
+"think_tokens": 1930,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/996.json",
+"level": 1,
+"subject": "Prealgebra",
+"prompt_tokens": 66,
+"gen_tokens": 1469,
+"think_tokens": 1023,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/1000.json",
+"level": 5,
+"subject": "Number Theory",
+"prompt_tokens": 77,
+"gen_tokens": 4053,
+"think_tokens": 3458,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2789.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 52,
+"gen_tokens": 2249,
+"think_tokens": 1967,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/13.json",
+"level": 5,
+"subject": "Number Theory",
+"prompt_tokens": 60,
+"gen_tokens": 3775,
+"think_tokens": 3060,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/459.json",
+"level": 3,
+"subject": "Number Theory",
+"prompt_tokens": 92,
+"gen_tokens": 2963,
+"think_tokens": 2541,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1814.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 71,
+"gen_tokens": 3098,
+"think_tokens": 2326,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2476.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 86,
+"gen_tokens": 1838,
+"think_tokens": 1446,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/323.json",
+"level": 5,
+"subject": "Precalculus",
+"prompt_tokens": 145,
+"gen_tokens": 4328,
+"think_tokens": 3414,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/190.json",
+"level": 2,
+"subject": "Counting & Probability",
+"prompt_tokens": 42,
+"gen_tokens": 1729,
+"think_tokens": 1315,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1102.json",
+"level": 1,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 67,
+"gen_tokens": 5227,
+"think_tokens": 4461,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/342.json",
+"level": 1,
+"subject": "Number Theory",
+"prompt_tokens": 36,
+"gen_tokens": 1734,
+"think_tokens": 1350,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/805.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 132,
+"gen_tokens": 4409,
+"think_tokens": 3826,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2780.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 102,
+"gen_tokens": 2722,
+"think_tokens": 2074,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/914.json",
+"level": 4,
+"subject": "Prealgebra",
+"prompt_tokens": 185,
+"gen_tokens": 14075,
+"think_tokens": 13476,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/824.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 122,
+"gen_tokens": 3474,
+"think_tokens": 2837,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/679.json",
+"level": 2,
+"subject": "Number Theory",
+"prompt_tokens": 128,
+"gen_tokens": 4279,
+"think_tokens": 3753,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/1425.json",
+"level": 2,
+"subject": "Algebra",
+"prompt_tokens": 50,
+"gen_tokens": 1225,
+"think_tokens": 803,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/834.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 62,
+"gen_tokens": 3246,
+"think_tokens": 2296,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/72.json",
+"level": 4,
+"subject": "Number Theory",
+"prompt_tokens": 46,
+"gen_tokens": 2703,
+"think_tokens": 2271,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/703.json",
+"level": 5,
+"subject": "Precalculus",
+"prompt_tokens": 107,
+"gen_tokens": 5133,
+"think_tokens": 4229,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1114.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 209,
+"gen_tokens": 5471,
+"think_tokens": 4829,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/224.json",
+"level": 4,
+"subject": "Algebra",
+"prompt_tokens": 56,
+"gen_tokens": 2930,
+"think_tokens": 2429,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/435.json",
+"level": 3,
+"subject": "Algebra",
+"prompt_tokens": 40,
+"gen_tokens": 2500,
+"think_tokens": 2153,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/158.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 74,
+"gen_tokens": 7413,
+"think_tokens": 5924,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/846.json",
+"level": 3,
+"subject": "Prealgebra",
+"prompt_tokens": 78,
+"gen_tokens": 1291,
+"think_tokens": 1044,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2470.json",
+"level": 1,
+"subject": "Algebra",
+"prompt_tokens": 57,
+"gen_tokens": 1901,
+"think_tokens": 1514,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1930.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 255,
+"gen_tokens": 5661,
+"think_tokens": 4287,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/752.json",
+"level": 1,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 80,
+"gen_tokens": 1504,
+"think_tokens": 1126,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/1003.json",
+"level": 5,
+"subject": "Counting & Probability",
+"prompt_tokens": 183,
+"gen_tokens": 4757,
+"think_tokens": 3752,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1252.json",
+"level": 2,
+"subject": "Prealgebra",
+"prompt_tokens": 86,
+"gen_tokens": 2279,
+"think_tokens": 1920,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/22.json",
+"level": 3,
+"subject": "Number Theory",
+"prompt_tokens": 62,
+"gen_tokens": 3318,
+"think_tokens": 2775,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1279.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 98,
+"gen_tokens": 10850,
+"think_tokens": 9673,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/1128.json",
+"level": 5,
+"subject": "Number Theory",
+"prompt_tokens": 69,
+"gen_tokens": 4465,
+"think_tokens": 3912,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/1252.json",
+"level": 2,
+"subject": "Precalculus",
+"prompt_tokens": 84,
+"gen_tokens": 3971,
+"think_tokens": 3431,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1467.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 126,
+"gen_tokens": 11776,
+"think_tokens": 10846,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/1090.json",
+"level": 5,
+"subject": "Number Theory",
+"prompt_tokens": 77,
+"gen_tokens": 5951,
+"think_tokens": 5275,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/1082.json",
+"level": 3,
+"subject": "Precalculus",
+"prompt_tokens": 74,
+"gen_tokens": 4553,
+"think_tokens": 3545,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/101.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 59,
+"gen_tokens": 5207,
+"think_tokens": 3959,
+"finish": "stop"
+},
+{
+"unique_id": "test/counting_and_probability/199.json",
+"level": 2,
+"subject": "Counting & Probability",
+"prompt_tokens": 224,
+"gen_tokens": 8690,
+"think_tokens": 7895,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/477.json",
+"level": 3,
+"subject": "Geometry",
+"prompt_tokens": 63,
+"gen_tokens": 10832,
+"think_tokens": 10330,
+"finish": "stop"
+},
+{
+"unique_id": "test/number_theory/239.json",
+"level": 1,
+"subject": "Number Theory",
+"prompt_tokens": 77,
+"gen_tokens": 3955,
+"think_tokens": 3259,
+"finish": "stop"
+},
+{
+"unique_id": "test/prealgebra/1203.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 62,
+"gen_tokens": 1269,
+"think_tokens": 909,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1365.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 88,
+"gen_tokens": 6030,
+"think_tokens": 5219,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1350.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 116,
+"gen_tokens": 16384,
+"think_tokens": 16113,
+"finish": "length"
+},
+{
+"unique_id": "test/prealgebra/1128.json",
+"level": 5,
+"subject": "Prealgebra",
+"prompt_tokens": 157,
+"gen_tokens": 2989,
+"think_tokens": 2502,
+"finish": "stop"
+},
+{
+"unique_id": "test/precalculus/356.json",
+"level": 3,
+"subject": "Precalculus",
+"prompt_tokens": 108,
+"gen_tokens": 1673,
+"think_tokens": 1045,
+"finish": "stop"
+},
+{
+"unique_id": "test/algebra/2779.json",
+"level": 5,
+"subject": "Algebra",
+"prompt_tokens": 90,
+"gen_tokens": 6047,
+"think_tokens": 5438,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1930.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 96,
+"gen_tokens": 12757,
+"think_tokens": 11634,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1981.json",
+"level": 4,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 75,
+"gen_tokens": 3900,
+"think_tokens": 3335,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1232.json",
+"level": 3,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 56,
+"gen_tokens": 2834,
+"think_tokens": 2137,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/561.json",
+"level": 5,
+"subject": "Geometry",
+"prompt_tokens": 74,
+"gen_tokens": 14407,
+"think_tokens": 12922,
+"finish": "stop"
+},
+{
+"unique_id": "test/intermediate_algebra/1508.json",
+"level": 5,
+"subject": "Intermediate Algebra",
+"prompt_tokens": 82,
+"gen_tokens": 5348,
+"think_tokens": 4425,
+"finish": "stop"
+},
+{
+"unique_id": "test/geometry/615.json",
+"level": 4,
+"subject": "Geometry",
+"prompt_tokens": 81,
+"gen_tokens": 7606,
+"think_tokens": 7053,
+"finish": "stop"
+}
+]
+}
