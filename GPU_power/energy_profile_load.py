@@ -258,6 +258,212 @@ async def _run_open_loop_async(args, engine, tokenizer, meta):
         {"arrival_rate": args.arrival_rate, "t0": win_t0, "t1": win_t1}]
 
 
+# ------------------------------------------------------------------ trace replay
+MOONCAKE_BLOCK = 512          # Mooncake hash_ids are 512-token prompt blocks
+
+
+def trace_speedups(args):
+    v = getattr(args, "trace_speedups", None)
+    return [float(x) for x in str(v).split(",") if x.strip()] if v else [args.trace_speedup]
+
+
+def load_trace(args):
+    """Requests from a normalized trace (traces/prepare_traces.py: one JSON per line,
+    {"t", "in", "out"[, "h"]}) whose trace time is in [offset, offset + window), t
+    re-based to the offset (trace seconds; each level divides by its speedup). The
+    window is --trace_window_s, default --duration_s x the first speedup. Lengths are
+    clipped so in + out fits max_model_len (output first to --trace_max_output)."""
+    import gzip
+    op = gzip.open if args.trace_file.endswith(".gz") else open
+    t_lo = args.trace_offset_s
+    t_hi = t_lo + (args.trace_window_s or args.duration_s * trace_speedups(args)[0])
+    recs, clipped = [], 0
+    with op(args.trace_file, "rt") as f:
+        for i, line in enumerate(f):
+            d = json.loads(line)
+            if d["t"] < t_lo:
+                continue
+            if d["t"] >= t_hi:
+                break
+            out = max(1, int(d["out"]))
+            if args.trace_max_output:
+                out = min(out, args.trace_max_output)
+            n_in = max(1, min(int(d["in"]), args.max_model_len - out - 1))
+            clipped += (n_in < int(d["in"])) or (out < int(d["out"]))
+            recs.append({"idx": i, "t": d["t"] - t_lo, "in": n_in, "out": out, "h": d.get("h")})
+            if args.trace_max_requests and len(recs) >= args.trace_max_requests:
+                break
+    return recs, clipped
+
+
+_BLOCKS = {}
+
+
+def trace_prompt(rec, vocab):
+    """Synthetic token ids of the trace's prompt length. Distinct per request, except
+    that Mooncake records share tokens block-for-block wherever their hash_ids match,
+    so their real prefix reuse is reproduced."""
+    import random
+    lo, hi = 1000, max(1001, vocab - 1000)
+    if rec.get("h"):
+        ids = []
+        for h in rec["h"][:-(-rec["in"] // MOONCAKE_BLOCK)]:
+            if h not in _BLOCKS:
+                r = random.Random(1_000_003 * int(h) + 7)
+                _BLOCKS[h] = [r.randrange(lo, hi) for _ in range(MOONCAKE_BLOCK)]
+            ids += _BLOCKS[h]
+        ids = ids[:rec["in"]]
+        if len(ids) < rec["in"]:           # hash list shorter than the length: pad uniquely
+            r = random.Random(7919 * rec["idx"] + 3)
+            ids += [r.randrange(lo, hi) for _ in range(rec["in"] - len(ids))]
+        return {"prompt_token_ids": ids}
+    r = random.Random(7919 * rec["idx"] + 17)
+    return {"prompt_token_ids": [r.randrange(lo, hi) for _ in range(rec["in"])]}
+
+
+def unique_prompt_tokens(recs):
+    """Prompt tokens the prefix cache must hold for these requests (shared Mooncake
+    blocks counted once)."""
+    seen, n = set(), 0
+    for r in recs:
+        if r.get("h"):
+            for k, h in enumerate(r["h"][:-(-r["in"] // MOONCAKE_BLOCK)]):
+                if h not in seen:
+                    seen.add(h)
+                    n += min(MOONCAKE_BLOCK, r["in"] - k * MOONCAKE_BLOCK)
+        else:
+            n += r["in"]
+    return n
+
+
+def cache_demand_tokens(recs):
+    """KV the replay allocates beyond nothing: the warmed prompts plus every generated
+    token. vLLM allocates from the never-used blocks first and then evicts the least
+    recently freed, so a warmed prompt survives only if this all fits."""
+    return unique_prompt_tokens(recs) + sum(r["out"] for r in recs) + 32 * len(recs)
+
+
+async def _run_trace_async(args, engine, tokenizer, meta):
+    """Replay a real request trace open-loop: each request is submitted at its own
+    (time-scaled) trace arrival with its trace prompt and output lengths (ignore_eos,
+    exact length). --trace_speedups replays the SAME request set at several arrival-
+    rate multipliers in one engine (identical work, only the load differs); each is a
+    "level" with its own window in run_meta["levels"].
+
+    With --prefix_warm every prompt is prefilled before each level, in reverse arrival
+    order, with max_tokens=1 (unmeasured), so during the window the prefix cache serves
+    each prompt and the GPU runs (almost) only decode: the decode tier of a
+    disaggregated deployment, with real context lengths, output lengths and arrival
+    process. The request set is cut to fit --warm_frac of the KV cache (prompts plus
+    all generated tokens, see cache_demand_tokens); per-request hits are in
+    requests.csv (cached_tokens)."""
+    from engine_compat import make_sampling_params, drain_generate
+
+    vocab = getattr(tokenizer, "vocab_size", None) or 32000
+    recs, clipped = load_trace(args)
+    info = {"trace_file": args.trace_file, "trace_speedups": trace_speedups(args),
+            "trace_offset_s": args.trace_offset_s, "trace_requests_in_window": len(recs),
+            "trace_clipped": clipped, "prefix_warm": bool(args.prefix_warm)}
+    try:
+        cc = engine.vllm_config.cache_config
+        info["kv_cache_tokens"] = int(cc.num_gpu_blocks) * int(cc.block_size)
+    except Exception:
+        info["kv_cache_tokens"] = None
+    if args.prefix_warm:
+        budget = args.warm_budget_tokens or (
+            int(args.warm_frac * info["kv_cache_tokens"]) if info["kv_cache_tokens"] else None)
+        if budget:
+            n = len(recs)
+            while n > 1 and cache_demand_tokens(recs[:n]) > budget:
+                n = int(n * 0.97)
+            info["warm_budget_tokens"] = budget
+            info["trace_dropped_for_cache"] = len(recs) - n
+            recs = recs[:n]
+        info["warm_tokens"] = unique_prompt_tokens(recs)
+    # Build every prompt now: generating 10^4-token id lists inside the replay loop
+    # delayed submissions by up to ~0.2 s (A5000 smoke, Mooncake).
+    prompts = {r["idx"]: trace_prompt(r, vocab) for r in recs}
+    _BLOCKS.clear()
+    info["trace_requests"] = len(recs)
+    info["trace_span_s"] = recs[-1]["t"] if recs else None
+    info["trace_in_tokens"] = sum(r["in"] for r in recs)
+    info["trace_out_tokens"] = sum(r["out"] for r in recs)
+    print(f"[trace] {json.dumps(info)}", flush=True)
+    meta["trace"] = info
+
+    warm_sp = make_sampling_params(1, force_exact=True)
+    sem = asyncio.Semaphore(args.warm_concurrency)
+
+    async def warm(rec):
+        async with sem:
+            await drain_generate(engine, prompts[rec["idx"]], warm_sp, f"warm{rec['idx']}-{time.time():.3f}")
+
+    completions: List[dict] = []
+
+    async def one(rec, t_sched, speedup):
+        try:
+            c = await drain_generate(engine, prompts[rec["idx"]],
+                                     make_sampling_params(rec["out"], force_exact=True),
+                                     f"t{rec['idx']}x{speedup:g}")
+            c["t_sched"], c["trace_idx"], c["trace_speedup"] = t_sched, rec["idx"], speedup
+            completions.append(c)
+        except Exception:
+            pass
+
+    levels = []
+    for speedup in trace_speedups(args):
+        lv = {"trace_speedup": speedup}
+        if args.prefix_warm:
+            tw0 = time.time()
+            # Reverse arrival order: if anything is evicted it is the latest arrivals.
+            await asyncio.gather(*[asyncio.create_task(warm(r)) for r in reversed(recs)],
+                                 return_exceptions=True)
+            lv["warm_s"] = time.time() - tw0
+        await asyncio.sleep(args.warm_settle_s)   # let power fall back before the window
+        t0 = time.time()
+        tasks = []
+        for rec in recs:
+            t_sched = t0 + rec["t"] / speedup
+            dt = t_sched - time.time()
+            if dt > 0:
+                await asyncio.sleep(dt)
+            tasks.append(asyncio.create_task(one(rec, t_sched, speedup)))
+        # Drain in-flight requests; --trace_drain_max_s cuts long tails (reasoning
+        # outputs) by aborting what is still running (cancel -> vLLM abort).
+        _, pending = await asyncio.wait(tasks, timeout=args.trace_drain_max_s or None)
+        for t in pending:
+            t.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+        lv["aborted"] = len(pending)
+        lv.update({"trace": os.path.basename(args.trace_file), "t0": t0, "t1": time.time(),
+                   "t_last_arrival": t0 + (info["trace_span_s"] or 0.0) / speedup})
+        print(f"[trace] level x{speedup:g}: {lv['t1'] - t0:.1f} s", flush=True)
+        levels.append(lv)
+    return levels[0]["t0"], levels[-1]["t1"], completions, levels
+
+
+def level_results(power_csv, levels, completions):
+    """Per-level energy, tokens and latency for a trace replay (whole level window
+    [t0, t1], including the drain; the trace analysis also uses a steady sub-window)."""
+    out = []
+    for lv in levels:
+        cs = [c for c in completions if c.get("trace_speedup") == lv["trace_speedup"]]
+        E, src = energy_in_window(power_csv, lv["t0"], lv["t1"])
+        gen = sum(c["gen_tokens"] for c in cs)
+        tpot = sorted((c["t1"] - c["t_first"]) / (c["gen_tokens"] - 1) for c in cs
+                      if c.get("t_first") and c["gen_tokens"] > 1)
+        ttft = sorted(c["t_first"] - c["t0"] for c in cs if c.get("t_first"))
+        pct = lambda v, q: v[min(len(v) - 1, int(q * len(v)))] if v else None
+        hit = sum(c.get("cached_tokens") or 0 for c in cs) / max(1, sum(c["prompt_tokens"] for c in cs))
+        dur = lv["t1"] - lv["t0"]
+        out.append(dict(lv, requests=len(cs), gen_tokens=gen, window_s=dur, energy_j=E,
+                        energy_source=src, avg_power_w=E / dur if E else None,
+                        j_per_token=E / gen if E and gen else None, tok_per_s=gen / dur,
+                        prefix_hit_frac=hit, tpot_p50_s=pct(tpot, .5), tpot_p99_s=pct(tpot, .99),
+                        ttft_p50_s=pct(ttft, .5), ttft_p99_s=pct(ttft, .99)))
+    return out
+
+
 def run_load(args):
     from transformers import AutoTokenizer
     from engine_compat import build_async_engine
@@ -296,7 +502,8 @@ def run_load(args):
         print(f"[warn] DRAM counter: {dram.error}", flush=True)
 
     segments = []
-    runner = (_run_open_loop_async if args.arrival_rate > 0
+    runner = (_run_trace_async if getattr(args, "trace_file", None)
+              else _run_open_loop_async if args.arrival_rate > 0
               else _run_load_async)
     try:
         win_t0, win_t1, completions, segments = asyncio.run(
@@ -335,6 +542,9 @@ def run_load(args):
         "input_len": args.input_len,
         "output_len": args.output_len,
         "concurrency_or_rate": (args.concurrency_schedule
+                                or (f"trace:{os.path.basename(args.trace_file)}"
+                                    f"x{','.join(f'{x:g}' for x in trace_speedups(args))}"
+                                    if args.trace_file else None)
                                 or (f"poisson:{args.arrival_rate}"
                                     if args.arrival_rate > 0 else args.concurrency)),
         "arrival_rate": args.arrival_rate,
@@ -355,6 +565,8 @@ def run_load(args):
         "window_wall_t0": win_t0,
         "window_wall_t1": win_t1,
     }
+    if "trace" in emeta:
+        meta["trace"] = emeta["trace"]
     write_json(os.path.join(args.run_dir, "run_meta.json"), meta)
 
     gen = sum(c["gen_tokens"] for c in completions)
@@ -377,6 +589,14 @@ def run_load(args):
     }
     results["energy_window_j"], results["energy_window_source"] = energy_in_window(
         os.path.join(args.run_dir, "power_trace.csv"), win_t0, win_t1)
+    if getattr(args, "trace_file", None):
+        # A multi-level replay's whole window includes the warm-ups between levels.
+        results["levels"] = level_results(os.path.join(args.run_dir, "power_trace.csv"),
+                                          segments, completions)
+        for lv in results["levels"]:
+            print(f"[level] x{lv['trace_speedup']:g}: reqs={lv['requests']} tok/s={lv['tok_per_s']:.0f} "
+                  f"P={lv['avg_power_w']} J/tok={lv['j_per_token']} hit={lv['prefix_hit_frac']:.4f} "
+                  f"TPOT p50/p99={lv['tpot_p50_s']}/{lv['tpot_p99_s']}", flush=True)
     write_json(os.path.join(args.run_dir, "results.json"), results)
     write_requests_csv(os.path.join(args.run_dir, "requests.csv"), completions)
     print(f"[saved] {args.run_dir} "
@@ -392,14 +612,21 @@ def write_requests_csv(path, completions):
     try:
         with open(path, "w", newline="") as f:
             w = csv.writer(f)
+            # trailing columns additive (2026-10-28): prefix-cache hits; trace replay's
+            # scheduled arrival and trace row
             w.writerow(["request_id", "t_submit", "t_first_token", "t_finish",
-                        "prompt_tokens", "gen_tokens", "ttft_s", "e2e_s"])
+                        "prompt_tokens", "gen_tokens", "ttft_s", "e2e_s",
+                        "cached_tokens", "t_sched", "trace_idx", "trace_speedup"])
             for c in sorted(completions, key=lambda c: c.get("t0", 0.0)):
                 t0, t1, tf = c.get("t0"), c.get("t1"), c.get("t_first")
+                ts_ = c.get("t_sched")
                 w.writerow([c.get("request_id"), f"{t0:.6f}",
                             "" if tf is None else f"{tf:.6f}", f"{t1:.6f}",
                             c.get("prompt_tokens", ""), c.get("gen_tokens", ""),
-                            "" if tf is None else f"{tf - t0:.6f}", f"{t1 - t0:.6f}"])
+                            "" if tf is None else f"{tf - t0:.6f}", f"{t1 - t0:.6f}",
+                            "" if c.get("cached_tokens") is None else c["cached_tokens"],
+                            "" if ts_ is None else f"{ts_:.6f}", c.get("trace_idx", ""),
+                            c.get("trace_speedup", "")])
     except Exception as e:      # latency log must never break a run
         print(f"[warn] requests.csv not written: {e!r}", flush=True)
 
@@ -605,6 +832,33 @@ def build_arg_parser():
     ap.add_argument("--unique_prompts", action="store_true",
                     help="synthetic prompts get distinct random token ids (no "
                          "prefix-cache hits); only used without --task")
+    ap.add_argument("--trace_file", default=None,
+                    help="replay a normalized request trace (traces/*.jsonl.gz) open-loop "
+                         "with its arrivals and exact prompt/output lengths; --duration_s "
+                         "is the window in replay (wall) seconds")
+    ap.add_argument("--trace_speedup", type=float, default=1.0,
+                    help="arrival-rate multiplier (trace seconds per wall second)")
+    ap.add_argument("--trace_speedups", default=None,
+                    help="comma list: replay the same request set at each multiplier in "
+                         "one engine (levels); overrides --trace_speedup")
+    ap.add_argument("--trace_window_s", type=float, default=0.0,
+                    help="trace seconds of requests to replay (default duration_s x the "
+                         "first speedup); cut further to fit the KV cache with --prefix_warm")
+    ap.add_argument("--trace_offset_s", type=float, default=0.0,
+                    help="trace time where the replay window starts")
+    ap.add_argument("--trace_max_requests", type=int, default=0)
+    ap.add_argument("--trace_max_output", type=int, default=0,
+                    help="clip trace output lengths (0 = only to fit max_model_len)")
+    ap.add_argument("--trace_drain_max_s", type=float, default=0.0,
+                    help="after the last arrival, abort requests still running after this "
+                         "many seconds (0 = drain fully)")
+    ap.add_argument("--prefix_warm", action="store_true",
+                    help="prefill every replayed prompt before the window (decode-only)")
+    ap.add_argument("--warm_frac", type=float, default=0.8,
+                    help="cap the warm set at this fraction of the KV cache")
+    ap.add_argument("--warm_budget_tokens", type=int, default=0)
+    ap.add_argument("--warm_concurrency", type=int, default=64)
+    ap.add_argument("--warm_settle_s", type=float, default=5.0)
     ap.add_argument("--gpu_memory_utilization", type=float, default=0.90)
     ap.add_argument("--max_model_len", type=int, default=4096)
     ap.add_argument("--enforce_eager", action="store_true", default=True)

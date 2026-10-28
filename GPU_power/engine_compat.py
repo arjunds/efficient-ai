@@ -175,6 +175,9 @@ async def drain_generate(engine, prompt, sampling_params, request_id) -> dict:
             gen_tokens = sum(len(o.token_ids) for o in last.outputs)
         except Exception:
             pass
+    cached_tokens = None    # additive (2026-10-28): prefix-cache hit tokens (V1 RequestOutput)
+    if last is not None:
+        cached_tokens = getattr(last, "num_cached_tokens", None)
     return {"t0": t0, "t1": t1, "prompt_tokens": prompt_tokens,
             "gen_tokens": gen_tokens, "request_id": request_id,
-            "t_first": t_first}
+            "t_first": t_first, "cached_tokens": cached_tokens}
