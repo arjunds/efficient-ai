@@ -73,7 +73,9 @@ runs from 21 req/s (Sunday 04:00) to 57 req/s (Monday 08:00), 2.7× peak/trough.
        Kernel times are GPU-side, so the Python tracing doesn't distort them.
      - **Systems implication:** a decode server admitting short-output requests at a
        high rate (code completion) spends much of its time in such steps. That's the
-       ~650 tok/s A100 plateau on azure23_code vs ~3000 tok/s on chat. Fixes:
+       lower code-trace capacity: A100 relaxed-SLO decode 1,552 tok/s on azure23_code vs
+       2,842 on chat. (A "~650 tok/s plateau" quoted earlier was whole-level throughput
+       dominated by ramp/drain in short windows; corrected.) Fixes:
        - run the chunk's attention separately from the decode sequences' attention
          (keeping pack-GQA + split-KV for the decodes);
        - admit without recompute (KV transfer of the full prompt);
