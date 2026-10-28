@@ -33,22 +33,24 @@
    "energy_parts_j": {
     "static": 1776.6508259371997,
     "activity": 1306.9015763523437,
-    "weights": 1489.6014988963595,
-    "kv": 129.78208432939087,
-    "gemm": 270.85288063590554,
-    "residual": -113.40294864762382
+    "weights": 1424.8774029577653,
+    "kv": 123.0555775582439,
+    "gemm": 256.51296583413637,
+    "residual": -27.61243113611272
    },
    "energy_shares": {
     "static": 0.3655369874106077,
     "activity": 0.26888843777730376,
-    "weights": 0.30647802955973064,
-    "kv": 0.026702012254214254,
-    "gemm": 0.055726620320516194,
-    "residual": -0.023332087322372665
+    "weights": 0.29316137178045737,
+    "kv": 0.02531806725780502,
+    "gemm": 0.05277625484642345,
+    "residual": -0.005681119072597264
    },
    "liminal_pred_j": 4887.959028253443,
    "liminal_err": 0.005673029100542929,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.711263042487757,
+   "unclipped_dynamic_j": 1890.236463861656,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/azure23_code",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -90,22 +92,24 @@
    "energy_parts_j": {
     "static": 887.3162176262189,
     "activity": 668.3021700877167,
-    "weights": 562.6281867711707,
-    "kv": 97.56920344676965,
-    "gemm": 219.47907362407034,
-    "residual": 26.42609472274671
+    "weights": 532.6737150414659,
+    "kv": 91.96020104716759,
+    "gemm": 209.30623878578874,
+    "residual": 72.1624036903354
    },
    "energy_shares": {
     "static": 0.3604454919910996,
     "activity": 0.27147763075988296,
-    "weights": 0.22855075739664082,
-    "kv": 0.03963455061560165,
-    "gemm": 0.08915676407427496,
-    "residual": 0.010734805162499923
+    "weights": 0.21638265533170695,
+    "kv": 0.03735606230518571,
+    "gemm": 0.0850243562749021,
+    "residual": 0.029313803337222707
    },
    "liminal_pred_j": 2389.5237299875944,
    "liminal_err": -0.029327944907905624,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.39508270975862,
+   "unclipped_dynamic_j": 879.6764638420107,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/azure23_code",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -147,22 +151,24 @@
    "energy_parts_j": {
     "static": 2592.5343787519696,
     "activity": 1955.0648927301015,
-    "weights": 2200.9419817303947,
-    "kv": 163.26413113692013,
-    "gemm": 323.4605563750992,
-    "residual": -0.8854981956446863
+    "weights": 2148.3012501553635,
+    "kv": 148.6987604216017,
+    "gemm": 298.6898663244777,
+    "residual": 91.09129414532708
    },
    "energy_shares": {
     "static": 0.3583630138541244,
     "activity": 0.27024634773654393,
-    "weights": 0.30423365196440183,
-    "kv": 0.022567811084020034,
-    "gemm": 0.04471157674727302,
-    "residual": -0.00012240138636324645
+    "weights": 0.2969571848234741,
+    "kv": 0.020554456819473366,
+    "gemm": 0.04128755305272113,
+    "residual": 0.012591443713663105
    },
    "liminal_pred_j": 7143.289148383524,
    "liminal_err": -0.012591443713661723,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.20065404510685353,
+   "unclipped_dynamic_j": 2687.666669242414,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/azure23_code",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -204,22 +210,24 @@
    "energy_parts_j": {
     "static": 2419.031503383794,
     "activity": 1824.2240509653186,
-    "weights": 2099.321912754104,
-    "kv": 163.29717536811518,
-    "gemm": 323.4605563750992,
-    "residual": -74.84383611304747
+    "weights": 2038.4414571781085,
+    "kv": 139.89930913795612,
+    "gemm": 284.3774440943984,
+    "residual": 48.517597973807824
    },
    "energy_shares": {
     "static": 0.35813673798301654,
     "activity": 0.27007571007198655,
-    "weights": 0.3108038488784976,
-    "kv": 0.024176087672430253,
-    "gemm": 0.047888218224651384,
-    "residual": -0.011080602830582336
+    "weights": 0.30179051947935265,
+    "kv": 0.020712042050986083,
+    "gemm": 0.04210197760610024,
+    "residual": 0.007183012808557933
    },
    "liminal_pred_j": 6705.973764759576,
    "liminal_err": -0.007183012808557933,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.24950797033105931,
+   "unclipped_dynamic_j": 2586.0796444973184,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/azure23_code",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -261,22 +269,24 @@
    "energy_parts_j": {
     "static": 21551.96967219979,
     "activity": 16252.628941254565,
-    "weights": 20224.872264549573,
-    "kv": 989.4602400824199,
-    "gemm": 2274.767863750394,
-    "residual": -1145.6125828742297
+    "weights": 19590.58780924356,
+    "kv": 950.2871771202779,
+    "gemm": 2182.932995375822,
+    "residual": -380.3201962314997
    },
    "energy_shares": {
     "static": 0.35831513457045805,
     "activity": 0.27021024132755955,
-    "weights": 0.33625130033893197,
-    "kv": 0.0164504026532004,
-    "gemm": 0.03781945528012062,
-    "residual": -0.01904653417027063
+    "weights": 0.32570591987414377,
+    "kv": 0.015799125691497797,
+    "gemm": 0.03629264247737522,
+    "residual": -0.0063230639410343705
    },
    "liminal_pred_j": 60528.40659519386,
    "liminal_err": 0.00632306394103183,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.8449162832881402,
+   "unclipped_dynamic_j": 23489.100368382387,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/azure23_conv",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -318,22 +328,24 @@
    "energy_parts_j": {
     "static": 10534.806690209556,
     "activity": 7944.4388010938565,
-    "weights": 9391.181496369894,
-    "kv": 944.8097150359578,
-    "gemm": 2172.5810991482504,
-    "residual": -1714.3575713137216
+    "weights": 8367.836671246887,
+    "kv": 832.1275221705421,
+    "gemm": 1919.0794462381155,
+    "residual": -324.82890041516293
    },
    "energy_shares": {
     "static": 0.3598756896944348,
     "activity": 0.27138707684459745,
-    "weights": 0.3208087264849947,
-    "kv": 0.03227530013859269,
-    "gemm": 0.07421675066896906,
-    "residual": -0.058563543831588745
+    "weights": 0.28585061708953435,
+    "kv": 0.02842600483909668,
+    "gemm": 0.06555697314647337,
+    "residual": -0.011096361614136683
    },
    "liminal_pred_j": 29598.289130958943,
    "liminal_err": 0.011096361614136185,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.9706916479205944,
+   "unclipped_dynamic_j": 12508.572310554102,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/azure23_conv",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -375,22 +387,24 @@
    "energy_parts_j": {
     "static": 4943.885179334412,
     "activity": 3728.250019372295,
-    "weights": 3745.0713225164714,
-    "kv": 835.2170525251103,
-    "gemm": 1920.7223189213787,
-    "residual": -1347.1032998017872
+    "weights": 2915.8201155266493,
+    "kv": 647.4657199075655,
+    "gemm": 1505.290785073554,
+    "residual": 85.33077365340432
    },
    "energy_shares": {
     "static": 0.3575777483778836,
     "activity": 0.269654168525092,
-    "weights": 0.27087080756198123,
-    "kv": 0.0604089743623352,
-    "gemm": 0.13892061347418222,
-    "residual": -0.09743231230147419
+    "weights": 0.21089332655685336,
+    "kv": 0.04682943188975554,
+    "gemm": 0.10887358222446482,
+    "residual": 0.006171742425950715
    },
    "liminal_pred_j": 13740.711819214463,
    "liminal_err": -0.006171742425951636,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.8048151780770662,
+   "unclipped_dynamic_j": 6501.01069396296,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/azure23_conv",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -432,22 +446,24 @@
    "energy_parts_j": {
     "static": 2916.8950057873253,
     "activity": 2199.6695852264147,
-    "weights": 1501.9941902349315,
-    "kv": 631.8261316309537,
-    "gemm": 1446.5054380399333,
-    "residual": -531.4148402786013
+    "weights": 1134.7361153991483,
+    "kv": 476.4064682034403,
+    "gemm": 1105.702868138705,
+    "residual": 332.0654678859237
    },
    "energy_shares": {
     "static": 0.35722292008421697,
     "activity": 0.2693865877571837,
-    "weights": 0.18394448532453328,
-    "kv": 0.07737775109454192,
-    "gemm": 0.17714895307136722,
-    "residual": -0.06508069733184313
+    "weights": 0.1389675486651574,
+    "kv": 0.0583439957149592,
+    "gemm": 0.13541193855738007,
+    "residual": 0.04066700922110265
    },
    "liminal_pred_j": 7833.410042755036,
    "liminal_err": -0.040667009221102425,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.5523865338231095,
+   "unclipped_dynamic_j": 3580.3257599058184,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/azure23_conv",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -489,22 +505,24 @@
    "energy_parts_j": {
     "static": 1647.3462716882038,
     "activity": 1242.2858837836673,
-    "weights": 515.535959684597,
-    "kv": 330.6582632930048,
-    "gemm": 767.2420086483685,
-    "residual": 109.44483026301441
+    "weights": 420.8988349035909,
+    "kv": 274.02929314851195,
+    "gemm": 642.0185415351774,
+    "residual": 385.93439230170407
    },
    "energy_shares": {
     "static": 0.3571472197603299,
     "activity": 0.26932950112920584,
-    "weights": 0.11176899347284071,
-    "kv": 0.07168722293270689,
-    "gemm": 0.16633925421841106,
-    "residual": 0.023727808486505655
+    "weights": 0.09125151843888198,
+    "kv": 0.059409974613645326,
+    "gemm": 0.13919061285693649,
+    "residual": 0.08367117320100047
    },
    "liminal_pred_j": 4226.578825059152,
    "liminal_err": -0.08367117320100027,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.2603782388203763,
+   "unclipped_dynamic_j": 1613.4362316259703,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/azure23_conv",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -546,22 +564,24 @@
    "energy_parts_j": {
     "static": 1078.7927873642636,
     "activity": 813.532087517248,
-    "weights": 245.37528850372644,
-    "kv": 187.54337290245505,
-    "gemm": 467.26234805451566,
-    "residual": 224.99647059438985
+    "weights": 220.58423823114023,
+    "kv": 172.0591299824216,
+    "gemm": 430.6982868056204,
+    "residual": 301.8358250359047
    },
    "energy_shares": {
     "static": 0.3575118294769087,
     "activity": 0.2696044581991192,
-    "weights": 0.08131734780663727,
-    "kv": 0.062151856350877825,
-    "gemm": 0.15485069872110618,
-    "residual": 0.0745638094453508
+    "weights": 0.07310159605021252,
+    "kv": 0.057020379686178166,
+    "gemm": 0.14273337222123555,
+    "residual": 0.10002836436634582
    },
    "liminal_pred_j": 2715.6665299006936,
    "liminal_err": -0.10002836436634598,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.09286476469890935,
+   "unclipped_dynamic_j": 900.1810094606972,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/azure23_conv",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -603,22 +623,24 @@
    "energy_parts_j": {
     "static": 7874.00400652236,
     "activity": 5937.891865402648,
-    "weights": 6848.201233694911,
-    "kv": 894.8909516751013,
-    "gemm": 1018.5773294151488,
-    "residual": -686.9521251987753
+    "weights": 6472.920128236892,
+    "kv": 839.8950319657092,
+    "gemm": 958.5769843115528,
+    "residual": -196.67475492777157
    },
    "energy_shares": {
     "static": 0.3597634733359663,
     "activity": 0.27130245298594013,
-    "weights": 0.31289451464552465,
-    "kv": 0.040887593753429534,
-    "gemm": 0.04653882796962303,
-    "residual": -0.03138686269048359
+    "weights": 0.2957479099619226,
+    "kv": 0.0383748285735328,
+    "gemm": 0.04379741044710897,
+    "residual": -0.008986075304470842
    },
    "liminal_pred_j": 22083.288016439157,
    "liminal_err": 0.008986075304470511,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.9407134130698018,
+   "unclipped_dynamic_j": 8761.66951478516,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/azure24_peak",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -660,22 +682,24 @@
    "energy_parts_j": {
     "static": 3845.608803869076,
     "activity": 2900.025097155143,
-    "weights": 2889.9756201550003,
-    "kv": 789.9456412484326,
-    "gemm": 911.6046497493115,
-    "residual": -635.4093419199144
+    "weights": 2463.0966766341576,
+    "kv": 658.2464139355258,
+    "gemm": 773.608177279048,
+    "residual": 61.16530138409871
    },
    "energy_shares": {
     "static": 0.3593439049580743,
     "activity": 0.2709860508535559,
-    "weights": 0.27004700101978596,
-    "kv": 0.0738146197151482,
-    "gemm": 0.08518276073460114,
-    "residual": -0.059374337281165576
+    "weights": 0.23015829825968606,
+    "kv": 0.061508293971623045,
+    "gemm": 0.07228800367090474,
+    "residual": 0.005715448286155896
    },
    "liminal_pred_j": 10640.58516887295,
    "liminal_err": -0.005715448286155896,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.838367357433132,
+   "unclipped_dynamic_j": 4591.525911152745,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/azure24_peak",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -717,22 +741,24 @@
    "energy_parts_j": {
     "static": 1778.7094180323506,
     "activity": 1341.3485915806766,
-    "weights": 983.9796922826201,
-    "kv": 442.77953465058863,
-    "gemm": 599.8471513034003,
-    "residual": -172.96763924951392
+    "weights": 795.0947490653962,
+    "kv": 349.88719744403346,
+    "gemm": 488.35272201102356,
+    "residual": 220.30407046664186
    },
    "energy_shares": {
     "static": 0.3576232142687387,
     "activity": 0.2696884549622386,
-    "weights": 0.19783668808508828,
-    "kv": 0.0890242322825998,
-    "gemm": 0.12060388512271702,
-    "residual": -0.034776474721382386
+    "weights": 0.15985991692983303,
+    "kv": 0.07034751315357363,
+    "gemm": 0.09818707225133368,
+    "residual": 0.04429382843428237
    },
    "liminal_pred_j": 4753.392678133482,
    "liminal_err": -0.04429382843428201,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.6141071922646054,
+   "unclipped_dynamic_j": 2026.606378236609,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/azure24_peak",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -774,22 +800,24 @@
    "energy_parts_j": {
     "static": 1060.316549920602,
     "activity": 799.5989094379519,
-    "weights": 446.1368881885935,
-    "kv": 248.61946433681038,
-    "gemm": 388.25735954213735,
-    "residual": 24.19897340627631
+    "weights": 361.91829569437635,
+    "kv": 201.20124376544925,
+    "gemm": 324.99801890936465,
+    "residual": 219.0951271046274
    },
    "energy_shares": {
     "static": 0.35735448493091787,
     "activity": 0.26948580256992083,
-    "weights": 0.15035983159864438,
-    "kv": 0.08379127971598145,
-    "gemm": 0.1308529125101444,
-    "residual": 0.008155688674391053
+    "weights": 0.12197595723147407,
+    "kv": 0.06781009580454643,
+    "gemm": 0.10953285569259613,
+    "residual": 0.07384080377054468
    },
    "liminal_pred_j": 2748.0330177277456,
    "liminal_err": -0.07384080377054421,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.41211735624049634,
+   "unclipped_dynamic_j": 1083.0137120675413,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/azure24_peak",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -831,22 +859,24 @@
    "energy_parts_j": {
     "static": 669.686620359645,
     "activity": 505.0196484671086,
-    "weights": 198.28306141715268,
-    "kv": 138.7214043444984,
-    "gemm": 251.78400030400164,
-    "residual": 110.51543124862701
+    "weights": 170.30872894017926,
+    "kv": 119.5691951408565,
+    "gemm": 223.38486548142603,
+    "residual": 186.0411077518179
    },
    "energy_shares": {
     "static": 0.35735484922083716,
     "activity": 0.2694860772858273,
-    "weights": 0.10580682271615297,
-    "kv": 0.07402382700524719,
-    "gemm": 0.13435572808149485,
-    "residual": 0.0589726956904405
+    "weights": 0.09087929831825803,
+    "kv": 0.06380392022476254,
+    "gemm": 0.11920152276517301,
+    "residual": 0.0992743321851419
    },
-   "liminal_pred_j": 1687.969058389215,
-   "liminal_err": -0.09927433218514213,
+   "liminal_pred_j": 1687.9690583892148,
+   "liminal_err": -0.09927433218514226,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.2215601593808958,
+   "unclipped_dynamic_j": 588.7884660656528,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/azure24_peak",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -888,22 +918,24 @@
    "energy_parts_j": {
     "static": 7412.765057628246,
     "activity": 5565.049571592354,
-    "weights": 6880.422231175198,
-    "kv": 352.01196741151506,
-    "gemm": 1120.464974325812,
-    "residual": -794.9054145773734
+    "weights": 6482.436159357566,
+    "kv": 322.5583066603085,
+    "gemm": 954.9658554360144,
+    "residual": -201.96656311873448
    },
    "energy_shares": {
     "static": 0.36096777481232334,
     "activity": 0.27099247648632385,
-    "weights": 0.3350451124848137,
-    "kv": 0.017141373778342545,
-    "gemm": 0.05456152264279934,
-    "residual": -0.038708260204602836
+    "weights": 0.31566500996794356,
+    "kv": 0.015707115131429243,
+    "gemm": 0.046502472043647554,
+    "residual": -0.009834848441667472
    },
    "liminal_pred_j": 20737.722553247113,
    "liminal_err": 0.009832296926461164,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.7454486949405349,
+   "unclipped_dynamic_j": 8352.899172912525,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/burstgpt",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -945,22 +977,24 @@
    "energy_parts_j": {
     "static": 3674.369217017937,
     "activity": 2770.8910315697017,
-    "weights": 3284.0632047215913,
-    "kv": 292.6229478085145,
-    "gemm": 994.9468737881621,
-    "residual": -848.9626430815042
+    "weights": 2839.8428087347825,
+    "kv": 247.5717634608913,
+    "gemm": 794.2333283124505,
+    "residual": -158.97751727136165
    },
    "energy_shares": {
     "static": 0.3613684386789189,
     "activity": 0.2725127788438235,
-    "weights": 0.32298245568698786,
-    "kv": 0.028779007096354475,
-    "gemm": 0.09785146160164565,
-    "residual": -0.08349414190773029
+    "weights": 0.27929407777885656,
+    "kv": 0.024348293908105688,
+    "gemm": 0.07811159980051353,
+    "residual": -0.015635189010218178
    },
-   "liminal_pred_j": 10326.908149095761,
-   "liminal_err": 0.015635189010217997,
+   "liminal_pred_j": 10326.90814909576,
+   "liminal_err": 0.01563518901021782,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.9656597680887892,
+   "unclipped_dynamic_j": 4571.633026318268,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/burstgpt",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -1002,22 +1036,24 @@
    "energy_parts_j": {
     "static": 1799.7202780692435,
     "activity": 1357.1931624997208,
-    "weights": 1417.7238891326417,
-    "kv": 253.47044868984932,
-    "gemm": 895.1904566793002,
-    "residual": -726.7315087435782
+    "weights": 1059.584273000543,
+    "kv": 186.8424883096164,
+    "gemm": 654.446348565219,
+    "residual": -61.219824117165444
    },
    "energy_shares": {
     "static": 0.36019138273215107,
     "activity": 0.271625145191917,
-    "weights": 0.28373960897241274,
-    "kv": 0.050728922993122455,
-    "gemm": 0.1791611131624629,
-    "residual": -0.14544617305206614
+    "weights": 0.21206246829798886,
+    "kv": 0.03739417454892244,
+    "gemm": 0.13097920720580117,
+    "residual": -0.01225237797678052
    },
    "liminal_pred_j": 5057.786550444342,
    "liminal_err": 0.012252377976780337,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.9835417074510263,
+   "unclipped_dynamic_j": 2566.384794501791,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/burstgpt",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -1059,22 +1095,24 @@
    "energy_parts_j": {
     "static": 1156.1656685514308,
     "activity": 871.8800133531352,
-    "weights": 679.1194853537479,
-    "kv": 214.033579995981,
-    "gemm": 787.7317075148064,
-    "residual": -491.1054543492405
+    "weights": 482.0380303914909,
+    "kv": 151.6383541650085,
+    "gemm": 579.5906542989273,
+    "residual": -23.487720340132
    },
    "energy_shares": {
     "static": 0.35930035611028405,
     "activity": 0.27095321008425644,
-    "weights": 0.21104922898701348,
-    "kv": 0.06651498449047229,
-    "gemm": 0.24480253196243532,
-    "residual": -0.15262031163446155
+    "weights": 0.14980243808429444,
+    "kv": 0.04712448754833553,
+    "gemm": 0.1801187616552493,
+    "residual": -0.0072992534824197495
    },
    "liminal_pred_j": 3241.3127207599923,
    "liminal_err": 0.007299253482419608,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.9137533194234836,
+   "unclipped_dynamic_j": 1680.8847728645353,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/burstgpt",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -1116,22 +1154,24 @@
    "energy_parts_j": {
     "static": 8995.689434261803,
     "activity": 4594.577867863409,
-    "weights": 4724.0939382636625,
-    "kv": 1642.2497935340232,
-    "gemm": 353.93337494471035,
-    "residual": 477.3718751635097
+    "weights": 4529.040285481614,
+    "kv": 1529.1526282802547,
+    "gemm": 330.0313588925463,
+    "residual": 809.4247092514925
    },
    "energy_shares": {
     "static": 0.4327364662889335,
     "activity": 0.22102156873668363,
-    "weights": 0.22725192240131453,
-    "kv": 0.07900021200275702,
-    "gemm": 0.017025918813065224,
-    "residual": 0.022963911757246092
+    "weights": 0.2178688918889257,
+    "kv": 0.07355968762751468,
+    "gemm": 0.015876115450112242,
+    "residual": 0.03893727000783032
    },
    "liminal_pred_j": 19978.30291726228,
    "liminal_err": -0.03894634535308221,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.4811410958248256,
+   "unclipped_dynamic_j": 6720.277106742396,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/mooncake_tool",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -1173,22 +1213,24 @@
    "energy_parts_j": {
     "static": 3702.2913355989554,
     "activity": 2791.947475108427,
-    "weights": 2572.722721887556,
-    "kv": 1307.9763232473765,
-    "gemm": 310.7479694871633,
-    "residual": -385.8658887713482
+    "weights": 2403.0020910740277,
+    "kv": 1186.3638809924362,
+    "gemm": 285.41308939852144,
+    "residual": -69.1979356142383
    },
    "energy_shares": {
     "static": 0.3594520446379903,
     "activity": 0.2710676004343244,
-    "weights": 0.24978327172069745,
-    "kv": 0.1269902125769065,
-    "gemm": 0.030170233208077355,
-    "residual": -0.03746336257799592
+    "weights": 0.23330525250687384,
+    "kv": 0.11518297293543571,
+    "gemm": 0.02771049311119291,
+    "residual": -0.006718363625817137
    },
    "liminal_pred_j": 10369.017872172375,
    "liminal_err": 0.006718363625817843,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.9422920846367053,
+   "unclipped_dynamic_j": 4191.447014622096,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/mooncake_tool",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",
@@ -1230,22 +1272,24 @@
    "energy_parts_j": {
     "static": 1781.4507216740562,
     "activity": 1343.4158453668315,
-    "weights": 1090.5568377943398,
-    "kv": 778.2289682191015,
-    "gemm": 213.19756010297257,
-    "residual": -242.8124625899427
+    "weights": 992.0603602998019,
+    "kv": 677.2376575101955,
+    "gemm": 189.3658270074314,
+    "residual": -19.492941290957788
    },
    "energy_shares": {
     "static": 0.3588713284773911,
     "activity": 0.27062967460100323,
-    "weights": 0.2196914999655907,
-    "kv": 0.1567733871537748,
-    "gemm": 0.04294841877545405,
-    "residual": -0.048914308973213846
+    "weights": 0.19984949069822708,
+    "kv": 0.1364287964234064,
+    "gemm": 0.03814754182058744,
+    "residual": -0.00392683202061524
    },
    "liminal_pred_j": 4983.530411858317,
    "liminal_err": 0.003926832020615423,
    "coef_src": "gpus_measured.json:calibrated (zeroshot coefficients + serving-fitted ovh_scale (0 uncapped runs) and cap_scale (roof_ovh, 25 capped runs); validate_v2.py)",
+   "capped_time_frac": 0.9675059092182005,
+   "unclipped_dynamic_j": 2081.983366116414,
    "run_dir": "logs/A6000_prov/a6000_trace/Qwen2.5-7B-Instruct/mooncake_tool",
    "gpu": "A6000",
    "model": "Qwen2.5-7B-Instruct",

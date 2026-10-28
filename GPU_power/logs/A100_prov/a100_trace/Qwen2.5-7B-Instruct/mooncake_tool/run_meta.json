@@ -1,0 +1,93 @@
+{
+  "gpu_name": "NVIDIA A100 80GB PCIe",
+  "power_limit_w": 300.0,
+  "dtype": "float16",
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "model_key": null,
+  "tp_degree": 1,
+  "vllm_version": "0.10.2",
+  "engine_api": "v1",
+  "max_num_seqs": 256,
+  "block_size": null,
+  "gpu_mem_util": 0.9,
+  "input_len": 512,
+  "output_len": 256,
+  "concurrency_or_rate": "trace:mooncake_tool.jsonl.gzx0.1,0.25,0.5,1",
+  "arrival_rate": 0.0,
+  "concurrency_schedule": null,
+  "task": null,
+  "segments": [
+    {
+      "trace_speedup": 0.1,
+      "warm_s": 72.41996812820435,
+      "aborted": 0,
+      "trace": "mooncake_tool.jsonl.gz",
+      "t0": 1793210688.118931,
+      "t1": 1793210904.8768053,
+      "t_last_arrival": 1793210898.118931
+    },
+    {
+      "trace_speedup": 0.25,
+      "warm_s": 0.851290225982666,
+      "aborted": 0,
+      "trace": "mooncake_tool.jsonl.gz",
+      "t0": 1793210910.7299166,
+      "t1": 1793211001.502188,
+      "t_last_arrival": 1793210994.7299166
+    },
+    {
+      "trace_speedup": 0.5,
+      "warm_s": 0.9037699699401855,
+      "aborted": 0,
+      "trace": "mooncake_tool.jsonl.gz",
+      "t0": 1793211007.4113395,
+      "t1": 1793211056.7037191,
+      "t_last_arrival": 1793211049.4113395
+    },
+    {
+      "trace_speedup": 1.0,
+      "warm_s": 0.7757363319396973,
+      "aborted": 0,
+      "trace": "mooncake_tool.jsonl.gz",
+      "t0": 1793211062.4848812,
+      "t1": 1793211098.6766124,
+      "t_last_arrival": 1793211083.4848812
+    }
+  ],
+  "idle_power_w": 97.166,
+  "prefill_ceiling_power_w": null,
+  "kv_cache_dtype": "auto",
+  "enforce_eager": false,
+  "max_num_seqs_resolved": 256,
+  "max_num_batched_tokens_resolved": 2048,
+  "chunked_prefill": true,
+  "prefix_caching": true,
+  "unique_prompts": false,
+  "metered_gpus": [
+    0
+  ],
+  "power_limit_total_w": 300.0,
+  "window_wall_t0": 1793210688.118931,
+  "window_wall_t1": 1793211098.6766124,
+  "trace": {
+    "trace_file": "traces/mooncake_tool.jsonl.gz",
+    "trace_speedups": [
+      0.1,
+      0.25,
+      0.5,
+      1.0
+    ],
+    "trace_offset_s": 600.0,
+    "trace_requests_in_window": 173,
+    "trace_clipped": 4,
+    "prefix_warm": true,
+    "kv_cache_tokens": 1042128,
+    "warm_budget_tokens": 833702,
+    "trace_dropped_for_cache": 6,
+    "warm_tokens": 782401,
+    "trace_requests": 167,
+    "trace_span_s": 21.0,
+    "trace_in_tokens": 1316417,
+    "trace_out_tokens": 25887
+  }
+}

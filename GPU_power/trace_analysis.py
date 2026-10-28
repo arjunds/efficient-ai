@@ -7,8 +7,9 @@
     (liminal_e.roofline);
   - energy breakdown with the GPU's LIMINAL-E coefficients on the MEASURED timeline:
     static (P_s x T), activity (P_0 x busy time), weights (e_w x W), KV (e_kv x K),
-    GEMM (e_g x F), residual = measured - sum (host/launch overhead, cap effects, model
-    error); and LIMINAL-E's predicted window energy (same terms, capped at P_cap per step);
+    GEMM (e_g x F), with each power-capped step's dynamic terms scaled down to P_cap;
+    residual = measured - sum (host/launch overhead not in the terms, model error);
+    LIMINAL-E's predicted window energy is the same sum (capT% = time in capped steps);
   - capacity at latency SLOs: the highest measured level whose TPOT p99 and TTFT p99 meet
     the SLO, its request rate and J/token.
 
@@ -145,20 +146,31 @@ def analyze_level(rd, meta, lv, iters, reqs, Efn, lim, g, m, pp):
     if lim is None or g is None or m is None or not E:
         return out
     # work of the steps actually run (LIMINAL-E work(): canonical byte/FLOP counts)
+    # Per step: full-clock dynamic energy e_w*W + e_kv*K + e_g*F; a step whose demanded
+    # power exceeds the cap is clipped to P_cap (its dynamic terms scaled down together,
+    # as LIMINAL-E's roof does), so the residual is model error, not the cap.
     W = K = F = Fg = 0.0
+    dyn = dict(weights=0.0, kv=0.0, gemm=0.0)
     E_pred = 0.0
     p_cap = g["p_cap"]
+    capped_t = 0.0
     for r, d in zip(S, dts):
         if r["n"] <= 0 and r["pf"] <= 0:
             continue
         nb = max(r["n"], 1.0)
         w = lim.work(m, nb, r["kv"] / max(r["nrun"], 1.0), prefill_tokens=r["pf"])
-        W += w["Wb"]; K += w["KVb"]; F += w["F"]; Fg += w["Fg"] + w.get("Fa_pf", 0.0)
-        e_dyn = pp["e_w"] * w["Wb"] + pp["e_kv"] * w["KVb"] + pp["e_g"] * (w["Fg"] + w.get("Fa_pf", 0.0))
-        E_pred += min(p_cap * d, (pp["p_s"] + pp["p0"]) * d + e_dyn)
+        fg = w["Fg"] + w.get("Fa_pf", 0.0)
+        W += w["Wb"]; K += w["KVb"]; F += w["F"]; Fg += fg
+        parts_s = dict(weights=pp["e_w"] * w["Wb"], kv=pp["e_kv"] * w["KVb"], gemm=pp["e_g"] * fg)
+        e_dyn = sum(parts_s.values())
+        room = max(0.0, (p_cap - pp["p_s"] - pp["p0"]) * d)
+        sc = min(1.0, room / e_dyn) if e_dyn > 0 else 1.0
+        capped_t += d if sc < 1.0 else 0.0
+        for k in dyn:
+            dyn[k] += sc * parts_s[k]
+        E_pred += (pp["p_s"] + pp["p0"]) * d + sc * e_dyn
     E_pred -= pp["p0"] * T_idle                           # no activity power with nothing running
-    parts = dict(static=pp["p_s"] * T, activity=pp["p0"] * T_busy, weights=pp["e_w"] * W,
-                 kv=pp["e_kv"] * K, gemm=pp["e_g"] * Fg)
+    parts = dict(static=pp["p_s"] * T, activity=pp["p0"] * T_busy, **dyn)
     parts["residual"] = E - sum(parts.values())
     I = F / (W + K) if W + K else None
     roof = lim.roofline(g, I) if I else {}
@@ -168,7 +180,9 @@ def analyze_level(rd, meta, lv, iters, reqs, Efn, lim, g, m, pp):
                roof_frac=(F / T) / roof["attainable"] if roof.get("attainable") else None,
                kv_byte_share=K / (W + K) if W + K else None,
                energy_parts_j=parts, energy_shares={k: v / E for k, v in parts.items()},
-               liminal_pred_j=E_pred, liminal_err=(E_pred - E) / E, coef_src=pp["src"])
+               liminal_pred_j=E_pred, liminal_err=(E_pred - E) / E, coef_src=pp["src"],
+               capped_time_frac=capped_t / T,
+               unclipped_dynamic_j=pp["e_w"] * W + pp["e_kv"] * K + pp["e_g"] * Fg)
     return out
 
 
@@ -219,7 +233,7 @@ def main():
                 cap[k] = dict(req_per_s=r["req_per_s"], tok_per_s=r["tok_per_s"], j_per_token=r["j_per_token"],
                               trace_speedup=r["trace_speedup"], avg_power_w=r["avg_power_w"])
     hdr = ("gpu", "model", "trace", "x", "req/s", "tok/s", "W", "%cap", "J/tok", "idle%", "nrun", "ctx",
-           "I", "BW%", "TPOT99", "TTFT99", "hit", "wts", "kv", "gemm", "stat", "act", "resid", "LimErr")
+           "I", "BW%", "TPOT99", "TTFT99", "hit", "wts", "kv", "gemm", "stat", "act", "resid", "LimErr", "capT%")
     print(" ".join("%8s" % h for h in hdr))
     for r in sorted(rows, key=lambda r: (r["gpu"], r["model"], r["trace"], r["trace_speedup"])):
         sh = r.get("energy_shares") or {}
@@ -231,7 +245,8 @@ def main():
             f(r["mean_context"], "%.0f"), f(r.get("intensity"), "%.1f"), f(r.get("bw_util") and 100 * r["bw_util"], "%.0f"),
             f(r["tpot_p99_ms"], "%.0f"), f(r["ttft_p99_ms"], "%.0f"), f(r["prefix_hit_frac"], "%.3f"),
             *[f(sh.get(k) and 100 * sh[k], "%.0f") for k in ("weights", "kv", "gemm", "static", "activity", "residual")],
-            f(r.get("liminal_err") and 100 * r["liminal_err"], "%+.1f"))))
+            f(r.get("liminal_err") and 100 * r["liminal_err"], "%+.1f"),
+            f(r.get("capped_time_frac") is not None and 100 * r["capped_time_frac"], "%.0f"))))
     print("\ncapacity at SLO (TPOT p99 / TTFT p99: tight 50 ms / 1 s, relaxed 100 ms / 2 s):")
     for k in sorted(cap):
         c = cap[k]
