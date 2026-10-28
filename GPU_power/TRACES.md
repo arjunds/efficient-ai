@@ -42,10 +42,17 @@ runs from 21 req/s (Sunday 04:00) to 57 req/s (Monday 08:00), 2.7× peak/trough.
    - In the window, the prefix cache serves each prompt. Smoke tests show a 98.9–99.9%
      hit rate and ≤0.1% computed prefill.
    - This emulates the decode tier of a prefill/decode-disaggregated deployment.
-   - Prompt admission is not free: vLLM 0.10.2 hashes every prompt block with
-     pickle+sha256 (its only option), about 1.6 µs per prompt token on the A5000 host.
-     That's a real cost of a prefix-cached decode server, and it shows up in the
-     residual / host-overhead term.
+   - Prompt admission is not free, but hashing isn't the cost. vLLM 0.10.2 hashes
+     every prompt block with pickle+sha256 (its only option), measured at 0.13 µs per
+     prompt token (Request init; ~0.3 ms for a 2k prompt).
+   - Even so, admission steps take much longer than pure-decode steps:
+     - A5000 Mooncake: 150–240 ms vs ~40 ms.
+     - A6000 code trace: ~40–70 ms vs ~25 ms.
+
+     Those steps recompute ≤16 tokens per request (0.5% of prompt tokens).
+     **Open:** iter_log step times are frontend-observed (the stat logger runs in the
+     API process), so the extra time may be frontend output/input processing rather
+     than GPU work. Check with nsys before attributing it.
 3. **Fitting the cache.** The request set is cut so warmed prompts plus *all* generated
    tokens fit in 80% of the KV cache. vLLM evicts the least recently freed block once
    the never-used blocks run out, so this guarantees nothing warmed is evicted.
