@@ -1,0 +1,39 @@
+/usr/local/lib/python3.12/dist-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+{
+  "run_dir": "logs/B200_prov/b200_tp4/Qwen2-72B-Instruct/alpaca_c256",
+  "model": "two_term",
+  "bin_s": 0.2,
+  "n_bins": 265,
+  "n_iters_total": 3509,
+  "weight_bytes": 142916714496.0,
+  "kv_bytes_per_token": 327680.0,
+  "matmul_flops_per_token": 142916714496.0,
+  "attn_flops_per_resident_token": 2621440.0,
+  "active_params": 71458357248.0,
+  "idle_power_w": 945.44,
+  "task": "alpaca",
+  "concurrency_or_rate": 256,
+  "power_source": "energy",
+  "prefill_spread": {
+    "spread_mode": "budget",
+    "requests_total": 1485,
+    "requests_attributed": 1485,
+    "tokens_attributed": 36896.0,
+    "tokens_moved_off_report_row": 0.0,
+    "computed_overflow": 0.0,
+    "budget": 2048.0
+  },
+  "p_static_source": "idle_baseline",
+  "e_bit_j_per_byte": 1.628732897139177e-10,
+  "e_flop_j_per_flop": 5.901134406642719e-13,
+  "p_static_w": 945.44,
+  "r2_energy": 0.1253548916025331,
+  "r2_power": -0.05666713541415058,
+  "bytes_flops_pearson": -0.6831480967861967,
+  "identifiable": true,
+  "arithmetic_intensity_min": 4.261622947664981,
+  "arithmetic_intensity_max": 687.299551590611,
+  "binned_table": "logs/B200_prov/b200_tp4/Qwen2-72B-Instruct/alpaca_c256/binned_table.csv",
+  "e_flop_pJ_per_flop": 0.5901134406642718
+}

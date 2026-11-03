@@ -1131,3 +1131,59 @@ summary *looked* complete because `provisioning_analysis.py` re-scans all of
 recycled from 2026-10-16. Fix: set multi-value variables in the environment
 (`PROV_ARMS=... sbatch --export=ALL ...`). Recorded in `b200_scale.sbatch`'s
 usage comments with the job number.
+
+---
+
+# UPDATE 8: TP4 scale-out (2026-11-03, B200)
+
+`logs/B200_prov/b200_tp4`. Job 9376765 (25 min, 4 GPUs, all metered). Run during
+the maintenance window; TP8 failed on a degraded GPU and was rerun separately
+(below).
+
+## Tensor-parallel ladder, Qwen2-72B alpaca, CUDA graphs
+
+| c | TP1 mJ/tok (tok/s) | TP2 | TP4 | TP4/TP1 energy | TP4/TP1 speed |
+|---|---|---|---|---|---|
+| 1 | 24835 (37) | 25637 (60) | 29788 (84) | **×1.20** | ×2.23 |
+| 16 | 1724 (572) | 1832 (879) | 2069 (1275) | **×1.20** | ×2.23 |
+| 64 | — | 590 (2999) | 679 (4057) | — | — |
+| 256 | — | — | 430 (6891) | — | — |
+
+TP4 vs TP2, incremental:
+
+| c | J/tok | throughput | board power |
+|---|---|---|---|
+| 1 | ×1.16 | ×1.39 | 1539 → 2492 W |
+| 16 | ×1.13 | ×1.45 | 1611 → 2640 W |
+| 64 | ×1.15 | ×1.35 | 1770 → 2754 W |
+
+So **the sync premium is remarkably flat**: TP2 costs 3–7% over TP1, TP4 costs a
+further 13–16% over TP2, landing at **×1.20 energy for ×2.23 throughput** versus
+one GPU. Over NVLink the all-reduce cost does not blow up between 2 and 4 ways —
+the energy premium per doubling is roughly constant (~1.1–1.15×), not compounding.
+This is the comparator for the A100 TP4-over-PCIe runs.
+
+## Caveat: the c=256 TP4 points are queue-dominated, not throughput measurements
+
+`wait%` is **91%** (alpaca) and **90%** (sharegpt) at c=256, with TTFT p50 of
+4.6 s and 5.2 s. At that concurrency the 72B cannot admit the offered load, so
+requests sit in the queue. The 430 mJ/tok figure is real energy per token
+delivered, but it is **not** a clean scaling point and should not be read as
+"TP4 scales to c=256". The c≤64 rows are the usable scaling data.
+
+## TP8 failed on a degraded GPU, not on TP8 itself
+
+Job 9376766 exited 0 after 70 s having produced no runs — a silent failure worth
+recording. `nvidia-smi` showed one of the eight GPUs reporting `[N/A]` for power
+limit and clocks, and the vLLM worker died with:
+
+```
+torch.cuda.DeferredCudaCallError: ... device=7, num_gpus=7
+```
+
+vLLM asked for `tensor_parallel_size=8` while PyTorch saw only **7** usable
+GPUs. The job's printed summary still looked complete, because
+`provisioning_analysis.py` re-scans all of `logs/B200_prov/` and re-prints every
+earlier arm — the same trap as UPDATE 7's dropped arm. dgx011 reports 8 healthy
+GPUs again, so this was transient around the maintenance restart; rerun as job
+10032050.

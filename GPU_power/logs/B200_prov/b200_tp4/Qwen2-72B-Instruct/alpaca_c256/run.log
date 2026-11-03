@@ -1,0 +1,234 @@
+/workspace/nvml_logger.py:51: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml
+[prompts] task=alpaca file=prompts_alpaca.json n=2000 token-len p5/50/95=13/20/52
+INFO 10-23 05:44:09 [__init__.py:216] Automatically detected platform cuda.
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+INFO 10-23 05:44:22 [__init__.py:742] Resolved architecture: Qwen2ForCausalLM
+`torch_dtype` is deprecated! Use `dtype` instead!
+WARNING 10-23 05:44:22 [__init__.py:2767] Casting torch.bfloat16 to torch.float16.
+INFO 10-23 05:44:22 [__init__.py:1815] Using max model len 8192
+INFO 10-23 05:44:23 [scheduler.py:222] Chunked prefill is enabled with max_num_batched_tokens=2048.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:23 [core.py:654] Waiting for init message from front-end.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:23 [core.py:76] Initializing a V1 LLM engine (v0.10.2) with config: model='Qwen/Qwen2-72B-Instruct', speculative_config=None, tokenizer='Qwen/Qwen2-72B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.float16, max_seq_len=8192, download_dir=None, load_format=auto, tensor_parallel_size=4, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, decoding_config=DecodingConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_backend=''), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=0, served_model_name=Qwen/Qwen2-72B-Instruct, enable_prefix_caching=True, chunked_prefill_enabled=True, use_async_output_proc=True, pooler_config=None, compilation_config={"level":3,"debug_dump_path":"","cache_dir":"","backend":"","custom_ops":[],"splitting_ops":["vllm.unified_attention","vllm.unified_attention_with_output","vllm.mamba_mixer2","vllm.mamba_mixer","vllm.short_conv","vllm.linear_attention","vllm.plamo2_mamba_mixer","vllm.gdn_attention"],"use_inductor":true,"compile_sizes":[],"inductor_compile_config":{"enable_auto_functionalized_v2":false},"inductor_passes":{},"cudagraph_mode":1,"use_cudagraph":true,"cudagraph_num_of_warmups":1,"cudagraph_capture_sizes":[256,248,240,232,224,216,208,200,192,184,176,168,160,152,144,136,128,120,112,104,96,88,80,72,64,56,48,40,32,24,16,8,4,2,1],"cudagraph_copy_inputs":false,"full_cuda_graph":false,"pass_config":{},"max_capture_size":256,"local_cache_dir":null}
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m WARNING 10-23 05:44:23 [multiproc_worker_utils.py:273] Reducing Torch parallelism from 112 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:23 [shm_broadcast.py:289] vLLM message queue communication handle: Handle(local_reader_ranks=[0, 1, 2, 3], buffer_handle=(4, 16777216, 10, 'psm_2d124448'), local_subscribe_addr='ipc:///tmp/5cd50431-6ce8-498a-9bfd-585dd7bc0ec2', remote_subscribe_addr=None, remote_addr_ipv6=False)
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m W1023 05:44:26.427000 4138103 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m W1023 05:44:26.427000 4138103 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m W1023 05:44:26.434000 4138137 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m W1023 05:44:26.434000 4138137 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m W1023 05:44:26.506000 4138147 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m W1023 05:44:26.506000 4138147 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m W1023 05:44:26.506000 4138126 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m W1023 05:44:26.506000 4138126 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:31 [shm_broadcast.py:289] vLLM message queue communication handle: Handle(local_reader_ranks=[0], buffer_handle=(1, 10485760, 10, 'psm_2e3969c4'), local_subscribe_addr='ipc:///tmp/a11c4f73-3fae-4f4c-a389-a6adb2b0079f', remote_subscribe_addr=None, remote_addr_ipv6=False)
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:31 [shm_broadcast.py:289] vLLM message queue communication handle: Handle(local_reader_ranks=[0], buffer_handle=(1, 10485760, 10, 'psm_7f679f1b'), local_subscribe_addr='ipc:///tmp/335edd4c-8204-4284-b464-b40f8e3ab9ea', remote_subscribe_addr=None, remote_addr_ipv6=False)
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:31 [shm_broadcast.py:289] vLLM message queue communication handle: Handle(local_reader_ranks=[0], buffer_handle=(1, 10485760, 10, 'psm_180826bc'), local_subscribe_addr='ipc:///tmp/14387d03-e1ef-4b15-80b4-bcb550e79820', remote_subscribe_addr=None, remote_addr_ipv6=False)
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:31 [shm_broadcast.py:289] vLLM message queue communication handle: Handle(local_reader_ranks=[0], buffer_handle=(1, 10485760, 10, 'psm_9788f3f5'), local_subscribe_addr='ipc:///tmp/fcd6b776-543b-4926-8f5d-8f086d7ac4c3', remote_subscribe_addr=None, remote_addr_ipv6=False)
+[W1023 05:44:32.202035532 ProcessGroupNCCL.cpp:981] Warning: TORCH_NCCL_AVOID_RECORD_STREAMS is the default now, this environment variable is thus deprecated. (function operator())
+[W1023 05:44:32.306966779 ProcessGroupNCCL.cpp:981] Warning: TORCH_NCCL_AVOID_RECORD_STREAMS is the default now, this environment variable is thus deprecated. (function operator())
+[W1023 05:44:32.592357945 ProcessGroupNCCL.cpp:981] Warning: TORCH_NCCL_AVOID_RECORD_STREAMS is the default now, this environment variable is thus deprecated. (function operator())
+[W1023 05:44:32.594714343 ProcessGroupNCCL.cpp:981] Warning: TORCH_NCCL_AVOID_RECORD_STREAMS is the default now, this environment variable is thus deprecated. (function operator())
+[Gloo] Rank 0 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[Gloo] Rank 3 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[Gloo] Rank 2 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[Gloo] Rank 1 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[Gloo] Rank 0 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[Gloo] Rank 1 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[Gloo] Rank [Gloo] Rank 32 is connected to  is connected to 33 peer ranks.  peer ranks. Expected number of connected peer ranks is : Expected number of connected peer ranks is : 33
+
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:32 [__init__.py:1433] Found nccl from library libnccl.so.2
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:32 [pynccl.py:70] vLLM is using nccl==2.27.3
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:32 [__init__.py:1433] Found nccl from library libnccl.so.2
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:32 [pynccl.py:70] vLLM is using nccl==2.27.3
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:32 [__init__.py:1433] Found nccl from library libnccl.so.2
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:32 [pynccl.py:70] vLLM is using nccl==2.27.3
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:32 [__init__.py:1433] Found nccl from library libnccl.so.2
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:32 [pynccl.py:70] vLLM is using nccl==2.27.3
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:34 [custom_all_reduce.py:35] Skipping P2P check and trusting the driver's P2P report.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:34 [custom_all_reduce.py:35] Skipping P2P check and trusting the driver's P2P report.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:34 [custom_all_reduce.py:35] Skipping P2P check and trusting the driver's P2P report.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:34 [custom_all_reduce.py:35] Skipping P2P check and trusting the driver's P2P report.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:34 [shm_broadcast.py:289] vLLM message queue communication handle: Handle(local_reader_ranks=[1, 2, 3], buffer_handle=(3, 4194304, 6, 'psm_665f1c9c'), local_subscribe_addr='ipc:///tmp/e6f6340b-6374-4269-a9d6-f29f8c8f1b71', remote_subscribe_addr=None, remote_addr_ipv6=False)
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank [Gloo] Rank 1 is connected to 03 is connected to  peer ranks. 3Expected number of connected peer ranks is :  peer ranks. 3Expected number of connected peer ranks is : 
+3
+[Gloo] Rank 3 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:34 [parallel_state.py:1165] rank 1 in world size 4 is assigned as DP rank 0, PP rank 0, TP rank 1, EP rank 1
+[Gloo] Rank 2 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:34 [parallel_state.py:1165] rank 3 in world size 4 is assigned as DP rank 0, PP rank 0, TP rank 3, EP rank 3
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:34 [parallel_state.py:1165] rank 0 in world size 4 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:44:34 [parallel_state.py:1165] rank 2 in world size 4 is assigned as DP rank 0, PP rank 0, TP rank 2, EP rank 2
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m WARNING 10-23 05:44:34 [topk_topp_sampler.py:62] FlashInfer is available, but it is not enabled. Falling back to the PyTorch-native implementation of top-p & top-k sampling. For the best performance, please set VLLM_USE_FLASHINFER_SAMPLER=1.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m WARNING 10-23 05:44:34 [topk_topp_sampler.py:62] FlashInfer is available, but it is not enabled. Falling back to the PyTorch-native implementation of top-p & top-k sampling. For the best performance, please set VLLM_USE_FLASHINFER_SAMPLER=1.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m WARNING 10-23 05:44:34 [topk_topp_sampler.py:62] FlashInfer is available, but it is not enabled. Falling back to the PyTorch-native implementation of top-p & top-k sampling. For the best performance, please set VLLM_USE_FLASHINFER_SAMPLER=1.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m WARNING 10-23 05:44:34 [topk_topp_sampler.py:62] FlashInfer is available, but it is not enabled. Falling back to the PyTorch-native implementation of top-p & top-k sampling. For the best performance, please set VLLM_USE_FLASHINFER_SAMPLER=1.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:44:34 [gpu_model_runner.py:2338] Starting to load model Qwen/Qwen2-72B-Instruct...
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m INFO 10-23 05:44:34 [gpu_model_runner.py:2338] Starting to load model Qwen/Qwen2-72B-Instruct...
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:44:34 [gpu_model_runner.py:2338] Starting to load model Qwen/Qwen2-72B-Instruct...
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:44:34 [gpu_model_runner.py:2338] Starting to load model Qwen/Qwen2-72B-Instruct...
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:44:34 [gpu_model_runner.py:2370] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:44:34 [gpu_model_runner.py:2370] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:44:34 [gpu_model_runner.py:2370] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m INFO 10-23 05:44:34 [gpu_model_runner.py:2370] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:44:34 [cuda.py:341] Using FlashInfer backend with HND KV cache layout on V1 engine by default for Blackwell (SM 10.0) GPUs.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:44:34 [cuda.py:341] Using FlashInfer backend with HND KV cache layout on V1 engine by default for Blackwell (SM 10.0) GPUs.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:44:34 [cuda.py:341] Using FlashInfer backend with HND KV cache layout on V1 engine by default for Blackwell (SM 10.0) GPUs.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m INFO 10-23 05:44:34 [cuda.py:341] Using FlashInfer backend with HND KV cache layout on V1 engine by default for Blackwell (SM 10.0) GPUs.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:44:35 [flashinfer.py:168] VLLM_USE_TRTLLM_ATTENTION is set to 0
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:44:35 [flashinfer.py:168] VLLM_USE_TRTLLM_ATTENTION is set to 0
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:44:35 [flashinfer.py:168] VLLM_USE_TRTLLM_ATTENTION is set to 0
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m INFO 10-23 05:44:35 [flashinfer.py:168] VLLM_USE_TRTLLM_ATTENTION is set to 0
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:44:35 [weight_utils.py:348] Using model weights format ['*.safetensors']
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:44:35 [weight_utils.py:348] Using model weights format ['*.safetensors']
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:44:35 [weight_utils.py:348] Using model weights format ['*.safetensors']
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m INFO 10-23 05:44:35 [weight_utils.py:348] Using model weights format ['*.safetensors']
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/37 [00:00<?, ?it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:   3% Completed | 1/37 [00:00<00:29,  1.24it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:   5% Completed | 2/37 [00:01<00:31,  1.11it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:   8% Completed | 3/37 [00:02<00:30,  1.13it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  11% Completed | 4/37 [00:03<00:28,  1.14it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  14% Completed | 5/37 [00:04<00:27,  1.14it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  16% Completed | 6/37 [00:05<00:28,  1.10it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  19% Completed | 7/37 [00:06<00:26,  1.14it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  22% Completed | 8/37 [00:06<00:24,  1.17it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  24% Completed | 9/37 [00:07<00:23,  1.17it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  27% Completed | 10/37 [00:08<00:23,  1.15it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  30% Completed | 11/37 [00:09<00:22,  1.16it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  32% Completed | 12/37 [00:10<00:21,  1.18it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  35% Completed | 13/37 [00:11<00:20,  1.17it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  38% Completed | 14/37 [00:12<00:19,  1.16it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  41% Completed | 15/37 [00:12<00:18,  1.17it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  43% Completed | 16/37 [00:13<00:18,  1.15it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  46% Completed | 17/37 [00:14<00:17,  1.17it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  49% Completed | 18/37 [00:15<00:15,  1.19it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  51% Completed | 19/37 [00:16<00:15,  1.19it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  54% Completed | 20/37 [00:17<00:14,  1.20it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  57% Completed | 21/37 [00:17<00:13,  1.22it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  59% Completed | 22/37 [00:18<00:12,  1.23it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  62% Completed | 23/37 [00:19<00:11,  1.23it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  65% Completed | 24/37 [00:20<00:10,  1.23it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  68% Completed | 25/37 [00:21<00:09,  1.21it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  70% Completed | 26/37 [00:22<00:09,  1.21it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  73% Completed | 27/37 [00:22<00:08,  1.25it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  76% Completed | 28/37 [00:23<00:07,  1.24it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  78% Completed | 29/37 [00:24<00:06,  1.23it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  81% Completed | 30/37 [00:25<00:05,  1.23it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  84% Completed | 31/37 [00:26<00:04,  1.25it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  86% Completed | 32/37 [00:26<00:03,  1.26it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  89% Completed | 33/37 [00:27<00:03,  1.28it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  92% Completed | 34/37 [00:28<00:02,  1.27it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  95% Completed | 35/37 [00:29<00:01,  1.28it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards:  97% Completed | 36/37 [00:29<00:00,  1.29it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:45:05 [default_loader.py:268] Loading weights took 30.04 seconds
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:45:05 [gpu_model_runner.py:2392] Model loading took 33.9836 GiB and 30.883273 seconds
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m INFO 10-23 05:45:06 [default_loader.py:268] Loading weights took 30.52 seconds
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards: 100% Completed | 37/37 [00:30<00:00,  1.32it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Loading safetensors checkpoint shards: 100% Completed | 37/37 [00:30<00:00,  1.21it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m 
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:45:06 [default_loader.py:268] Loading weights took 30.64 seconds
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:45:06 [gpu_model_runner.py:2392] Model loading took 33.9836 GiB and 31.524085 seconds
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m INFO 10-23 05:45:06 [gpu_model_runner.py:2392] Model loading took 33.9836 GiB and 31.467116 seconds
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:45:07 [default_loader.py:268] Loading weights took 31.22 seconds
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:45:07 [gpu_model_runner.py:2392] Model loading took 33.9836 GiB and 32.335531 seconds
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:45:15 [backends.py:539] Using cache directory: /vast/home/a/adsampat/.cache/vllm/torch_compile_cache/af38c48a13/rank_3_0/backbone for vLLM's torch.compile
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:45:15 [backends.py:550] Dynamo bytecode transform time: 6.95 s
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:45:15 [backends.py:539] Using cache directory: /vast/home/a/adsampat/.cache/vllm/torch_compile_cache/af38c48a13/rank_2_0/backbone for vLLM's torch.compile
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:45:15 [backends.py:550] Dynamo bytecode transform time: 6.95 s
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:45:15 [backends.py:539] Using cache directory: /vast/home/a/adsampat/.cache/vllm/torch_compile_cache/af38c48a13/rank_0_0/backbone for vLLM's torch.compile
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:45:15 [backends.py:550] Dynamo bytecode transform time: 7.00 s
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m INFO 10-23 05:45:15 [backends.py:539] Using cache directory: /vast/home/a/adsampat/.cache/vllm/torch_compile_cache/af38c48a13/rank_1_0/backbone for vLLM's torch.compile
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m INFO 10-23 05:45:15 [backends.py:550] Dynamo bytecode transform time: 7.30 s
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:45:25 [backends.py:161] Directly load the compiled graph(s) for dynamic shape from the cache, took 9.989 s
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:45:25 [backends.py:161] Directly load the compiled graph(s) for dynamic shape from the cache, took 9.970 s
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:45:25 [backends.py:161] Directly load the compiled graph(s) for dynamic shape from the cache, took 10.063 s
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m INFO 10-23 05:45:26 [backends.py:161] Directly load the compiled graph(s) for dynamic shape from the cache, took 10.318 s
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:45:27 [monitor.py:34] torch.compile takes 6.95 s in total
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:45:27 [monitor.py:34] torch.compile takes 7.00 s in total
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:45:27 [monitor.py:34] torch.compile takes 6.95 s in total
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m INFO 10-23 05:45:27 [monitor.py:34] torch.compile takes 7.30 s in total
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:45:30 [gpu_worker.py:298] Available KV cache memory: 124.05 GiB
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:45:30 [gpu_worker.py:298] Available KV cache memory: 124.05 GiB
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m INFO 10-23 05:45:30 [gpu_worker.py:298] Available KV cache memory: 124.05 GiB
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:45:31 [gpu_worker.py:298] Available KV cache memory: 124.05 GiB
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:45:31 [kv_cache_utils.py:864] GPU KV cache size: 1,625,952 tokens
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:45:31 [kv_cache_utils.py:868] Maximum concurrency for 8,192 tokens per request: 198.48x
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:45:31 [kv_cache_utils.py:864] GPU KV cache size: 1,625,952 tokens
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:45:31 [kv_cache_utils.py:868] Maximum concurrency for 8,192 tokens per request: 198.48x
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:45:31 [kv_cache_utils.py:864] GPU KV cache size: 1,625,952 tokens
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:45:31 [kv_cache_utils.py:868] Maximum concurrency for 8,192 tokens per request: 198.48x
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:45:31 [kv_cache_utils.py:864] GPU KV cache size: 1,625,952 tokens
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:45:31 [kv_cache_utils.py:868] Maximum concurrency for 8,192 tokens per request: 198.48x
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m INFO 10-23 05:45:31 [utils.py:289] `_KV_CACHE_LAYOUT_OVERRIDE` variable detected. Setting KV cache layout to HND.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:45:31 [utils.py:289] `_KV_CACHE_LAYOUT_OVERRIDE` variable detected. Setting KV cache layout to HND.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:45:31 [utils.py:289] `_KV_CACHE_LAYOUT_OVERRIDE` variable detected. Setting KV cache layout to HND.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:45:31 [utils.py:289] `_KV_CACHE_LAYOUT_OVERRIDE` variable detected. Setting KV cache layout to HND.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m 2026-10-23 05:45:31,423 - INFO - autotuner.py:256 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m [1;36m(EngineCore_DP0 pid=4138095)[0;0m 2026-10-23 05:45:31,423 - INFO - autotuner.py:256 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+[1;36m(Worker_TP1 pid=4138126)[0;0m 2026-10-23 05:45:31,423 - INFO - autotuner.py:256 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m 2026-10-23 05:45:31,423 - INFO - autotuner.py:256 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m 2026-10-23 05:45:31,502 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process ends
+2026-10-23 05:45:31,502 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process ends
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m 2026-10-23 05:45:31,502 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process ends
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m 2026-10-23 05:45:31,502 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process ends
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m [1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:45:31 [kernel_warmup.py:52] Warming up FlashInfer attention.
+[1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:45:31 [kernel_warmup.py:52] Warming up FlashInfer attention.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:45:31 [kernel_warmup.py:52] Warming up FlashInfer attention.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:45:31 [kernel_warmup.py:52] Warming up FlashInfer attention.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m [rank2]:W1023 05:45:31.671000 4138137 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m [rank2]:W1023 05:45:31.671000 4138137 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m [rank2]:W1023 05:45:31.701000 4138137 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m [rank2]:W1023 05:45:31.701000 4138137 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m [rank3]:W1023 05:45:32.149000 4138147 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m [rank3]:W1023 05:45:32.149000 4138147 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m [rank3]:W1023 05:45:32.185000 4138147 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m [rank3]:W1023 05:45:32.185000 4138147 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m [rank0]:W1023 05:45:32.619000 4138103 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m [rank0]:W1023 05:45:32.619000 4138103 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m [rank0]:W1023 05:45:32.651000 4138103 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m [rank0]:W1023 05:45:32.651000 4138103 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m [rank1]:W1023 05:45:32.675000 4138126 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m [rank1]:W1023 05:45:32.675000 4138126 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m [rank1]:W1023 05:45:32.704000 4138126 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m [rank1]:W1023 05:45:32.704000 4138126 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/35 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   6%|▌         | 2/35 [00:00<00:02, 14.18it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  11%|█▏        | 4/35 [00:00<00:02, 10.47it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  17%|█▋        | 6/35 [00:00<00:03,  9.10it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  23%|██▎       | 8/35 [00:00<00:02, 11.15it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  29%|██▊       | 10/35 [00:00<00:02, 12.07it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  34%|███▍      | 12/35 [00:01<00:01, 13.24it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  40%|████      | 14/35 [00:01<00:01, 14.22it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  46%|████▌     | 16/35 [00:01<00:01, 14.80it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  51%|█████▏    | 18/35 [00:01<00:01, 15.13it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  57%|█████▋    | 20/35 [00:01<00:00, 15.38it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  63%|██████▎   | 22/35 [00:01<00:00, 15.67it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  69%|██████▊   | 24/35 [00:01<00:00, 14.54it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  74%|███████▍  | 26/35 [00:01<00:00, 13.77it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  80%|████████  | 28/35 [00:02<00:00, 14.06it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  86%|████████▌ | 30/35 [00:02<00:00, 13.76it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  91%|█████████▏| 32/35 [00:02<00:00, 14.10it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  97%|█████████▋| 34/35 [00:02<00:00, 14.65it/s][1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:45:35 [custom_all_reduce.py:203] Registering 5635 cuda graph addresses
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 35/35 [00:02<00:00, 13.60it/s]
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:45:35 [custom_all_reduce.py:203] Registering 5635 cuda graph addresses
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:45:35 [custom_all_reduce.py:203] Registering 5635 cuda graph addresses
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m INFO 10-23 05:45:35 [custom_all_reduce.py:203] Registering 5635 cuda graph addresses
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:45:36 [gpu_model_runner.py:3118] Graph capturing finished in 3 secs, took 0.16 GiB
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP3 pid=4138147)[0;0m INFO 10-23 05:45:36 [gpu_worker.py:391] Free memory on device (177.65/178.35 GiB) on startup. Desired GPU memory utilization is (0.9, 160.52 GiB). Actual usage is 33.98 GiB for weight, 0.73 GiB for peak activation, 1.75 GiB for non-torch memory, and 0.16 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=132869026406` to fit into requested memory, or `--kv-cache-memory=151262530560` to fully utilize gpu memory. Current kv cache memory in use is 133198279270 bytes.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:45:36 [gpu_model_runner.py:3118] Graph capturing finished in 3 secs, took 0.16 GiB
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP2 pid=4138137)[0;0m INFO 10-23 05:45:36 [gpu_worker.py:391] Free memory on device (177.65/178.35 GiB) on startup. Desired GPU memory utilization is (0.9, 160.52 GiB). Actual usage is 33.98 GiB for weight, 0.73 GiB for peak activation, 1.75 GiB for non-torch memory, and 0.16 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=132869026406` to fit into requested memory, or `--kv-cache-memory=151262530560` to fully utilize gpu memory. Current kv cache memory in use is 133198279270 bytes.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:45:36 [gpu_model_runner.py:3118] Graph capturing finished in 3 secs, took 0.16 GiB
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP0 pid=4138103)[0;0m INFO 10-23 05:45:36 [gpu_worker.py:391] Free memory on device (177.65/178.35 GiB) on startup. Desired GPU memory utilization is (0.9, 160.52 GiB). Actual usage is 33.98 GiB for weight, 0.73 GiB for peak activation, 1.75 GiB for non-torch memory, and 0.16 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=132869026406` to fit into requested memory, or `--kv-cache-memory=151262530560` to fully utilize gpu memory. Current kv cache memory in use is 133198279270 bytes.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m INFO 10-23 05:45:36 [gpu_model_runner.py:3118] Graph capturing finished in 3 secs, took 0.16 GiB
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m [1;36m(Worker_TP1 pid=4138126)[0;0m INFO 10-23 05:45:36 [gpu_worker.py:391] Free memory on device (177.65/178.35 GiB) on startup. Desired GPU memory utilization is (0.9, 160.52 GiB). Actual usage is 33.98 GiB for weight, 0.73 GiB for peak activation, 1.75 GiB for non-torch memory, and 0.16 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=132869026406` to fit into requested memory, or `--kv-cache-memory=151262530560` to fully utilize gpu memory. Current kv cache memory in use is 133198279270 bytes.
+[1;36m(EngineCore_DP0 pid=4138095)[0;0m INFO 10-23 05:45:36 [core.py:218] init engine (profile, create kv cache, warmup model) took 28.22 seconds
+INFO 10-23 05:45:37 [loggers.py:142] Engine 000: vllm cache_config_info with initialization after num_gpu_blocks is: 101622
+INFO 10-23 05:45:37 [async_llm.py:180] Torch profiler disabled. AsyncLLM CPU traces will not be collected.
+[warn] DRAM counter: dcgmi not found on PATH; DRAM counter disabled
+[rank3]:[W1023 05:46:41.684612382 TCPStore.cpp:125] [c10d] recvValue failed on SocketImpl(fd=153, addr=[localhost]:57832, remote=[localhost]:59035): Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:682 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x80 (0x7fff5377eeb0 in /usr/local/lib/python3.12/dist-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x5d694d1 (0x7fff377ef4d1 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #2: <unknown function> + 0x5d6a8cd (0x7fff377f08cd in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #3: <unknown function> + 0x5d6b47a (0x7fff377f147a in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #4: c10d::TCPStore::check(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) + 0x31e (0x7fff377ec19e in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #5: c10d::ProcessGroupNCCL::HeartbeatMonitor::runLoop() + 0x398 (0x7ffef6cd1b18 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cuda.so)
+frame #6: <unknown function> + 0xdc253 (0x7ffff4010253 in /lib/x86_64-linux-gnu/libstdc++.so.6)
+frame #7: <unknown function> + 0x94ac3 (0x7ffff7ceaac3 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #8: <unknown function> + 0x126850 (0x7ffff7d7c850 in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank3]:[W1023 05:46:41.695564045 ProcessGroupNCCL.cpp:1783] [PG ID 0 PG GUID 0 Rank 3] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+[saved] logs/B200_prov/b200_tp4/Qwen2-72B-Instruct/alpaca_c256 (reqs=1485, tok/s=6891.402474612566, dram_filled=0)
