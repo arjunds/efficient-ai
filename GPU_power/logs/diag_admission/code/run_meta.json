@@ -1,0 +1,74 @@
+{
+  "gpu_name": "NVIDIA RTX A5000",
+  "power_limit_w": 100.0,
+  "dtype": "float16",
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "model_key": null,
+  "tp_degree": 1,
+  "vllm_version": "0.10.2",
+  "engine_api": "v1",
+  "max_num_seqs": null,
+  "block_size": null,
+  "gpu_mem_util": 0.9,
+  "input_len": 512,
+  "output_len": 128,
+  "concurrency_or_rate": "trace:azure23_code.jsonl.gzx4,8",
+  "arrival_rate": 0.0,
+  "concurrency_schedule": null,
+  "task": null,
+  "segments": [
+    {
+      "trace_speedup": 4.0,
+      "warm_s": 44.30834245681763,
+      "aborted": 0,
+      "trace": "azure23_code.jsonl.gz",
+      "t0": 1793210456.9388406,
+      "t1": 1793210486.6413083,
+      "t_last_arrival": 1793210458.5832157
+    },
+    {
+      "trace_speedup": 8.0,
+      "warm_s": 0.5383627414703369,
+      "aborted": 0,
+      "torch_profile": "/workspace/logs/diag_admission/prof",
+      "trace": "azure23_code.jsonl.gz",
+      "t0": 1793210492.2328916,
+      "t1": 1793210590.5057871,
+      "t_last_arrival": 1793210493.055079
+    }
+  ],
+  "idle_power_w": null,
+  "prefill_ceiling_power_w": null,
+  "kv_cache_dtype": "auto",
+  "enforce_eager": false,
+  "max_num_seqs_resolved": 128,
+  "max_num_batched_tokens_resolved": 2048,
+  "chunked_prefill": true,
+  "prefix_caching": true,
+  "unique_prompts": false,
+  "metered_gpus": [
+    0
+  ],
+  "power_limit_total_w": 100.0,
+  "window_wall_t0": 1793210456.9388406,
+  "window_wall_t1": 1793210590.5057871,
+  "trace": {
+    "trace_file": "traces/azure23_code.jsonl.gz",
+    "trace_speedups": [
+      4.0,
+      8.0
+    ],
+    "trace_offset_s": 600.0,
+    "trace_requests_in_window": 351,
+    "trace_clipped": 0,
+    "prefix_warm": true,
+    "kv_cache_tokens": 110624,
+    "warm_budget_tokens": 88499,
+    "trace_dropped_for_cache": 305,
+    "warm_tokens": 84834,
+    "trace_requests": 46,
+    "trace_span_s": 6.577499999999986,
+    "trace_in_tokens": 84834,
+    "trace_out_tokens": 1216
+  }
+}

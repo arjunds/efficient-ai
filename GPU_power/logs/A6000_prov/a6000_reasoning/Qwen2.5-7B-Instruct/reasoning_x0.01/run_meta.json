@@ -1,0 +1,59 @@
+{
+  "gpu_name": "NVIDIA RTX A6000",
+  "power_limit_w": 300.0,
+  "dtype": "float16",
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "model_key": null,
+  "tp_degree": 1,
+  "vllm_version": "0.10.2",
+  "engine_api": "v1",
+  "max_num_seqs": 256,
+  "block_size": null,
+  "gpu_mem_util": 0.9,
+  "input_len": 512,
+  "output_len": 256,
+  "concurrency_or_rate": "trace:reasoning_math.jsonl.gzx0.01",
+  "arrival_rate": 0.0,
+  "concurrency_schedule": null,
+  "task": null,
+  "segments": [
+    {
+      "trace_speedup": 0.01,
+      "aborted": 0,
+      "trace": "reasoning_math.jsonl.gz",
+      "t0": 1793209556.712601,
+      "t1": 1793210212.8016546,
+      "t_last_arrival": 1793210145.982601
+    }
+  ],
+  "idle_power_w": 116.21900000000001,
+  "prefill_ceiling_power_w": null,
+  "kv_cache_dtype": "auto",
+  "enforce_eager": false,
+  "max_num_seqs_resolved": 256,
+  "max_num_batched_tokens_resolved": 2048,
+  "chunked_prefill": true,
+  "prefix_caching": true,
+  "unique_prompts": false,
+  "metered_gpus": [
+    0
+  ],
+  "power_limit_total_w": 300.0,
+  "window_wall_t0": 1793209556.712601,
+  "window_wall_t1": 1793210212.8016546,
+  "trace": {
+    "trace_file": "traces/reasoning_math.jsonl.gz",
+    "trace_speedups": [
+      0.01
+    ],
+    "trace_offset_s": 0.0,
+    "trace_requests_in_window": 5,
+    "trace_clipped": 0,
+    "prefix_warm": false,
+    "kv_cache_tokens": 505840,
+    "trace_requests": 5,
+    "trace_span_s": 5.8927,
+    "trace_in_tokens": 348,
+    "trace_out_tokens": 20918
+  }
+}

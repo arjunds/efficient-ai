@@ -47,6 +47,42 @@ def _ragged(tasks, concs):
     return [(f"{t}_c{c}", {"task": t, "concurrency": c}) for t in tasks for c in concs]
 
 
+# Real-trace decode-only replay (TRACES.md): each run replays one trace window at several
+# arrival-rate multipliers ("levels") in one engine, every prompt prefix-cache-warmed
+# first so the window is (almost) pure decode. trace_window_s = 240 s of wall time at
+# the slowest level; the harness trims it further to what fits the KV cache.
+Q7_25 = "Qwen/Qwen2.5-7B-Instruct"     # Qwen2-7B architecture, 32k context
+MOE = "Qwen/Qwen3-30B-A3B"
+TRACE_ENG = dict(GRAPHS, max_model_len=32768)
+TRACE_FILES = {"azure23_conv": "traces/azure23_conv.jsonl.gz", "azure23_code": "traces/azure23_code.jsonl.gz",
+               "azure24_peak": "traces/azure24_conv_h32.jsonl.gz", "burstgpt": "traces/burstgpt_h521.jsonl.gz",
+               "mooncake_conv": "traces/mooncake_conv.jsonl.gz", "mooncake_tool": "traces/mooncake_tool.jsonl.gz",
+               "reasoning": "traces/reasoning_math.jsonl.gz"}
+TRACE_OFFSET = {"azure23_conv": 600, "azure23_code": 600, "mooncake_conv": 600, "mooncake_tool": 600}
+
+
+def _trace(name, speedups, wall_s=240, **extra):
+    f = {"trace_file": TRACE_FILES[name], "trace_speedups": ",".join(f"{x:g}" for x in speedups),
+         "trace_offset_s": TRACE_OFFSET.get(name, 0), "trace_window_s": wall_s * min(speedups),
+         "prefix_warm": None, "trace_drain_max_s": 120}
+    f.update(extra)
+    return (f"{name}", f)
+
+
+# Reasoning (MATH-500 lengths from Qwen3-30B-A3B thinking, Azure chat arrivals): requests
+# run for minutes, so each rate is its own 10-min run (its own request set; a shared set
+# sized for the slowest rate never reaches steady state at the fastest), with the
+# post-arrival drain capped. No prefix warm-up: prompts are ~100-300 tokens (~3% of the
+# tokens, prefill measured in iter_log), and warming would cap the request set by KV.
+def _reasoning(speedups, wall_s=600):
+    out = []
+    for x in speedups:
+        tag, f = _trace("reasoning", (x,), wall_s=wall_s, trace_drain_max_s=90)
+        f.pop("prefix_warm")
+        out.append((f"{tag}_x{x:g}", f))
+    return out
+
+
 ARMS = {
     "relog": [(Q7, {}, _ragged(["alpaca", "sharegpt"], [1, 4, 16, 64]))],
     "graphs": [(Q7, GRAPHS, _ragged(["alpaca", "sharegpt"], [1, 4, 16, 64])),
@@ -135,6 +171,30 @@ ARMS = {
                      [(f"ctx{n}_c4", {"input_len": n, "output_len": 512, "concurrency": 4,
                                       "unique_prompts": None})
                       for n in (1024, 4096, 8192, 16384, 30720)])],
+    "a100_trace": [(Q7_25, dict(TRACE_ENG, max_num_seqs=256), [
+        _trace("azure23_conv", (0.5, 1, 2, 3, 4, 6)), _trace("azure23_code", (1, 2, 4, 8, 16)),
+        _trace("azure24_peak", (0.1, 0.2, 0.4, 0.6, 0.8)), _trace("burstgpt", (1, 2, 4, 8, 12)),
+        _trace("mooncake_tool", (0.1, 0.25, 0.5, 1)), _trace("mooncake_conv", (0.1, 0.25, 0.5, 1))])],
+    "a6000_trace": [(Q7_25, dict(TRACE_ENG, max_num_seqs=256), [
+        _trace("azure23_conv", (0.25, 0.5, 1, 1.5, 2, 3)), _trace("azure23_code", (1, 2, 4, 8)),
+        _trace("azure24_peak", (0.05, 0.1, 0.2, 0.3, 0.4)), _trace("burstgpt", (1, 2, 4, 6)),
+        _trace("mooncake_tool", (0.1, 0.25, 0.5))])],
+    "b200_trace": [(Q7_25, dict(TRACE_ENG, max_num_seqs=512), [
+        _trace("azure23_conv", (1, 2, 4, 8, 12, 16)), _trace("azure23_code", (2, 4, 8, 16, 32)),
+        _trace("azure24_peak", (0.25, 0.5, 1, 1.5, 2)), _trace("burstgpt", (2, 4, 8, 16, 32)),
+        _trace("mooncake_tool", (0.25, 0.5, 1, 2, 3)), _trace("mooncake_conv", (0.25, 0.5, 1, 2, 3))])],
+    "a100_reasoning": [(Q7_25, dict(TRACE_ENG, max_num_seqs=256), _reasoning((0.02, 0.05, 0.1, 0.2)))],
+    "a6000_reasoning": [(Q7_25, dict(TRACE_ENG, max_num_seqs=256), _reasoning((0.01, 0.025, 0.05, 0.1)))],
+    "b200_reasoning": [(Q7_25, dict(TRACE_ENG, max_num_seqs=512), _reasoning((0.05, 0.1, 0.25, 0.5)))],
+    "b200_trace_32b": [(Q32, dict(TRACE_ENG, max_num_seqs=512), [
+        _trace("azure23_conv", (0.5, 1, 2, 4, 6)), _trace("mooncake_tool", (0.1, 0.25, 0.5, 1)),
+        *_reasoning((0.02, 0.05, 0.1, 0.2))])],
+    "b200_trace_moe": [(MOE, dict(TRACE_ENG, max_num_seqs=512), [
+        _trace("azure23_conv", (1, 2, 4, 8, 12)), _trace("mooncake_tool", (0.25, 0.5, 1, 2)),
+        *_reasoning((0.05, 0.1, 0.25, 0.5))])],
+    "smoke_trace": [(Q05, dict(TRACE_ENG, max_num_seqs=256), [
+        _trace("azure23_conv", (1, 4), wall_s=20), _trace("mooncake_tool", (0.5, 1), wall_s=20),
+        *_reasoning((0.05,), wall_s=40)])],
     # pipeline smoke tests (A5000, 0.5B): every code path in ~5 min
     "smoke": [(Q05, dict(GRAPHS, max_num_seqs=512), _ragged(["alpaca"], [4])
                + [("in1024_c4", {"input_len": 1024, "output_len": 16, "concurrency": 4,
@@ -186,6 +246,12 @@ def do_model(arm, model, eng, runs):
         if not base.load_complete(rd):
             base.run(cmd("load", model, rd, dict(eng, duration_s=DURATION_S, **lf)),
                      os.path.join(rd, "run.log"))
+        if base.load_complete(rd) and "trace_file" in lf:
+            for lv in base.load_json(os.path.join(rd, "results.json")).get("levels", []):
+                print(f"[{ts()}]   {tag} x{lv['trace_speedup']:g}: tok/s={lv['tok_per_s']:.0f} "
+                      f"reqs={lv['requests']} P={lv['avg_power_w']} J/tok={lv['j_per_token']} "
+                      f"hit={lv['prefix_hit_frac']:.3f} TPOT p99={lv['tpot_p99_s']}", flush=True)
+            continue
         if base.load_complete(rd):
             base.run([sys.executable, "-u", "energy_model.py", "--two_term", "--run_dir", rd],
                      os.path.join(rd, "two_term.log"))

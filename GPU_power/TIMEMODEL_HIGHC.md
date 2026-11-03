@@ -19,6 +19,10 @@ Scripts: `timemodel_highc.py` → `timemodel_highc.json`; `prefill_spread_compar
      head, which adds (g−1)·K_decode bytes (g = query heads per KV head, 7 for Qwen2-7B).
    - That byte term has **no fitted constant**, and it predicts the measured penalties from the
      at-cap streaming rate.
+   - **Confirmed 2026-10-28 [M]** (torch profiler, A5000, FA2; TRACES.md §Method 2):
+     - Mixed-step decode attention launches with grid `[1, b, 28]`: 28 query heads, so no GQA packing, and one split.
+     - Pure decode launches with `[1, 32, 4]`: 4 KV heads, 32 splits.
+     - Attention per step is 79 vs 7 ms. Besides the extra bytes, mixed steps also lose split-KV parallelism.
 2. **Throughput fix (zero-shot).** A100 and A6000 use microbench-only coefficients plus the
    B200-fitted host terms plus the parameter-free FA2 term:
    - A100 c=128–256: tok/s MAPE **23.9% → 4.9%**, J/token **18.2% → 4.2%**.

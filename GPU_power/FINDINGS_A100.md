@@ -263,3 +263,18 @@ request.
 **TP4 note:** the planned 72B TP4 run was cancelled. The local 72B snapshot was
 incomplete (33 of ~145 GB) and `/shared_data0` is 99% full. It was replaced by 32B TP4,
 which is cached and tests TP2 → TP4 scaling over PCIe.
+
+## TP4 over PCIe: worse than TP2 under load (Qwen2.5-32B, 2026-10-23)
+| alpaca | TP2 (2 A100) | TP4 (4 A100, all metered) | TP4 / TP2: J/token, throughput | A100 TP4 / B200 TP1, J/token |
+|---|---|---|---|---|
+| c=1 | 15.6 J, 38 tok/s, 26.2 ms, 596 W | 18.6 J, 49 tok/s, 20.1 ms, 911 W | 1.19×, 1.28× | 1.62 |
+| c=16 | 1.28 J, 438 tok/s, 31.0 ms, 563 W | 2.35 J, 268 tok/s, 50.8 ms, 631 W | 1.83×, **0.61×** | 2.84 |
+| c=64 | 0.444 J, 1246 tok/s, 45.0 ms, 553 W | 1.26 J, 428 tok/s, 113.4 ms, 539 W | 2.83×, **0.34×** | 4.84 |
+
+- **Under load, TP4 over PCIe is slower than TP2.** A step at c=64 takes 113 ms against
+  45 ms, and the four GPUs draw only 539–631 W of their 1,200 W combined cap, so they're
+  mostly waiting on all-reduces through the host bridges. Idle alone is 399 W for four
+  GPUs.
+- Only at batch 1 does TP4 buy a little latency (1.28×), at 1.19× the energy.
+- **Provisioning rule for PCIe-only A100s:** never go beyond TP2. Shard a model only if
+  it doesn't fit; if 2 GPUs aren't enough, use a different GPU type.

@@ -1,0 +1,93 @@
+{
+  "gpu_name": "NVIDIA RTX A6000",
+  "power_limit_w": 300.0,
+  "dtype": "float16",
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "model_key": null,
+  "tp_degree": 1,
+  "vllm_version": "0.10.2",
+  "engine_api": "v1",
+  "max_num_seqs": 256,
+  "block_size": null,
+  "gpu_mem_util": 0.9,
+  "input_len": 512,
+  "output_len": 256,
+  "concurrency_or_rate": "trace:azure23_code.jsonl.gzx1,2,4,8",
+  "arrival_rate": 0.0,
+  "concurrency_schedule": null,
+  "task": null,
+  "segments": [
+    {
+      "trace_speedup": 1.0,
+      "warm_s": 52.47355031967163,
+      "aborted": 0,
+      "trace": "azure23_code.jsonl.gz",
+      "t0": 1793207894.1712568,
+      "t1": 1793207929.0707185,
+      "t_last_arrival": 1793207913.1445568
+    },
+    {
+      "trace_speedup": 2.0,
+      "warm_s": 0.6958959102630615,
+      "aborted": 0,
+      "trace": "azure23_code.jsonl.gz",
+      "t0": 1793207934.771885,
+      "t1": 1793207963.321585,
+      "t_last_arrival": 1793207944.258535
+    },
+    {
+      "trace_speedup": 4.0,
+      "warm_s": 0.6743063926696777,
+      "aborted": 0,
+      "trace": "azure23_code.jsonl.gz",
+      "t0": 1793207969.001305,
+      "t1": 1793207993.8946671,
+      "t_last_arrival": 1793207973.74463
+    },
+    {
+      "trace_speedup": 8.0,
+      "warm_s": 0.6785132884979248,
+      "aborted": 0,
+      "trace": "azure23_code.jsonl.gz",
+      "t0": 1793207999.5783954,
+      "t1": 1793208022.5601966,
+      "t_last_arrival": 1793208001.950058
+    }
+  ],
+  "idle_power_w": 116.057,
+  "prefill_ceiling_power_w": null,
+  "kv_cache_dtype": "auto",
+  "enforce_eager": false,
+  "max_num_seqs_resolved": 256,
+  "max_num_batched_tokens_resolved": 2048,
+  "chunked_prefill": true,
+  "prefix_caching": true,
+  "unique_prompts": false,
+  "metered_gpus": [
+    0
+  ],
+  "power_limit_total_w": 300.0,
+  "window_wall_t0": 1793207894.1712568,
+  "window_wall_t1": 1793208022.5601966,
+  "trace": {
+    "trace_file": "traces/azure23_code.jsonl.gz",
+    "trace_speedups": [
+      1.0,
+      2.0,
+      4.0,
+      8.0
+    ],
+    "trace_offset_s": 600.0,
+    "trace_requests_in_window": 484,
+    "trace_clipped": 0,
+    "prefix_warm": true,
+    "kv_cache_tokens": 505840,
+    "warm_budget_tokens": 404672,
+    "trace_dropped_for_cache": 280,
+    "warm_tokens": 374838,
+    "trace_requests": 204,
+    "trace_span_s": 18.973299999999995,
+    "trace_in_tokens": 374838,
+    "trace_out_tokens": 6856
+  }
+}

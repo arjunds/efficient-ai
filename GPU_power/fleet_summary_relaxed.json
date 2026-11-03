@@ -1,0 +1,48 @@
+[
+ {
+  "gpu": "A100-80-PCIe",
+  "model": "Qwen2.5-7B-Instruct",
+  "slo": "relaxed",
+  "capacity_req_s": 23.298995357925953,
+  "fleet_peak_gpus": 3,
+  "mean_active_gpus": 2.1350496838301716,
+  "hours": 36.9,
+  "energy_kwh": {
+   "peak": 32.91459027823967,
+   "consol": 26.51317348728761,
+   "gated": 24.92800032062092
+  },
+  "j_per_request": {
+   "peak": 24.62972536054431,
+   "consol": 19.839596237054632,
+   "gated": 18.653423800640727
+  },
+  "saving_vs_peak": {
+   "consol": 0.1944856896846785,
+   "gated": 0.2426458871310575
+  }
+ },
+ {
+  "gpu": "A6000",
+  "model": "Qwen2.5-7B-Instruct",
+  "slo": "relaxed",
+  "capacity_req_s": 11.159687849383713,
+  "fleet_peak_gpus": 7,
+  "mean_active_gpus": 3.761065943992773,
+  "hours": 36.9,
+  "energy_kwh": {
+   "peak": 76.68793649797378,
+   "consol": 55.23118502181784,
+   "gated": 45.24473090515096
+  },
+  "j_per_request": {
+   "peak": 57.38497117676936,
+   "consol": 41.32905519787423,
+   "gated": 33.85627123975847
+  },
+  "saving_vs_peak": {
+   "consol": 0.2797930477203916,
+   "gated": 0.410015017077081
+  }
+ }
+]

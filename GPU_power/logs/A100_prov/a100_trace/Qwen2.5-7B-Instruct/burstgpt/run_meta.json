@@ -1,0 +1,103 @@
+{
+  "gpu_name": "NVIDIA A100 80GB PCIe",
+  "power_limit_w": 300.0,
+  "dtype": "float16",
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "model_key": null,
+  "tp_degree": 1,
+  "vllm_version": "0.10.2",
+  "engine_api": "v1",
+  "max_num_seqs": 256,
+  "block_size": null,
+  "gpu_mem_util": 0.9,
+  "input_len": 512,
+  "output_len": 256,
+  "concurrency_or_rate": "trace:burstgpt_h521.jsonl.gzx1,2,4,8,12",
+  "arrival_rate": 0.0,
+  "concurrency_schedule": null,
+  "task": null,
+  "segments": [
+    {
+      "trace_speedup": 1.0,
+      "warm_s": 50.25523924827576,
+      "aborted": 0,
+      "trace": "burstgpt_h521.jsonl.gz",
+      "t0": 1793210206.649772,
+      "t1": 1793210347.8428414,
+      "t_last_arrival": 1793210346.649772
+    },
+    {
+      "trace_speedup": 2.0,
+      "warm_s": 1.415025234222412,
+      "aborted": 0,
+      "trace": "burstgpt_h521.jsonl.gz",
+      "t0": 1793210354.2635422,
+      "t1": 1793210429.2825174,
+      "t_last_arrival": 1793210424.2635422
+    },
+    {
+      "trace_speedup": 4.0,
+      "warm_s": 1.3834552764892578,
+      "aborted": 0,
+      "trace": "burstgpt_h521.jsonl.gz",
+      "t0": 1793210435.672092,
+      "t1": 1793210482.1321099,
+      "t_last_arrival": 1793210470.672092
+    },
+    {
+      "trace_speedup": 8.0,
+      "warm_s": 1.388575553894043,
+      "aborted": 0,
+      "trace": "burstgpt_h521.jsonl.gz",
+      "t0": 1793210488.5263896,
+      "t1": 1793210521.5098457,
+      "t_last_arrival": 1793210506.0263896
+    },
+    {
+      "trace_speedup": 12.0,
+      "warm_s": 1.3763465881347656,
+      "aborted": 0,
+      "trace": "burstgpt_h521.jsonl.gz",
+      "t0": 1793210527.8921142,
+      "t1": 1793210558.0214581,
+      "t_last_arrival": 1793210539.558781
+    }
+  ],
+  "idle_power_w": 97.166,
+  "prefill_ceiling_power_w": null,
+  "kv_cache_dtype": "auto",
+  "enforce_eager": false,
+  "max_num_seqs_resolved": 256,
+  "max_num_batched_tokens_resolved": 2048,
+  "chunked_prefill": true,
+  "prefix_caching": true,
+  "unique_prompts": false,
+  "metered_gpus": [
+    0
+  ],
+  "power_limit_total_w": 300.0,
+  "window_wall_t0": 1793210206.649772,
+  "window_wall_t1": 1793210558.0214581,
+  "trace": {
+    "trace_file": "traces/burstgpt_h521.jsonl.gz",
+    "trace_speedups": [
+      1.0,
+      2.0,
+      4.0,
+      8.0,
+      12.0
+    ],
+    "trace_offset_s": 0.0,
+    "trace_requests_in_window": 2118,
+    "trace_clipped": 0,
+    "prefix_warm": true,
+    "kv_cache_tokens": 1042128,
+    "warm_budget_tokens": 833702,
+    "trace_dropped_for_cache": 862,
+    "warm_tokens": 722474,
+    "trace_requests": 1256,
+    "trace_span_s": 140.0,
+    "trace_in_tokens": 722474,
+    "trace_out_tokens": 58971
+  }
+}
