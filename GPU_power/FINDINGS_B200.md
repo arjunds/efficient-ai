@@ -1187,3 +1187,96 @@ GPUs. The job's printed summary still looked complete, because
 earlier arm — the same trap as UPDATE 7's dropped arm. dgx011 reports 8 healthy
 GPUs again, so this was transient around the maintenance restart; rerun as job
 10032050.
+
+---
+
+# UPDATE 9: TP8 scale-out (2026-11-04, B200, job 10032050)
+
+The rerun on a healthy node (dgx021) completed all 8 arms in 26 min, metering
+all 8 GPUs. This **completes the TP ladder** and it splits the earlier
+conclusion in two: the *dynamic* sync premium stays flat all the way to TP8, but
+*total* energy per token inflects sharply, and the cause is idle power, not
+synchronisation.
+
+## The full ladder, Qwen2-72B, CUDA graphs, alpaca
+
+| c | TP | tok/s | mJ/tok | W | MBU | step ms | tok/s vs TP1 | J/tok vs TP1 | J/tok vs prev TP |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 1 | 37 | 24852 | 931 | 0.67 | 26.7 | 1.00× | 1.00× | — |
+| 1 | 2 | 60 | 25635 | 1539 | 0.54 | 16.6 | 1.60× | 1.03× | 1.031× |
+| 1 | 4 | 84 | 29789 | 2492 | 0.38 | 12.0 | 2.23× | 1.20× | 1.162× |
+| 1 | 8 | **107** | **36978** | 3943 | 0.24 | **9.4** | 2.85× | **1.49×** | 1.241× |
+| 16 | 1 | 572 | 1724 | 986 | 0.68 | 26.5 | 1.00× | 1.00× | — |
+| 16 | 2 | 879 | 1837 | 1615 | 0.52 | 17.3 | 1.54× | 1.07× | 1.065× |
+| 16 | 4 | 1275 | 2068 | 2638 | 0.37 | 12.0 | 2.23× | 1.20× | 1.126× |
+| 16 | 8 | **1260** | **2945** | 3709 | 0.18 | 12.3 | **2.20×** | **1.71×** | 1.424× |
+| 64 | 2 | 2999 | 591 | 1772 | 0.45 | 19.9 | — | — | — |
+| 64 | 4 | 4057 | 679 | 2754 | 0.30 | 14.8 | — | — | 1.149× |
+| 64 | 8 | 4511 | 904 | 4077 | 0.17 | 13.4 | — | — | 1.331× |
+
+sharegpt tracks alpaca closely (TP4→TP8 ratios 1.244 / 1.413 / 1.324 at
+c=1/16/64), so none of this is task-specific.
+
+## The headline: TP8 at c=16 buys *zero* throughput for 1.42× the energy
+
+1275 → **1260** tok/s going TP4 → TP8 (−1.2%; sharegpt −0.5%), with step time
+going the *wrong* way (12.0 → 12.3 ms). This is the first point in the whole
+ladder that is **strictly dominated** — doubling the GPU count makes every
+metric worse or flat. At c=16 a 72B sharded 8 ways gives each GPU ~17 GB of
+weights, and the all-reduce no longer hides behind enough compute.
+
+MBU falls almost exactly in half per doubling — 0.67 → 0.54 → 0.38 → 0.24 at
+c=1 — i.e. per-GPU bandwidth utilisation halves while the GPU count doubles.
+That is the geometric signature of a workload that has stopped scaling.
+
+## The flat premium survives: the blowup is idle power, not sync
+
+Subtracting idle (which scales with GPU count) and comparing **dynamic** energy
+per token only:
+
+| | c=1 | c=16 | c=64 | c=256 |
+|---|---|---|---|---|
+| TP1 mJ/tok dyn | 18360 | 1299 | — | — |
+| TP2 | 17614 | 1289 | 430 | — |
+| TP4 | 18489 | 1327 | 446 | 292 |
+| TP8 | 19043 | 1427 | 480 | 319 |
+| **TP8/TP4** | **1.030×** | **1.075×** | **1.076×** | **1.092×** |
+
+The dynamic premium per doubling is **1.03–1.09**, flat and matching UPDATE 8's
+TP1→TP2→TP4 values (1.03, 1.07, 1.13/1.16). So UPDATE 8's conclusion — the sync
+premium does not compound — **holds through TP8** and the fitted energy model
+needs no TP-dependent term.
+
+What UPDATE 8 could not see is that at high TP, **idle dominates**. At TP8 c=16,
+1912 W of the 3709 W draw (**52%**) is idle. Total J/token is therefore governed
+by `idle × N_gpu / throughput`, which is why it inflects while the dynamic term
+does not. Per-GPU idle is essentially constant across the ladder — 243.2 /
+240.8 / 236.3 / 239.0 W at TP1/2/4/8 (spread 2.9%) — which is also a clean
+independent check that `--meter_gpus` is summing the right devices.
+
+## What TP8 is actually good for: latency, and only at c=1
+
+Only two legitimate wins:
+
+* **c=1 step time 9.4 ms vs TP4's 12.0 ms** (−22%), the lowest TPOT available
+  for a 72B here. Costs 1.24× the energy per token.
+* **c=256 TPOT p99 15.7 ms vs TP4's 18.3 ms** — but see the caveat below.
+
+A Pareto scan over all 72B points puts only the two c=256 rows on the
+frontier (TP4 429 mJ/tok @ 6891 tok/s, TP8 556 @ 8059), and **both are
+queue-dominated** (`wait%` 91–92, TTFT p50 3.9–4.6 s) — the same UPDATE 8
+caveat, so neither is a usable operating point. Among usable (`wait% ≈ 0`)
+points, **TP2 at c=64 is the efficiency optimum: 2999 tok/s at 591 mJ/tok**,
+beating TP8 at every concurrency except c=256.
+
+## Practical conclusion for the 72B on B200
+
+| goal | choice |
+|---|---|
+| lowest J/token | **TP2**, high concurrency (c=64: 591 mJ/tok) |
+| lowest latency | **TP8** at c=1 (9.4 ms/step), at 1.49× the energy |
+| peak throughput | TP8 c=256, but queue-dominated — raise TP only after admission control |
+| **avoid** | **TP8 at moderate concurrency (c=16)** — dominated on every axis |
+
+TP8 is the ladder's last rung for this model: the next doubling does not exist
+on a single node, and this one already returned nothing at c=16.
