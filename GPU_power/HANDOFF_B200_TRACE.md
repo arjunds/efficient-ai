@@ -25,7 +25,7 @@ Both are 1-GPU jobs and resume-safe. `trace_analysis.py` prints a table at the e
 - `logs/B200_prov/{b200_trace,b200_reasoning,b200_trace_moe,b200_trace_32b}/`
 - `logs/B200_prov/trace_summary.json`
 - the slurm logs
-- a short "UPDATE 7" in `FINDINGS_B200.md`
+- a short "UPDATE 9" (7 and 8 are taken) in `FINDINGS_B200.md`
 
 Never commit `prompts_*.json`.
 
