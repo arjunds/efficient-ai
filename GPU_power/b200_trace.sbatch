@@ -22,7 +22,7 @@ SIF="${SIF:-}"
 export PROV_LOG_ROOT="${PROV_LOG_ROOT:-logs/B200_prov}"
 export PROV_ARMS="${PROV_ARMS:-b200_trace,b200_reasoning}"
 mkdir -p "$PROV_LOG_ROOT" slurm_out
-echo "==== B200 trace replay  $(date)  node=$(hostname)  arms=$PROV_ARMS ===="
+echo "==== B200 trace replay  $(date)  node=$(hostname)  arms=$PROV_ARMS skip=${PROV_SKIP_TAGS:-none} ===="
 nvidia-smi --query-gpu=name,power.limit,enforced.power.limit,memory.total,clocks.max.sm,driver_version --format=csv
 for f in traces/azure23_conv.jsonl.gz traces/reasoning_math.jsonl.gz; do
   [ -s "$f" ] || { echo "FATAL: $f missing (git pull)"; exit 1; }; done
@@ -35,6 +35,12 @@ export APPTAINERENV_VLLM_USE_TRTLLM_ATTENTION=0        # Blackwell long-sequence
 export APPTAINERENV_TOKENIZERS_PARALLELISM=false
 export APPTAINERENV_PROV_LOG_ROOT="$PROV_LOG_ROOT"
 export APPTAINERENV_PROV_ARMS="$PROV_ARMS"
+# PROV_SKIP_TAGS must be propagated explicitly: apptainer only passes vars
+# prefixed APPTAINERENV_, so setting PROV_SKIP_TAGS in the submitting shell
+# alone silently has NO effect inside the container (the run would then
+# re-attempt a skipped trace). Needed to skip mooncake_tool, which deadlocks
+# the engine on B200 -- see run_provisioning_sweep.py and FINDINGS_B200.md.
+export APPTAINERENV_PROV_SKIP_TAGS="${PROV_SKIP_TAGS:-}"
 [ -n "${HF_TOKEN:-}" ] && export APPTAINERENV_HF_TOKEN="$HF_TOKEN"
 source /vast/parcc/sw/etc/profile.d/Z98-lmod.sh
 module load apptainer/1.4.1

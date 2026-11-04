@@ -241,7 +241,19 @@ def do_model(arm, model, eng, runs):
     if not base.load_json(os.path.join(mdir, "baselines.json")).get("idle_power_w"):
         print(f"[{ts()}] [skip] no idle baseline for {mdir}", flush=True)
         return
+    # PROV_SKIP_TAGS: skip runs whose tag starts with any listed prefix. Added
+    # because mooncake_tool DEADLOCKS the engine on B200 (jobs 10061617/10062213,
+    # both models, both nodes): ~42k iterations run clean, then the engine stops
+    # dead mid-decode with ~11 reqs in running, n_waiting=0 and KV at 6% -- no
+    # error, no traceback, no slowdown. The level's drain timeout then fires and
+    # ends the level, but the stuck requests are never aborted, so the NEXT level
+    # never starts and the job hangs to its wall clock (7.8 GPU-h burned before
+    # it was caught). Resume cannot help: no results.json means a rerun re-hangs.
+    skip_tags = [t for t in os.environ.get("PROV_SKIP_TAGS", "").split(",") if t]
     for tag, lf in runs:
+        if any(tag.startswith(t) for t in skip_tags):
+            print(f"[{ts()}] [skip] {arm}/{model}/{tag} (PROV_SKIP_TAGS)", flush=True)
+            continue
         rd = os.path.join(mdir, tag)
         if not base.load_complete(rd):
             base.run(cmd("load", model, rd, dict(eng, duration_s=DURATION_S, **lf)),

@@ -1,0 +1,113 @@
+{
+  "gpu_name": "NVIDIA B200",
+  "power_limit_w": 1000.0,
+  "dtype": "float16",
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "model_key": null,
+  "tp_degree": 1,
+  "vllm_version": "0.10.2",
+  "engine_api": "v1",
+  "max_num_seqs": 512,
+  "block_size": null,
+  "gpu_mem_util": 0.9,
+  "input_len": 512,
+  "output_len": 256,
+  "concurrency_or_rate": "trace:azure23_conv.jsonl.gzx1,2,4,8,12,16",
+  "arrival_rate": 0.0,
+  "concurrency_schedule": null,
+  "task": null,
+  "segments": [
+    {
+      "trace_speedup": 1.0,
+      "warm_s": 22.564706325531006,
+      "aborted": 0,
+      "trace": "azure23_conv.jsonl.gz",
+      "t0": 1793813001.6676018,
+      "t1": 1793813243.0668569,
+      "t_last_arrival": 1793813241.4576018
+    },
+    {
+      "trace_speedup": 2.0,
+      "warm_s": 0.694580078125,
+      "aborted": 0,
+      "trace": "azure23_conv.jsonl.gz",
+      "t0": 1793813248.7668474,
+      "t1": 1793813371.5320075,
+      "t_last_arrival": 1793813368.6618474
+    },
+    {
+      "trace_speedup": 4.0,
+      "warm_s": 0.6755599975585938,
+      "aborted": 0,
+      "trace": "azure23_conv.jsonl.gz",
+      "t0": 1793813377.2129245,
+      "t1": 1793813440.9524555,
+      "t_last_arrival": 1793813437.1604245
+    },
+    {
+      "trace_speedup": 8.0,
+      "warm_s": 0.7017233371734619,
+      "aborted": 0,
+      "trace": "azure23_conv.jsonl.gz",
+      "t0": 1793813446.6595619,
+      "t1": 1793813481.0652802,
+      "t_last_arrival": 1793813476.633312
+    },
+    {
+      "trace_speedup": 12.0,
+      "warm_s": 0.7041835784912109,
+      "aborted": 0,
+      "trace": "azure23_conv.jsonl.gz",
+      "t0": 1793813486.7747414,
+      "t1": 1793813511.705275,
+      "t_last_arrival": 1793813506.7572415
+    },
+    {
+      "trace_speedup": 16.0,
+      "warm_s": 0.6701056957244873,
+      "aborted": 0,
+      "trace": "azure23_conv.jsonl.gz",
+      "t0": 1793813517.3807611,
+      "t1": 1793813538.075872,
+      "t_last_arrival": 1793813532.3676362
+    }
+  ],
+  "idle_power_w": 240.031,
+  "prefill_ceiling_power_w": null,
+  "kv_cache_dtype": "auto",
+  "enforce_eager": false,
+  "max_num_seqs_resolved": 512,
+  "max_num_batched_tokens_resolved": 2048,
+  "chunked_prefill": true,
+  "prefix_caching": true,
+  "unique_prompts": false,
+  "metered_gpus": [
+    0
+  ],
+  "power_limit_total_w": 1000.0,
+  "window_wall_t0": 1793813001.6676018,
+  "window_wall_t1": 1793813538.075872,
+  "trace": {
+    "trace_file": "traces/azure23_conv.jsonl.gz",
+    "trace_speedups": [
+      1.0,
+      2.0,
+      4.0,
+      8.0,
+      12.0,
+      16.0
+    ],
+    "trace_offset_s": 600.0,
+    "trace_requests_in_window": 1274,
+    "trace_clipped": 0,
+    "prefix_warm": true,
+    "kv_cache_tokens": 2685360,
+    "warm_budget_tokens": 2148288,
+    "trace_dropped_for_cache": 0,
+    "warm_tokens": 1606970,
+    "trace_requests": 1274,
+    "trace_span_s": 239.78999999999996,
+    "trace_in_tokens": 1606970,
+    "trace_out_tokens": 299923
+  }
+}
