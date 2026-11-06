@@ -34,7 +34,14 @@ export APPTAINERENV_PYTHONNOUSERSITE=1
 export APPTAINERENV_VLLM_USE_TRTLLM_ATTENTION=0        # Blackwell long-sequence crash fix
 # Optional backend override, for testing whether the Mooncake deadlock is a
 # FlashInfer long-sequence path issue: VLLM_ATTENTION_BACKEND=TRITON_ATTN_VLLM_V1
-export APPTAINERENV_VLLM_ATTENTION_BACKEND="${VLLM_ATTENTION_BACKEND:-}"
+# Export ONLY when non-empty. "${VAR:-}" would export it as an EMPTY string,
+# which is NOT the same as unset: vLLM logs "VLLM_ATTENTION_BACKEND= is not
+# supported by the V1 Engine. Falling back to V0", sets VLLM_USE_V1=False, and
+# the harness then dies asking for the V1 AsyncLLM. That killed all 4 MoE
+# reasoning runs in job 10139024.
+if [ -n "${VLLM_ATTENTION_BACKEND:-}" ]; then
+  export APPTAINERENV_VLLM_ATTENTION_BACKEND="$VLLM_ATTENTION_BACKEND"
+fi
 export APPTAINERENV_TOKENIZERS_PARALLELISM=false
 export APPTAINERENV_PROV_LOG_ROOT="$PROV_LOG_ROOT"
 export APPTAINERENV_PROV_ARMS="$PROV_ARMS"

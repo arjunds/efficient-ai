@@ -1,0 +1,103 @@
+{
+  "gpu_name": "NVIDIA B200",
+  "power_limit_w": 1000.0,
+  "dtype": "float16",
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "model_key": null,
+  "tp_degree": 1,
+  "vllm_version": "0.10.2",
+  "engine_api": "v1",
+  "max_num_seqs": 512,
+  "block_size": null,
+  "gpu_mem_util": 0.9,
+  "input_len": 512,
+  "output_len": 256,
+  "concurrency_or_rate": "trace:mooncake_conv.jsonl.gzx0.25,0.5,1,2,3",
+  "arrival_rate": 0.0,
+  "concurrency_schedule": null,
+  "task": null,
+  "segments": [
+    {
+      "trace_speedup": 0.25,
+      "warm_s": 155.20039701461792,
+      "aborted": 0,
+      "trace": "mooncake_conv.jsonl.gz",
+      "t0": 1793935037.9138672,
+      "t1": 1793935270.6284459,
+      "t_last_arrival": 1793935265.9138672
+    },
+    {
+      "trace_speedup": 0.5,
+      "warm_s": 0.7958729267120361,
+      "aborted": 0,
+      "trace": "mooncake_conv.jsonl.gz",
+      "t0": 1793935276.4296405,
+      "t1": 1793935395.1756816,
+      "t_last_arrival": 1793935390.4296405
+    },
+    {
+      "trace_speedup": 1.0,
+      "warm_s": 0.8064680099487305,
+      "aborted": 0,
+      "trace": "mooncake_conv.jsonl.gz",
+      "t0": 1793935400.9846838,
+      "t1": 1793935482.041661,
+      "t_last_arrival": 1793935457.9846838
+    },
+    {
+      "trace_speedup": 2.0,
+      "warm_s": 0.920234203338623,
+      "aborted": 0,
+      "trace": "mooncake_conv.jsonl.gz",
+      "t0": 1793935487.9670582,
+      "t1": 1793935550.3881018,
+      "t_last_arrival": 1793935516.4670582
+    },
+    {
+      "trace_speedup": 3.0,
+      "warm_s": 0.8925347328186035,
+      "aborted": 0,
+      "trace": "mooncake_conv.jsonl.gz",
+      "t0": 1793935556.2854128,
+      "t1": 1793935612.2429717,
+      "t_last_arrival": 1793935575.2854128
+    }
+  ],
+  "idle_power_w": 240.031,
+  "prefill_ceiling_power_w": null,
+  "kv_cache_dtype": "auto",
+  "enforce_eager": false,
+  "max_num_seqs_resolved": 512,
+  "max_num_batched_tokens_resolved": 2048,
+  "chunked_prefill": true,
+  "prefix_caching": true,
+  "unique_prompts": false,
+  "metered_gpus": [
+    0
+  ],
+  "power_limit_total_w": 1000.0,
+  "window_wall_t0": 1793935037.9138672,
+  "window_wall_t1": 1793935612.2429717,
+  "trace": {
+    "trace_file": "traces/mooncake_conv.jsonl.gz",
+    "trace_speedups": [
+      0.25,
+      0.5,
+      1.0,
+      2.0,
+      3.0
+    ],
+    "trace_offset_s": 600.0,
+    "trace_requests_in_window": 218,
+    "trace_clipped": 11,
+    "prefix_warm": true,
+    "kv_cache_tokens": 2685392,
+    "warm_budget_tokens": 2148313,
+    "trace_dropped_for_cache": 0,
+    "warm_tokens": 2055083,
+    "trace_requests": 218,
+    "trace_span_s": 57.0,
+    "trace_in_tokens": 2277803,
+    "trace_out_tokens": 74896
+  }
+}

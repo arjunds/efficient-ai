@@ -1,0 +1,65 @@
+/workspace/nvml_logger.py:51: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml
+INFO 11-05 22:13:36 [__init__.py:216] Automatically detected platform cuda.
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+INFO 11-05 22:13:53 [__init__.py:742] Resolved architecture: Qwen2ForCausalLM
+`torch_dtype` is deprecated! Use `dtype` instead!
+WARNING 11-05 22:13:53 [__init__.py:2767] Casting torch.bfloat16 to torch.float16.
+INFO 11-05 22:13:53 [__init__.py:1815] Using max model len 32768
+INFO 11-05 22:13:54 [scheduler.py:222] Chunked prefill is enabled with max_num_batched_tokens=2048.
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:13:54 [core.py:654] Waiting for init message from front-end.
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:13:54 [core.py:76] Initializing a V1 LLM engine (v0.10.2) with config: model='Qwen/Qwen2.5-7B-Instruct', speculative_config=None, tokenizer='Qwen/Qwen2.5-7B-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=True, dtype=torch.float16, max_seq_len=32768, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, kv_cache_dtype=auto, device_config=cuda, decoding_config=DecodingConfig(backend='auto', disable_fallback=False, disable_any_whitespace=False, disable_additional_properties=False, reasoning_backend=''), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None), seed=0, served_model_name=Qwen/Qwen2.5-7B-Instruct, enable_prefix_caching=True, chunked_prefill_enabled=True, use_async_output_proc=True, pooler_config=None, compilation_config={"level":3,"debug_dump_path":"","cache_dir":"","backend":"","custom_ops":[],"splitting_ops":["vllm.unified_attention","vllm.unified_attention_with_output","vllm.mamba_mixer2","vllm.mamba_mixer","vllm.short_conv","vllm.linear_attention","vllm.plamo2_mamba_mixer","vllm.gdn_attention"],"use_inductor":true,"compile_sizes":[],"inductor_compile_config":{"enable_auto_functionalized_v2":false},"inductor_passes":{},"cudagraph_mode":1,"use_cudagraph":true,"cudagraph_num_of_warmups":1,"cudagraph_capture_sizes":[512,504,496,488,480,472,464,456,448,440,432,424,416,408,400,392,384,376,368,360,352,344,336,328,320,312,304,296,288,280,272,264,256,248,240,232,224,216,208,200,192,184,176,168,160,152,144,136,128,120,112,104,96,88,80,72,64,56,48,40,32,24,16,8,4,2,1],"cudagraph_copy_inputs":false,"full_cuda_graph":false,"pass_config":{},"max_capture_size":512,"local_cache_dir":null}
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m W1105 22:13:57.793000 3673333 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m W1105 22:13:57.793000 3673333 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+[W1105 22:14:00.303818951 ProcessGroupNCCL.cpp:981] Warning: TORCH_NCCL_AVOID_RECORD_STREAMS is the default now, this environment variable is thus deprecated. (function operator())
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:00 [parallel_state.py:1165] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, TP rank 0, EP rank 0
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m WARNING 11-05 22:14:00 [topk_topp_sampler.py:62] FlashInfer is available, but it is not enabled. Falling back to the PyTorch-native implementation of top-p & top-k sampling. For the best performance, please set VLLM_USE_FLASHINFER_SAMPLER=1.
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:00 [gpu_model_runner.py:2338] Starting to load model Qwen/Qwen2.5-7B-Instruct...
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:00 [gpu_model_runner.py:2370] Loading model from scratch...
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:01 [cuda.py:319] Using Triton backend on V1 engine.
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:01 [triton_attn.py:266] Using vllm unified attention for TritonAttentionImpl
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:01 [weight_utils.py:348] Using model weights format ['*.safetensors']
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:01<00:05,  1.91s/it]
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:03<00:03,  1.95s/it]
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:05<00:01,  1.97s/it]
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:07<00:00,  2.00s/it]
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:07<00:00,  1.98s/it]
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m 
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:09 [default_loader.py:268] Loading weights took 8.02 seconds
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:10 [gpu_model_runner.py:2392] Model loading took 14.2488 GiB and 8.713256 seconds
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:16 [backends.py:539] Using cache directory: /vast/home/a/adsampat/.cache/vllm/torch_compile_cache/b096a3a484/rank_0_0/backbone for vLLM's torch.compile
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:16 [backends.py:550] Dynamo bytecode transform time: 6.13 s
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:19 [backends.py:194] Cache the graph for dynamic shape for later use
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:32 [backends.py:215] Compiling a graph for dynamic shape takes 15.90 s
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:33 [monitor.py:34] torch.compile takes 22.03 s in total
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:34 [gpu_worker.py:298] Available KV cache memory: 143.42 GiB
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:34 [kv_cache_utils.py:864] GPU KV cache size: 2,685,392 tokens
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:34 [kv_cache_utils.py:868] Maximum concurrency for 32,768 tokens per request: 81.95x
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m 2026-11-05 22:14:34,294 - INFO - autotuner.py:256 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m 2026-11-05 22:14:34,334 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process ends
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/67 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   7%|▋         | 5/67 [00:00<00:01, 42.41it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  15%|█▍        | 10/67 [00:00<00:01, 43.01it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  22%|██▏       | 15/67 [00:00<00:01, 43.74it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  30%|██▉       | 20/67 [00:00<00:01, 44.86it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  37%|███▋      | 25/67 [00:00<00:00, 44.63it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  45%|████▍     | 30/67 [00:00<00:00, 40.26it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  52%|█████▏    | 35/67 [00:00<00:00, 39.96it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  60%|█████▉    | 40/67 [00:00<00:00, 40.48it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  67%|██████▋   | 45/67 [00:01<00:00, 41.18it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  75%|███████▍  | 50/67 [00:01<00:00, 40.95it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  82%|████████▏ | 55/67 [00:01<00:00, 40.13it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  90%|████████▉ | 60/67 [00:01<00:00, 38.11it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  96%|█████████▌| 64/67 [00:01<00:00, 37.53it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 67/67 [00:01<00:00, 39.39it/s]
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:36 [gpu_model_runner.py:3118] Graph capturing finished in 2 secs, took 0.11 GiB
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:36 [gpu_worker.py:391] Free memory on device (177.65/178.35 GiB) on startup. Desired GPU memory utilization is (0.9, 160.52 GiB). Actual usage is 14.25 GiB for weight, 2.79 GiB for peak activation, 0.07 GiB for non-torch memory, and 0.11 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=153716746854` to fit into requested memory, or `--kv-cache-memory=172112413696` to fully utilize gpu memory. Current kv cache memory in use is 153991473766 bytes.
+[1;36m(EngineCore_DP0 pid=3673333)[0;0m INFO 11-05 22:14:36 [core.py:218] init engine (profile, create kv cache, warmup model) took 26.39 seconds
+INFO 11-05 22:14:36 [loggers.py:142] Engine 000: vllm cache_config_info with initialization after num_gpu_blocks is: 167837
+INFO 11-05 22:14:36 [async_llm.py:180] Torch profiler disabled. AsyncLLM CPU traces will not be collected.
+[warn] DRAM counter: dcgmi not found on PATH; DRAM counter disabled
+[trace] {"trace_file": "traces/mooncake_conv.jsonl.gz", "trace_speedups": [0.25, 0.5, 1.0, 2.0, 3.0], "trace_offset_s": 600.0, "trace_requests_in_window": 218, "trace_clipped": 11, "prefix_warm": true, "kv_cache_tokens": 2685392, "warm_budget_tokens": 2148313, "trace_dropped_for_cache": 0, "warm_tokens": 2055083, "trace_requests": 218, "trace_span_s": 57.0, "trace_in_tokens": 2277803, "trace_out_tokens": 74896}
+[trace] level x0.25: 232.7 s
+[trace] level x0.5: 118.7 s
+[trace] level x1: 81.1 s
+[trace] level x2: 62.4 s
+[trace] level x3: 56.0 s
+[level] x0.25: reqs=218 tok/s=322 P=432.5884546213019 J/tok=1.3441257201555166 hit=0.9992 TPOT p50/p99=0.007519245147705078/0.012391107302185492
+[level] x0.5: reqs=218 tok/s=631 P=567.0639966927962 J/tok=0.8990681028979326 hit=0.9992 TPOT p50/p99=0.007544079836267624/0.009844128902141865
+[level] x1: reqs=218 tok/s=924 P=600.4442100438122 J/tok=0.6498370098088752 hit=0.9992 TPOT p50/p99=0.008303137473118158/0.04946308891947677
+[level] x2: reqs=218 tok/s=1200 P=543.6478011534599 J/tok=0.4530958010782113 hit=0.9992 TPOT p50/p99=0.05437917747194805/0.05949474540021685
+[level] x3: reqs=218 tok/s=1338 P=556.41919401275 J/tok=0.4157212642269546 hit=0.9992 TPOT p50/p99=0.05866742609874108/0.06416258033441037
+[saved] logs/B200_prov/b200_trace/Qwen2.5-7B-Instruct/mooncake_conv (reqs=1090, tok/s=652.0303378598244, dram_filled=0)
