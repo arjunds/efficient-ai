@@ -1354,11 +1354,37 @@ so `active_params()` overstates it roughly 2× even in its best case. An energy
 model for MoE needs an effective-active term interpolating between top-k and
 total as a function of batch size; this measurement does not yet pin its shape.
 
-**Caveat on this comparison:** the two models are matched on *arrival rate*, not
-on batch size. The MoE is slower per request, so at the same rate it sits at
-higher concurrency (3.7 vs 2.5, 18.9 vs 8.5), which itself inflates the expert
-union. Part of the penalty is therefore self-reinforcing rather than intrinsic,
-and a matched-batch comparison would separate the two. Not done here.
+**The arrival-rate confound, resolved on A100.** The B200 traces match the two
+models on *arrival rate*, not batch size, and the MoE being slower means it sits
+at higher concurrency for the same rate (3.7 vs 2.5, 18.9 vs 8.5) — which itself
+inflates the union. The A100 data already in this repo settles it: the
+`a100_graphs` / `a100_moe_graphs` arms run both models at **fixed concurrency**,
+so batch size is matched exactly, and on different hardware (sm_80) with a
+different attention backend (FlashAttention, not FlashInfer):
+
+| task | c | 7B J/tok | MoE J/tok | MoE/7B |
+|---|---|---|---|---|
+| alpaca | 1 | 3.3330 | 1.9174 | **0.58** |
+| alpaca | 4 | 0.8750 | 1.0139 | 1.16 |
+| alpaca | 16 | 0.2316 | 0.4365 | 1.88 |
+| alpaca | 64 | 0.0722 | 0.1604 | **2.22** |
+| sharegpt | 1 | 3.3505 | 1.8844 | 0.56 |
+| sharegpt | 4 | 0.8872 | 1.0246 | 1.15 |
+| sharegpt | 16 | 0.2497 | 0.5048 | 2.02 |
+| sharegpt | 64 | 0.0928 | 0.2139 | 2.31 |
+
+Same curve, and the confound is not driving it. At **batch exactly 1** the ratio
+is 0.56–0.58 against the predicted 0.430 — so `active_params()` is roughly right
+at batch 1 and ~33% optimistic, not 2× as the B200 low point suggested. The
+crossover sits between **c=1 and c=4**, and B200's `mean_running` 3.7 → 0.93
+falls neatly between A100's c=1 and c=4. Two GPUs, two attention backends, one
+curve.
+
+Inverting the ratio to an effective active-parameter count is only crude, since
+J/token includes static power that does not scale with weights (and the A100
+run schema carries no energy decomposition): it would put the MoE near 4.0 B at
+batch 1, rising to ~15.7 B at c=64, i.e. roughly half of all 30.53 B. Treat the
+direction as sound and the magnitudes as indicative.
 
 ## 3. Capacity numbers are lower bounds, not capacity
 
