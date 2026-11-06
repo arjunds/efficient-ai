@@ -1280,3 +1280,137 @@ beating TP8 at every concurrency except c=256.
 
 TP8 is the ladder's last rung for this model: the next doubling does not exist
 on a single node, and this one already returned nothing at c=16.
+
+---
+
+# UPDATE 10: real-trace decode-only replay (2026-11-05/06, B200)
+
+Production traces (Azure 2023/2024, BurstGPT, Mooncake) plus a reasoning
+workload, replayed open-loop with prompts prefix-warmed so the GPU runs the
+decode tier of a disaggregated deployment. Design in `TRACES.md`, protocol in
+`HANDOFF_B200_TRACE.md`. Three models: Qwen2.5-7B, Qwen2.5-32B, Qwen3-30B-A3B.
+
+**All numbers here are steady-window** (`trace_analysis.py`), which excludes
+ramp and drain. The raw per-level values are optimistic-to-pessimistic by a
+margin that grows with arrival rate — 7B azure23_conv at x16 reads 0.0553 J/tok
+raw vs **0.0462 steady** (and 14,492 vs 18,163 tok/s). Quote steady.
+
+## 1. The arrival-rate result reproduces on real traffic
+
+UPDATE 7 found energy per token collapsing with arrival rate under synthetic
+Poisson. It holds on every production trace:
+
+| model | trace | rates | J/token | reduction | TPOT p99 | hit |
+|---|---|---|---|---|---|---|
+| 7B | azure23_conv | x1→x16 | 0.5209 → **0.0462** | 11.3× | 5.0 → 14.2 ms | 0.993 |
+| 7B | burstgpt | x2→x32 | 0.7198 → 0.0664 | 10.8× | 5.1 → 8.4 ms | 0.983 |
+| 7B | azure23_code | x2→x32 | 1.5645 → 0.2251 | 7.0× | 6.3 → 51.9 ms | 0.996 |
+| 7B | azure24_conv | x0.25→x2 | 0.4033 → 0.0758 | 5.3× | 5.8 → 12.7 ms | 0.995 |
+| 7B | reasoning | x0.05→x0.5 | 1.2239 → 0.0796 | **15.4×** | 5.0 → 19.1 ms | 0 |
+| 7B | mooncake_conv* | x0.25→x3 | 1.3509 → 0.3124 | 4.3× | 12.3 → 64.2 ms | 0.999 |
+| 32B | azure23_conv | x0.5→x6 | 1.5384 → 0.3581 | 4.3× | 15.7 → 25.5 ms | 0.993 |
+| 32B | reasoning | x0.02→x0.2 | 4.8204 → 0.3857 | 12.5× | 15.5 → 142.4 ms | 0 |
+| MoE | azure23_conv | x1→x12 | 0.5736 → 0.0903 | 6.4× | 10.8 → 27.7 ms | 0.993 |
+
+\* Triton backend — see §4, not comparable to the rest.
+
+Reduction is largest where outputs are longest (reasoning, 15.4×) and smallest
+where prompts are longest (mooncake, 4.3×). `prefix_hit` is 0 on reasoning by
+construction (no shared prefix); every non-reasoning trace clears the ≥0.98 bar.
+
+## 2. `active_params()` is the wrong energy denominator for an MoE
+
+The headline negative result. Qwen3-30B-A3B touches **3.04 B active params
+(6.08 GB)** against the 7B's **7.07 B (14.14 GB)**, ratio **0.430**. If J/token
+tracks streamed weight bytes — the project's central model — the MoE should cost
+0.43× the 7B per token. It does not:
+
+| trace | rate | MoE mean_running | MoE/7B J/token |
+|---|---|---|---|
+| reasoning | x0.05 | 3.7 | **0.93** |
+| reasoning | x0.1 | 18.9 | 1.12 |
+| azure23_conv | x1 | 11.6 | 1.10 |
+| azure23_conv | x2 | 27.2 | 1.19 |
+| azure23_conv | x4 | 74.0 | 1.26 |
+| azure23_conv | x8 | 173.7 | 1.43 |
+| azure23_conv | x12 | 244.0 | **1.65** |
+
+The ratio **rises monotonically with concurrency** and crosses 1.0 somewhere
+between `mean_running` 3.7 and 18.9. On azure23_conv the MoE moves *more* bytes
+per second than the dense 7B (`bw_util` 0.45–0.60 vs 0.33–0.38) and spends
+**2.35× the weight energy per token** at x12 despite 0.43× the active params —
+a ~5.5× gap between the analytic denominator and the hardware.
+
+This is the signature of **expert union**: with top-8 of 128 experts, a batch of
+B tokens collectively activates far more than 8, so streamed weights drift from
+3.04 B toward the full 30.53 B as B grows. The practical reading:
+
+> An MoE's active-parameter advantage is a **batch-1 phenomenon**. It does not
+> survive serving concurrency, and at realistic serving batches the MoE is
+> *worse* per token than a dense model with 2.3× its active count.
+
+Even at the lowest concurrency measured the advantage is only 0.93, not 0.43 —
+so `active_params()` overstates it roughly 2× even in its best case. An energy
+model for MoE needs an effective-active term interpolating between top-k and
+total as a function of batch size; this measurement does not yet pin its shape.
+
+**Caveat on this comparison:** the two models are matched on *arrival rate*, not
+on batch size. The MoE is slower per request, so at the same rate it sits at
+higher concurrency (3.7 vs 2.5, 18.9 vs 8.5), which itself inflates the expert
+union. Part of the penalty is therefore self-reinforcing rather than intrinsic,
+and a matched-batch comparison would separate the two. Not done here.
+
+## 3. Capacity numbers are lower bounds, not capacity
+
+In `trace_summary.json` the "tight" and "relaxed" SLO rows are **identical** for
+every trace except `azure23_code`, which means the speedup ladder ran out before
+the SLO bound. Those rows record the top rung tested, not a measured limit. Only
+azure23_code actually binds: 60.2 req/s tight vs 114.6 relaxed. Treat all other
+capacity figures as ≥.
+
+Separately, the KV trim is heavy on some runs and those levels describe a
+subsample — retained fractions: 32B azure23_conv **191/603 (31.7%)**,
+azure24_peak 1156/3390 (34.1%), azure23_code 1054/1435 (73.4%), burstgpt
+3763/4125 (91.2%), 7B azure23_conv 1274/1274 (100%).
+
+## 4. A second Blackwell attention bug: FlashInfer deadlocks on long prompts
+
+Both Mooncake traces **deadlock the engine** under FlashInfer. The signature,
+from `iter_log.csv`: ~42k iterations with no inter-iteration gap above 1 s, then
+a dead stop mid-decode at `n_running=11, n_waiting=0, kv_cache_pct=0.0622`. No
+error, no traceback, no slowdown. The level's 120 s drain timeout then ends the
+level but never aborts the stuck requests, so the next level never starts and
+the job sits at SLURM state RUNNING to its wall clock.
+
+Clean A/B: the same trace, same 218 requests, same `warm_tokens` 2,055,083, same
+11 clipped — **completes all 5 levels on `TRITON_ATTN_VLLM_V1`** at hit 0.999.
+So the bug is FlashInfer's long-sequence path. `VLLM_USE_TRTLLM_ATTENTION=0`
+does not avoid it. The two Mooncake traces are the only ones with ~10k-token
+prompts (10,449 and 7,858 tok/req vs ~1,300 for azure23_conv) and the only ones
+with requests clipped at `max_model_len`; all five short-prompt traces ran clean.
+
+Two hypotheses were tested and **rejected** before the backend was implicated:
+KV starvation from the warm set (refuted — KV was 6% full with an empty queue at
+the freeze) and clipped-to-limit prompts leaving no decode headroom (refuted —
+`load_trace` reserves room, `n_in = min(in, max_model_len - out - 1)`).
+
+This is the project's second Blackwell attention bug, both in variable- or
+long-sequence handling; the first was TRTLLM switching kernels per batch on
+sharegpt (illegal memory access, UPDATE 3 era).
+
+Because Mooncake has no completed FlashInfer run, its J/token **cannot** be put
+on the same scale as the other traces. The only calibration is an earlier
+sharegpt A/B where Triton ran ~27% slower, on a different workload — so treat
+mooncake_conv as a Triton measurement and probably an overestimate.
+
+## 5. Operational
+
+`hang_watchdog.sh` was added after the first deadlock went unnoticed for 3.5 h
+(7.8 GPU-h burned). It kills a job whose `power_trace.csv` is still growing
+while `iter_log.csv` has been frozen 15 min — the live-logger/dead-engine
+divergence above, which polling SLURM state cannot see. It caught the second
+deadlock in 15 min. Two of its own bugs were found and fixed: it originally
+scancel'd every live job (killing a healthy 32B/MoE job for another job's hang),
+and the `VLLM_ATTENTION_BACKEND` passthrough added alongside it exported the
+variable *empty* rather than unset, which makes vLLM fall back to V0 and fail
+every run.
