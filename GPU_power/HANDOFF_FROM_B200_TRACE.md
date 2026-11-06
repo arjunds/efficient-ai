@@ -59,14 +59,23 @@ If J/token tracks streamed weight bytes, the MoE should cost 0.43x per token.
 Measured MoE/7B **rises monotonically with batch size** and crosses 1.0 between
 c=1 and c=4:
 
-| source | batch | MoE/7B |
+| batch | A100 (exact c) | B200 (by mean_running) |
 |---|---|---|
-| A100 alpaca c=1 (matched batch) | 1 | **0.58** |
-| A100 alpaca c=4 | 4 | 1.16 |
-| B200 reasoning x0.05 | mean_running 3.7 | 0.93 |
-| A100 alpaca c=16 | 16 | 1.88 |
-| B200 azure23_conv x12 | mean_running 244 | 1.65 |
-| A100 alpaca c=64 | 64 | **2.22** |
+| 1 | **0.58** | — |
+| ~4 | 1.16 | 0.93 |
+| ~16 | **1.88** | **1.12** |
+| ~64 | **2.22** | 1.26 |
+| ~244 | — | 1.65 |
+
+**Corrected 2026-11-06:** UPDATE 10 first called these "one curve" — wrong, and
+the synthesis pass caught it. The crossover agrees (batch 1→4 on both) but the
+slope does not: A100 is at 1.88 by batch 16 where B200 is still 1.12, and B200
+needs batch 244 to reach 1.65. The rate at which union erodes the advantage is
+hardware-dependent. UPDATE 10 §2 now carries both this and a second correction:
+LIMINAL-E **already** models expert union and predicts the B200 MoE within
+−9.6%/+13.4% (the `liminal_err` field in `trace_summary.json`, which my first
+pass ignored), so the failure is specific to the naive `active_params()`
+denominator, not a missing model.
 
 This is **expert union**: with top-8 of 128, a batch of B tokens activates far
 more than 8, so streamed weights drift from 3.04 B toward the full 30.53 B. On

@@ -1373,18 +1373,57 @@ different attention backend (FlashAttention, not FlashInfer):
 | sharegpt | 16 | 0.2497 | 0.5048 | 2.02 |
 | sharegpt | 64 | 0.0928 | 0.2139 | 2.31 |
 
-Same curve, and the confound is not driving it. At **batch exactly 1** the ratio
-is 0.56–0.58 against the predicted 0.430 — so `active_params()` is roughly right
-at batch 1 and ~33% optimistic, not 2× as the B200 low point suggested. The
-crossover sits between **c=1 and c=4**, and B200's `mean_running` 3.7 → 0.93
-falls neatly between A100's c=1 and c=4. Two GPUs, two attention backends, one
-curve.
+The confound is not driving it, and at **batch exactly 1** the ratio is
+0.56–0.58 against the predicted 0.430 — so `active_params()` is roughly right at
+batch 1 and ~33% optimistic, not 2× as the B200 low point suggested. The
+crossover sits between **c=1 and c=4** on both machines, and B200's
+`mean_running` 3.7 → 0.93 falls between A100's c=1 and c=4.
+
+**Correction (2026-11-06).** An earlier version of this section called these
+"one curve". That is wrong, as the synthesis pass pointed out: the crossover
+agrees but the **slope does not**. Lining B200 up by actual `mean_running`
+against A100's exact batch:
+
+| batch | A100 | B200 |
+|---|---|---|
+| 1 | 0.58 | — |
+| ~4 | 1.16 | 0.93 (batch 3.7) |
+| ~16 | **1.88** | **1.12** (batch 18.9) |
+| ~64 | **2.22** | 1.26 (batch 74) |
+| ~244 | — | 1.65 |
+
+A100 degrades far faster — it is at 1.88 by batch 16, where B200 is still 1.12,
+and B200 does not reach 1.65 until batch 244. So the *rate* at which expert
+union erodes the MoE advantage is hardware-dependent (B200's larger bandwidth
+and cache make the extra expert weights cheaper to stream), even though the
+batch-1 anchor and the crossover region are consistent.
 
 Inverting the ratio to an effective active-parameter count is only crude, since
 J/token includes static power that does not scale with weights (and the A100
 run schema carries no energy decomposition): it would put the MoE near 4.0 B at
 batch 1, rising to ~15.7 B at c=64, i.e. roughly half of all 30.53 B. Treat the
 direction as sound and the magnitudes as indicative.
+
+**Second correction (2026-11-06): the project already has this model, and it
+works.** An earlier version of this section said an MoE energy model "needs an
+effective-active term ... this measurement does not yet pin its shape", which
+implied no such model exists. It does — LIMINAL-E already counts expert-union
+bytes, and the `liminal_err` field that these same runs carry (and that this
+section originally ignored) shows it predicting the MoE's energy per token on
+B200 to within **−9.6% to +13.4%** across both traces and all seven levels,
+on B200 long-context-calibrated coefficients:
+
+| trace | levels | liminal_err |
+|---|---|---|
+| azure23_conv | x1→x12 | +3.0%, +13.4%, +3.0%, −7.0%, −9.6% |
+| reasoning | x0.05, x0.1 | −4.4%, +6.0% |
+
+So the correct claim is narrower than the one this section first made: the
+**naive `active_params()` denominator** fails for an MoE at serving
+concurrency, which is a reason the union term is necessary — not evidence that
+the project's model is missing one. The synthesis pass locates the real MoE
+discrepancy elsewhere, in LIMINAL-E's *time* prior (A100 graphs MoE J/token
++28–108%, even at c=1); see `FINDINGS_TRACES.md`.
 
 ## 3. Capacity numbers are lower bounds, not capacity
 
