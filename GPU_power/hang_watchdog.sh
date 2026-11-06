@@ -35,8 +35,22 @@ while :; do
       age=$(( ( $(date +%s) - $(stat -c %Y "$il") ) / 60 ))
       echo "[watchdog $(date +%H:%M:%S)] HANG: $d"
       echo "   power_trace.csv live ($(du -h "$pt"|cut -f1)) but iter_log.csv frozen ${age} min"
+      # Kill ONLY the job that owns this run dir. The first version scancel'd every
+      # live job and so killed a healthy 32B/MoE job (10069519) for a hang that
+      # belonged to 10069518 -- it lost its remaining runs for nothing. Ownership
+      # comes from the arm component of the path vs the arms= each job logged.
+      arm=$(echo "${d#$ROOT/}" | cut -d/ -f1)
+      owner=""
+      for j in $live; do
+        hdr=$(head -1 "slurm_out/b200-trace-$j.out" 2>/dev/null)
+        case ",$(echo "$hdr" | grep -o 'arms=[^ ]*' | cut -d= -f2)," in
+          *",$arm,"*) owner="$j" ;;
+        esac
+      done
+      [ -z "$owner" ] && { echo "   WARN: no job claims arm '$arm'; killing nothing"; exit 8; }
+      echo "   arm=$arm owned by job $owner (other live jobs left alone:$(echo $live | sed "s/$owner//"))"
       if [ "${DRY:-0}" = "1" ]; then echo "   DRY=1, not killing"; else
-        echo "   scancel$live"; scancel $live; fi
+        echo "   scancel $owner"; scancel "$owner"; fi
       exit 9
     fi
   done

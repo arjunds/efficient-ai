@@ -1,0 +1,59 @@
+{
+  "gpu_name": "NVIDIA B200",
+  "power_limit_w": 1000.0,
+  "dtype": "float16",
+  "model": "Qwen/Qwen2.5-32B-Instruct",
+  "model_key": null,
+  "tp_degree": 1,
+  "vllm_version": "0.10.2",
+  "engine_api": "v1",
+  "max_num_seqs": 512,
+  "block_size": null,
+  "gpu_mem_util": 0.9,
+  "input_len": 512,
+  "output_len": 256,
+  "concurrency_or_rate": "trace:reasoning_math.jsonl.gzx0.2",
+  "arrival_rate": 0.0,
+  "concurrency_schedule": null,
+  "task": null,
+  "segments": [
+    {
+      "trace_speedup": 0.2,
+      "aborted": 180,
+      "trace": "reasoning_math.jsonl.gz",
+      "t0": 1793831084.9281008,
+      "t1": 1793831774.4341998,
+      "t_last_arrival": 1793831684.4276009
+    }
+  ],
+  "idle_power_w": 233.919,
+  "prefill_ceiling_power_w": null,
+  "kv_cache_dtype": "auto",
+  "enforce_eager": false,
+  "max_num_seqs_resolved": 512,
+  "max_num_batched_tokens_resolved": 2048,
+  "chunked_prefill": true,
+  "prefix_caching": true,
+  "unique_prompts": false,
+  "metered_gpus": [
+    0
+  ],
+  "power_limit_total_w": 1000.0,
+  "window_wall_t0": 1793831084.9281008,
+  "window_wall_t1": 1793831774.4341998,
+  "trace": {
+    "trace_file": "traces/reasoning_math.jsonl.gz",
+    "trace_speedups": [
+      0.2
+    ],
+    "trace_offset_s": 0.0,
+    "trace_requests_in_window": 456,
+    "trace_clipped": 0,
+    "prefix_warm": false,
+    "kv_cache_tokens": 395728,
+    "trace_requests": 456,
+    "trace_span_s": 119.8999,
+    "trace_in_tokens": 40081,
+    "trace_out_tokens": 2232935
+  }
+}

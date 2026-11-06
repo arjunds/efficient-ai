@@ -32,6 +32,9 @@ export APPTAINERENV_HF_HUB_CACHE=$BASE/hf_cache/hub
 export APPTAINERENV_HF_XET_CACHE=$BASE/hf_cache/xet
 export APPTAINERENV_PYTHONNOUSERSITE=1
 export APPTAINERENV_VLLM_USE_TRTLLM_ATTENTION=0        # Blackwell long-sequence crash fix
+# Optional backend override, for testing whether the Mooncake deadlock is a
+# FlashInfer long-sequence path issue: VLLM_ATTENTION_BACKEND=TRITON_ATTN_VLLM_V1
+export APPTAINERENV_VLLM_ATTENTION_BACKEND="${VLLM_ATTENTION_BACKEND:-}"
 export APPTAINERENV_TOKENIZERS_PARALLELISM=false
 export APPTAINERENV_PROV_LOG_ROOT="$PROV_LOG_ROOT"
 export APPTAINERENV_PROV_ARMS="$PROV_ARMS"

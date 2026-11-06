@@ -1,0 +1,53 @@
+{
+  "mode": "load",
+  "completed_requests": 52,
+  "generated_tokens_window": 224300,
+  "window_duration_s": 683.7254769802094,
+  "aggregate_tokens_per_sec": 328.0556415575727,
+  "avg_power_window_w": 834.0975172054843,
+  "energy_window_j": 570606.6737077637,
+  "energy_window_source": "energy",
+  "dram_rows_filled": 0,
+  "nvml_summary": {
+    "gpu_name": "NVIDIA B200",
+    "power_limit_w": 1000.0,
+    "metered_gpus": [
+      0
+    ],
+    "power_limit_total_w": 1000.0,
+    "have_power_instant": true,
+    "have_energy_counter": true,
+    "n_samples": 67742,
+    "duration_s": 688.7547450065613,
+    "mean_power_w": 829.7344861238228,
+    "median_power_w": 829.842,
+    "max_power_w": 892.029,
+    "min_power_w": 234.066
+  },
+  "dram_backend": null,
+  "dram_total_bytes": null,
+  "peak_hbm_bw_bytes_per_s": 8000000000000.0,
+  "levels": [
+    {
+      "trace_speedup": 0.05,
+      "aborted": 7,
+      "trace": "reasoning_math.jsonl.gz",
+      "t0": 1793829560.1253648,
+      "t1": 1793830243.8508418,
+      "t_last_arrival": 1793830153.8473647,
+      "requests": 52,
+      "gen_tokens": 224300,
+      "window_s": 683.7254769802094,
+      "energy_j": 570606.6737077637,
+      "energy_source": "energy",
+      "avg_power_w": 834.5552314767408,
+      "j_per_token": 2.5439441538464718,
+      "tok_per_s": 328.0556415575727,
+      "prefix_hit_frac": 0.0,
+      "tpot_p50_s": 0.015774291435543764,
+      "tpot_p99_s": 0.01662896806630178,
+      "ttft_p50_s": 0.02681255340576172,
+      "ttft_p99_s": 0.03654789924621582
+    }
+  ]
+}
