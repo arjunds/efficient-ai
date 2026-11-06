@@ -141,10 +141,20 @@ long-sequence handling; the first was TRTLLM switching kernels per batch.
 
 ## 6. State when this was written
 
-Running, both 1-GPU with the watchdog armed:
-* **10141162** — MoE reasoning x0.25 and x0.5. Adds two higher-concurrency
-  points to §3; expected to extend the rise, not change the conclusion.
-* **10141163** — `mooncake_tool` on Triton, to recover the sixth 7B trace.
+Both jobs finished. `trace_summary.json` carries **51 levels**.
+
+* **10141163 — done.** `mooncake_tool` completes all 5 levels on Triton at hit
+  0.999, the same trace that deadlocked under FlashInfer. **The backend A/B is
+  now two-for-two across both Mooncake traces**, so §5 does not rest on one
+  trace. Triton numbers, so still not poolable (see §5).
+* **10141162 — partial, 2 of 4 MoE reasoning levels.** It died on the third with
+  `OSError(116, 'Stale file handle')` — a transient VAST/NFS fault, not a code
+  bug. It reached the arm-level handler, so x0.5 never started and the x0.25 run
+  dir did not survive. The two levels that landed (x0.05, x0.1) are the ones that
+  bracket the crossover, which is why §3 is unaffected. Resubmitted as
+  **10143269**; if that is also missing, the gap is the x0.25/x0.5
+  higher-concurrency points, a regime the A100 matched-batch ladder covers better
+  anyway (c=16 1.88, c=64 2.22).
 
 If either is missing from `trace_summary.json`, regenerate:
 `python3 -W ignore trace_analysis.py --root logs/B200_prov` (runs fine on the
