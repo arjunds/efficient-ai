@@ -89,7 +89,8 @@ def main():
                 h.append(hh); l.append(ll)
     fig.legend(h, l, loc="upper center", ncol=5, frameon=False, fontsize=8.5, bbox_to_anchor=(0.5, 1.02))
     fig.text(0.01, 0.01, "Qwen2.5-7B, decode only (prompts prefix-cache-warmed). Each line = one trace at increasing "
-             "arrival rate; open marker = misses TPOT p99 50 ms / TTFT p99 1 s.", fontsize=7.5, color=INK2)
+             "arrival rate; open marker = misses TPOT p99 50 ms / TTFT p99 1 s. B200 Mooncake ran on the Triton backend "
+             "(FlashInfer deadlocks on long prompts); others on FlashAttention/FlashInfer.", fontsize=7.5, color=INK2)
     fig.tight_layout(rect=(0, 0.04, 1, 0.9)); fig.savefig(os.path.join(HERE, "fig_trace_roofline.png"), dpi=180, facecolor=SURF)
 
     # 2. J/token vs request rate
@@ -127,7 +128,7 @@ def main():
                 continue
             r = next((r for r in rows if r["gpu"] == gk and r["trace"] == tk and r["trace_speedup"] == c["trace_speedup"]), None)
             if r and r.get("energy_shares"):
-                bars.append((f"{SHORT.get(tk, tl)}\n{gl}", r["energy_shares"], r["j_per_token"]))
+                bars.append((f"{SHORT.get(tk, tl)}{'*' if gk == 'B200' and tk.startswith('mooncake') else ''}\n{gl}", r["energy_shares"], r["j_per_token"]))
     if bars:
         fig, a = plt.subplots(figsize=(max(8, 0.75 * len(bars)), 4.6), facecolor=SURF)
         x = np.arange(len(bars))
@@ -145,6 +146,9 @@ def main():
         a.set_title("Where the energy goes at each workload's tight-SLO capacity\n"
                     "(LIMINAL-E terms on the measured timeline; number = J/token)", loc="left", fontsize=10, color=INK)
         style(a); a.legend(ncol=6, frameon=False, fontsize=8, loc="upper center", bbox_to_anchor=(0.5, -0.22))
+        fig.text(0.01, 0.01, "* B200 Mooncake ran on the Triton attention backend (FlashInfer deadlocks on long prompts). "
+                 "B200 7B bars are at the highest rate tested, which still met the SLO (capacity is a lower bound).",
+                 fontsize=7, color=INK2)
         fig.tight_layout(); fig.savefig(os.path.join(HERE, "fig_trace_breakdown.png"), dpi=180, facecolor=SURF)
     print("wrote fig_trace_roofline.png, fig_trace_jtok.png, fig_trace_breakdown.png;", len(rows), "levels,", len(bars), "bars")
 

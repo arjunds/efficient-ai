@@ -5,6 +5,8 @@ model misses at high concurrency and long context; mixed-step FA2 attention is a
                         against measured power / TDP; MAPE by GPU at the cap vs below it
   fig_thesis_time.png : B200 throughput predicted/measured vs concurrency and prompt length:
                         LIMINAL (peak BW + 114 us/layer), LIMINAL-E, LIMINAL-E + high-c terms
+  fig_thesis_moe.png  : MoE/dense J/token vs batch: measured (A100 fixed concurrency, B200 traces) vs
+                        active-params and LIMINAL-E's expert-union byte accounting
   fig_thesis_fa2.png  : FA2 mixed-step penalty, measured vs parameter-free prediction (A100/A6000);
                         profiler kernel split; high-c throughput error with and without the terms
 Inputs: liminal_energy/validation_v2_runs.csv (validate_v2.py), timemodel_highc.json
@@ -200,13 +202,67 @@ def fig_fa2(hc):
     fig.savefig(os.path.join(HERE, "fig_thesis_fa2.png"), dpi=180, facecolor=SURF)
 
 
+# ---------------------------------------------------------------------------------------------
+def fig_moe(runs):
+    """Qwen3-30B-A3B over Qwen2(.5)-7B J/token. Active params 3.04B vs 7.07B -> 0.43 if J/token tracked
+    active weight bytes. LIMINAL-E reads E(1-(1-k/E)^t) distinct experts per step (energy_model.
+    weight_params_for_tokens; LIMINAL v2 uses a Monte Carlo estimate of the same quantity)."""
+    fig, a = plt.subplots(figsize=(7.6, 4.6), facecolor=SURF)
+    # A100, fixed concurrency (batch matched exactly), CUDA graphs
+    A = []
+    rows = list(csv.DictReader(open(os.path.join(ROOT, "liminal_energy", "validation_v2_runs.csv"))))
+    for r in rows:
+        if r["gpu"] != "A100-80-PCIe" or r["arm"] != "a100_moe_graphs":
+            continue
+        d = [x for x in rows if x["gpu"] == r["gpu"] and x["arm"] == "a100_graphs" and x["model"] == "Qwen2-7B-Instruct"
+             and x["task"] == r["task"] and x["conc"] == r["conc"]]
+        if d:
+            A.append((float(r["conc"]), float(r["j_meas"]) / float(d[0]["j_meas"])))
+    a.scatter([x[0] for x in A], [x[1] for x in A], marker="s", s=34, color="#1baf7a", zorder=3,
+              label="A100, fixed concurrency (batch matched), measured")
+    # B200 traces (matched arrival rate): measured, and LIMINAL-E on the measured step timeline
+    s = json.load(open(os.path.join(ROOT, "logs", "B200_prov", "trace_summary.json")))
+    L = {(l["model"], l["trace"], l["trace_speedup"]): l for l in s["levels"]}
+    B = []
+    for (m, t, x), l in L.items():
+        d = L.get(("Qwen2.5-7B-Instruct", t, x))
+        if m.startswith("Qwen3") and d and l.get("liminal_err") is not None and d.get("liminal_err") is not None:
+            B.append((l["mean_running"], l["j_per_token"] / d["j_per_token"],
+                      l["j_per_token"] * (1 + l["liminal_err"]) / (d["j_per_token"] * (1 + d["liminal_err"]))))
+    B.sort()
+    a.scatter([b[0] for b in B], [b[1] for b in B], s=34, color="#eb6834", zorder=3,
+              label="B200, real traces (rate matched), measured")
+    a.scatter([b[0] for b in B], [b[2] for b in B], s=46, facecolor="none", edgecolor="#0b4fa0", lw=1.3, zorder=4,
+              label="B200, LIMINAL-E with expert union (on measured timeline)")
+    for b in B:
+        a.plot([b[0], b[0]], [b[1], b[2]], color="#0b4fa0", lw=0.8, alpha=0.6)
+    a.axhline(3.04 / 7.07, color=C_LIM, lw=1.4, ls="--")
+    a.text(1.05, 0.45, "active-params prediction (3.04B / 7.07B = 0.43)", fontsize=8, color=INK2)
+    a.axhline(1, color=INK2, lw=0.8)
+    a.set_xscale("log"); a.set_yscale("log"); a.set_ylim(0.35, 3); a.set_xlim(0.8, 400)
+    a.set_yticks([0.4, 0.5, 0.75, 1, 1.5, 2, 3]); a.set_yticklabels(["0.4", "0.5", "0.75", "1", "1.5", "2", "3"])
+    a.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    a.set_xlabel("sequences per decode step (A100: concurrency; B200: mean running)")
+    a.set_ylabel("MoE J/token / dense 7B J/token")
+    a.set_title("Qwen3-30B-A3B vs a dense 7B: the active-parameter advantage is gone by batch ~3\n"
+                "(expert union); counting distinct experts per step tracks it on B200", loc="left", fontsize=9.5, color=INK)
+    a.legend(frameon=False, fontsize=7.8, loc="upper left"); style(a)
+    fig.text(0.01, 0.01, "A100: alpaca/sharegpt, CUDA graphs, FlashAttention (at its 300 W cap). B200: azure23_conv and reasoning, "
+             "FlashInfer; rate matched, so\nthe dense 7B ran at ~half the MoE's batch. Both cross 1 by batch 3-4; the A100 rises faster. "
+             "LIMINAL-E's full A100 prediction (predicted time)\nmisses MoE J/token by +28-108%, from the fused-MoE time prior "
+             "(wrong even at c=1), not the byte count. Uniform routing assumed.",
+             fontsize=6.6, color=INK2)
+    fig.tight_layout(rect=(0, 0.1, 1, 1))
+    fig.savefig(os.path.join(HERE, "fig_thesis_moe.png"), dpi=180, facecolor=SURF)
+
+
 def main():
     plt.rcParams.update({"font.size": 10, "axes.edgecolor": INK2, "axes.labelcolor": INK,
                          "xtick.color": INK2, "ytick.color": INK2})
     runs = load_runs()
     hc = json.load(open(os.path.join(ROOT, "timemodel_highc.json")))
-    fig_tdp(runs); fig_time(runs, hc); fig_fa2(hc)
-    print("wrote fig_thesis_{tdp,time,fa2}.png from", len(runs), "runs")
+    fig_tdp(runs); fig_time(runs, hc); fig_fa2(hc); fig_moe(runs)
+    print("wrote fig_thesis_{tdp,time,fa2,moe}.png from", len(runs), "runs")
 
 
 if __name__ == "__main__":

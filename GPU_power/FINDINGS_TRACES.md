@@ -10,7 +10,8 @@ Design and caveats are in `TRACES.md`.
 - Data: `logs/{A100,A6000}_prov/trace_summary.json`, from `trace_analysis.py`.
 - Figures: `talk_figs/fig_trace_{roofline,jtok,breakdown}.png`.
 - Fleet sizing: `fleet_summary_{tight,relaxed}.json`, from `fleet_analysis.py`.
-- **B200 pending** (`HANDOFF_B200_TRACE.md`).
+- **B200:** §8 (data: `logs/B200_prov/trace_summary.json`; B200-side notes in `FINDINGS_B200.md` UPDATE 10 and
+  `HANDOFF_FROM_B200_TRACE.md`).
 
 ## 1. Real decode traffic sits on the power roof, not the bandwidth roof
 - **A100:** every trace × load level up to the latency knee lies on the full-clock
@@ -139,6 +140,31 @@ J/request, using measured P(load) per GPU from the azure24 levels:
 4. **KV (3–25%).** Matters mainly for long-context agents and chat, and grows with
    reasoning load at high batch (27% at A100 0.2×). KV compression is a second-order
    lever for chat.
+
+## 8. B200 (2026-11-06; Qwen2.5-7B, 32B, Qwen3-30B-A3B)
+- **Not power-capped.** The SW-power-cap flag is 0% on every 7B level and 10–30% only at the 32B's top
+  rates (§1). Achieved bandwidth is 32–41% of peak (7B) and 50–56% (32B), so the B200 is below *both*
+  roofs: on short prompts the step is dominated by per-layer and per-sequence overhead (`fig_thesis_time.png`).
+- **Capacity rows are lower bounds** (the speedup ladder ran out first) except azure23_code
+  (60 req/s tight, 115 relaxed). At the highest rates tested: 7B chat ≥87 req/s at 0.046 J/token
+  (A100: 10 at 0.12), BurstGPT ≥276 at 0.066, Azure '24 peak ≥115 at 0.076, reasoning ≥2.4 at 0.080.
+  Retained fractions after the KV trim: 32B azure23_conv 31.7%, azure24_peak 34.1%, code 73.4%.
+- **KV, not weights, is the largest dynamic term on B200 7B chat and reasoning at capacity** (25–40% of
+  energy vs weights 17–22%), because the B200 runs 160–230 sequences per step. Static is 26–44%. This
+  moves KV compression up the lever list (§7) for big-memory GPUs.
+- **LIMINAL-E on B200 real traffic:** −6.8% to +4.3% for 7B/32B on FlashInfer; MoE −10% to +13%.
+  B200 Mooncake ran on the Triton backend (FlashInfer deadlocks on ~10k-token prompts; A100/A6000
+  ran Mooncake clean on FlashAttention), and LIMINAL-E under-predicts it by 8–18% — the coefficients
+  were measured under FlashInfer. Keep B200 Mooncake out of cross-GPU rows.
+- **MoE (`talk_figs/fig_thesis_moe.png`).** Qwen3-30B-A3B costs 0.57× a dense 7B per token at batch 1
+  (A100, fixed concurrency), not the 0.43× active parameters imply, and >1× by batch 3–4 on both GPUs
+  (A100 2.2× at 64; B200 1.65× at 244). This is expert union. LIMINAL v2 models it (Monte Carlo active
+  experts), and LIMINAL-E already counts E(1−(1−k/E)^t) distinct experts per step
+  (`energy_model.weight_params_for_tokens`): on the B200 measured timeline it predicts the MoE/7B
+  ratio within 15% at every level. So "active_params is the wrong denominator" is right but not new
+  for either model. What *is* broken is LIMINAL-E's MoE **time**: on A100 graphs runs it over-predicts
+  MoE J/token by 28–108%, even at c=1 where union does not apply (the fused-MoE layer floor is an
+  H200 eager prior).
 
 ## Caveats
 - **Synthetic token ids.** Data-dependent switching power is not reproduced.
