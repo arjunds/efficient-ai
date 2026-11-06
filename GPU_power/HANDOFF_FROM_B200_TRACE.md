@@ -150,6 +150,22 @@ If either is missing from `trace_summary.json`, regenerate:
 `python3 -W ignore trace_analysis.py --root logs/B200_prov` (runs fine on the
 login node; no container needed).
 
+**If those two runs are not in git when you read this**, they finished after I
+stopped working and nobody committed them. They are on disk; add them (the
+repo `.gitignore` excludes `logs/` and `*.csv`, so a plain `git add` silently
+drops the data):
+
+```bash
+git add -f logs/B200_prov/b200_trace_moe/Qwen3-30B-A3B/reasoning_x0.25 \
+           logs/B200_prov/b200_trace_moe/Qwen3-30B-A3B/reasoning_x0.5 \
+           logs/B200_prov/b200_trace/Qwen2.5-7B-Instruct/mooncake_tool \
+           logs/B200_prov/trace_summary.json
+```
+
+Add only directories that contain a `results.json` — one without it is an
+incomplete or deadlocked run, and committing a live one shows up dirty
+immediately. **Never commit `prompts_*.json`.**
+
 **Operational, if you run anything here:** use `./hang_watchdog.sh 15 <jobid>...`.
 It kills a job whose `power_trace.csv` is still growing while `iter_log.csv` has
 been frozen 15 min — the live-logger/dead-engine divergence. Polling SLURM state
