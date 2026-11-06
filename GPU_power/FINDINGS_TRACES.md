@@ -161,10 +161,10 @@ J/request, using measured P(load) per GPU from the azure24 levels:
   Mooncake out of cross-GPU rows.
 - **MoE (`talk_figs/fig_thesis_moe.png`).** Qwen3-30B-A3B costs 0.57× a dense 7B per token at batch 1
   (A100, fixed concurrency), not the 0.43× active parameters imply, and >1× by batch 3–4 on both GPUs
-  (A100 2.2× at 64; B200 1.65× at 244; the B200 reasoning trace adds 0.93× at 3.7 and 1.12× at 19). This is expert union. LIMINAL v2 models it (Monte Carlo active
+  (A100 2.2× at 64; B200 1.65× at 244). On the B200 the ratio follows batch, not trace: reasoning lands on the azure23_conv curve (0.93× at 3.7, 1.12× at 19, 1.24× at 105, 1.64× at 266 vs chat 1.65× at 244). This is expert union. LIMINAL v2 models it (Monte Carlo active
   experts), and LIMINAL-E already counts E(1−(1−k/E)^t) distinct experts per step
   (`energy_model.weight_params_for_tokens`): on the B200 measured timeline it predicts the MoE/7B
-  ratio within 15% at every level. So "active_params is the wrong denominator" is right but not new
+  ratio within 15% at all 9 levels (−10%..+13% J/token). So "active_params is the wrong denominator" is right but not new
   for either model. What *is* broken is LIMINAL-E's MoE **time**: on A100 graphs runs it over-predicts
   MoE J/token by 28–108%, even at c=1 where union does not apply (the fused-MoE layer floor is an
   H200 eager prior).
