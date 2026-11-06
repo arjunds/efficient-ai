@@ -154,11 +154,14 @@ J/request, using measured P(load) per GPU from the azure24 levels:
   moves KV compression up the lever list (§7) for big-memory GPUs.
 - **LIMINAL-E on B200 real traffic:** −6.8% to +4.3% for 7B/32B on FlashInfer; MoE −10% to +13%.
   B200 Mooncake ran on the Triton backend (FlashInfer deadlocks on ~10k-token prompts; A100/A6000
-  ran Mooncake clean on FlashAttention), and LIMINAL-E under-predicts it by 8–18% — the coefficients
-  were measured under FlashInfer. Keep B200 Mooncake out of cross-GPU rows.
+  ran Mooncake clean on FlashAttention). Both Mooncake traces now completed on Triton (chat and agent;
+  the FlashInfer hang reproduced on both), and LIMINAL-E under-predicts them by 5–18%, growing with batch
+  (chat −8..−18%, agent −5..−15%) — the coefficients were measured under FlashInfer. Mooncake agent on
+  B200: 3.5 req/s at 0.82 J/token tight (A100: 1.7 at 0.90), 22 req/s at 0.31 relaxed. Keep B200
+  Mooncake out of cross-GPU rows.
 - **MoE (`talk_figs/fig_thesis_moe.png`).** Qwen3-30B-A3B costs 0.57× a dense 7B per token at batch 1
   (A100, fixed concurrency), not the 0.43× active parameters imply, and >1× by batch 3–4 on both GPUs
-  (A100 2.2× at 64; B200 1.65× at 244). This is expert union. LIMINAL v2 models it (Monte Carlo active
+  (A100 2.2× at 64; B200 1.65× at 244; the B200 reasoning trace adds 0.93× at 3.7 and 1.12× at 19). This is expert union. LIMINAL v2 models it (Monte Carlo active
   experts), and LIMINAL-E already counts E(1−(1−k/E)^t) distinct experts per step
   (`energy_model.weight_params_for_tokens`): on the B200 measured timeline it predicts the MoE/7B
   ratio within 15% at every level. So "active_params is the wrong denominator" is right but not new
