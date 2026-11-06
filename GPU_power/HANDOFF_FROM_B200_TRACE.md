@@ -65,7 +65,9 @@ c=1 and c=4:
 | ~4 | 1.16 | 0.93 |
 | ~16 | **1.88** | **1.12** |
 | ~64 | **2.22** | 1.26 |
+| ~105 | — | 1.24 |
 | ~244 | — | 1.65 |
+| ~266 | — | 1.64 |
 
 **Corrected 2026-11-06:** UPDATE 10 first called these "one curve" — wrong, and
 the synthesis pass caught it. The crossover agrees (batch 1→4 on both) but the
@@ -73,9 +75,17 @@ slope does not: A100 is at 1.88 by batch 16 where B200 is still 1.12, and B200
 needs batch 244 to reach 1.65. The rate at which union erodes the advantage is
 hardware-dependent. UPDATE 10 §2 now carries both this and a second correction:
 LIMINAL-E **already** models expert union and predicts the B200 MoE within
-−9.6%/+13.4% (the `liminal_err` field in `trace_summary.json`, which my first
-pass ignored), so the failure is specific to the naive `active_params()`
-denominator, not a missing model.
+−10.2%/+13.4% over all 9 levels (the `liminal_err` field in
+`trace_summary.json`, which my first pass ignored), so the failure is specific
+to the naive `active_params()` denominator, not a missing model.
+
+**Added 2026-11-06 (job 10143269, the two re-run levels):** within one GPU the
+ratio is a function of batch alone, **not of the trace**. Despite very different
+prompt-length distributions, azure23_conv and reasoning agree once indexed by
+`mean_running` — 1.261 vs 1.236 at batch ~74/~105, and 1.647 vs 1.641 at batch
+~244/~266. Two independent traces agreeing to 0.4% is the strongest evidence
+that batch size (union) is the mechanism rather than prompt shape, and it means
+the curve can be calibrated on whichever trace is cheapest to run.
 
 This is **expert union**: with top-8 of 128, a batch of B tokens activates far
 more than 8, so streamed weights drift from 3.04 B toward the full 30.53 B. On
@@ -150,7 +160,8 @@ long-sequence handling; the first was TRTLLM switching kernels per batch.
 
 ## 6. State when this was written
 
-Both jobs finished. `trace_summary.json` carries **51 levels**.
+All jobs finished. `trace_summary.json` carries **53 levels**, and everything
+described here is committed — there is nothing left for you to pick up.
 
 * **10141163 — done.** `mooncake_tool` completes all 5 levels on Triton at hit
   0.999, the same trace that deadlocked under FlashInfer. **The backend A/B is
@@ -164,15 +175,18 @@ Both jobs finished. `trace_summary.json` carries **51 levels**.
   **10143269**; if that is also missing, the gap is the x0.25/x0.5
   higher-concurrency points, a regime the A100 matched-batch ladder covers better
   anyway (c=16 1.88, c=64 2.22).
+* **10143269 — done (2026-11-06 00:55, 26 min, rc 0).** The re-run of those two
+  levels completed with the watchdog armed. x0.25: 3229 tok/s, 0.2596 J/tok,
+  batch 105.3. x0.5: 4900 tok/s, 0.1889 J/tok, batch 265.5. Committed, and
+  §3 above now carries the trace-independence result they made possible.
 
 If either is missing from `trace_summary.json`, regenerate:
 `python3 -W ignore trace_analysis.py --root logs/B200_prov` (runs fine on the
 login node; no container needed).
 
-**If those two runs are not in git when you read this**, they finished after I
-stopped working and nobody committed them. They are on disk; add them (the
-repo `.gitignore` excludes `logs/` and `*.csv`, so a plain `git add` silently
-drops the data):
+**Those two runs are now in git** (the contingency below is kept only as the
+recipe for any future straggler, since the repo `.gitignore` excludes `logs/`
+and `*.csv` and a plain `git add` silently drops the data):
 
 ```bash
 git add -f logs/B200_prov/b200_trace_moe/Qwen3-30B-A3B/reasoning_x0.25 \

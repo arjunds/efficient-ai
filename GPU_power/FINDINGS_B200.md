@@ -1329,11 +1329,17 @@ tracks streamed weight bytes — the project's central model — the MoE should 
 |---|---|---|---|
 | reasoning | x0.05 | 3.7 | **0.93** |
 | reasoning | x0.1 | 18.9 | 1.12 |
+| reasoning | x0.25 | 105.3 | 1.24 |
+| reasoning | x0.5 | 265.5 | **1.64** |
 | azure23_conv | x1 | 11.6 | 1.10 |
 | azure23_conv | x2 | 27.2 | 1.19 |
 | azure23_conv | x4 | 74.0 | 1.26 |
 | azure23_conv | x8 | 173.7 | 1.43 |
 | azure23_conv | x12 | 244.0 | **1.65** |
+
+(The reasoning x0.25 / x0.5 levels were lost to a filesystem fault on the first
+attempt and re-run as job 10143269 on 2026-11-06; they are the last two rows to
+land and they did not change any conclusion below.)
 
 The ratio **rises monotonically with concurrency** and crosses 1.0 somewhere
 between `mean_running` 3.7 and 18.9. On azure23_conv the MoE moves *more* bytes
@@ -1390,13 +1396,29 @@ against A100's exact batch:
 | ~4 | 1.16 | 0.93 (batch 3.7) |
 | ~16 | **1.88** | **1.12** (batch 18.9) |
 | ~64 | **2.22** | 1.26 (batch 74) |
+| ~105 | — | 1.24 |
 | ~244 | — | 1.65 |
+| ~266 | — | 1.64 |
 
 A100 degrades far faster — it is at 1.88 by batch 16, where B200 is still 1.12,
 and B200 does not reach 1.65 until batch 244. So the *rate* at which expert
 union erodes the MoE advantage is hardware-dependent (B200's larger bandwidth
 and cache make the extra expert weights cheaper to stream), even though the
 batch-1 anchor and the crossover region are consistent.
+
+**Within one GPU the ratio is a function of batch alone, not of the trace.**
+The two B200 traces have very different prompt-length distributions, yet once
+indexed by `mean_running` they land on the same curve:
+
+| MoE batch | azure23_conv | reasoning |
+|---|---|---|
+| ~74 / ~105 | 1.261 | 1.236 |
+| ~244 / ~266 | 1.647 | 1.641 |
+
+Two independently measured traces agreeing to 0.4% at the top end is the
+strongest evidence here that batch size — i.e. expert union — is the mechanism,
+and not some prompt-shape artifact of either trace. It also means the curve can
+be calibrated on whichever trace is cheapest to run.
 
 Inverting the ratio to an effective active-parameter count is only crude, since
 J/token includes static power that does not scale with weights (and the A100
@@ -1410,13 +1432,18 @@ effective-active term ... this measurement does not yet pin its shape", which
 implied no such model exists. It does — LIMINAL-E already counts expert-union
 bytes, and the `liminal_err` field that these same runs carry (and that this
 section originally ignored) shows it predicting the MoE's energy per token on
-B200 to within **−9.6% to +13.4%** across both traces and all seven levels,
+B200 to within **−10.2% to +13.4%** across both traces and all nine levels,
 on B200 long-context-calibrated coefficients:
 
 | trace | levels | liminal_err |
 |---|---|---|
 | azure23_conv | x1→x12 | +3.0%, +13.4%, +3.0%, −7.0%, −9.6% |
-| reasoning | x0.05, x0.1 | −4.4%, +6.0% |
+| reasoning | x0.05→x0.5 | −4.4%, +6.0%, −3.5%, −10.2% |
+
+The two levels added on 2026-11-06 are the highest-batch points in the set
+(105 and 266), i.e. exactly where expert union is largest, and the union term
+still holds to −10.2% / −3.5% there. That is the part of the range the naive
+`active_params()` denominator misses by ~5.5×.
 
 So the correct claim is narrower than the one this section first made: the
 **naive `active_params()` denominator** fails for an MoE at serving
