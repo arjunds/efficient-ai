@@ -31,6 +31,7 @@ TRACES = [  # key, label, color
     ("burstgpt_h521", "BurstGPT", "#1baf7a"), ("azure23_code", "Azure code '23", "#9a6fd1"),
     ("mooncake_conv", "Mooncake chat (long ctx)", "#eb6834"), ("mooncake_tool", "Mooncake agent", "#c2410c"),
     ("reasoning_math", "Reasoning", "#eda100")]
+MODEL = "Qwen2.5-7B-Instruct"
 GPUS = [("B200", "B200"), ("A100-80-PCIe", "A100"), ("A6000", "A6000")]
 
 
@@ -41,7 +42,8 @@ def load():
         if os.path.exists(p):
             s = json.load(open(p))
             rows += s["levels"]; caps += s["capacity"]
-    return rows, caps
+    keep = lambda r: r.get("model") == MODEL   # cross-GPU figures: one model (B200 also has 32B / MoE)
+    return [r for r in rows if keep(r)], [c for c in caps if keep(c)]
 
 
 def style(a):

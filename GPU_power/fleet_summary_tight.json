@@ -44,5 +44,28 @@
    "consol": 0.21394761247629945,
    "gated": 0.3559499969987082
   }
+ },
+ {
+  "gpu": "B200",
+  "model": "Qwen2.5-7B-Instruct",
+  "slo": "tight",
+  "capacity_req_s": 115.4465728503812,
+  "fleet_peak_gpus": 1,
+  "mean_active_gpus": 1.0,
+  "hours": 36.9,
+  "energy_kwh": {
+   "peak": 26.791959661374108,
+   "consol": 26.791959661374108,
+   "gated": 26.791959661374108
+  },
+  "j_per_request": {
+   "peak": 20.048209707373502,
+   "consol": 20.048209707373502,
+   "gated": 20.048209707373502
+  },
+  "saving_vs_peak": {
+   "consol": 0.0,
+   "gated": 0.0
+  }
  }
 ]
