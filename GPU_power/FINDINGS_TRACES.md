@@ -23,9 +23,31 @@ Design and caveats are in `TRACES.md`.
   leaves less for bytes).
 - **Past the knee:** points fall *below* the power roof. Steps that admit requests run
   attention without GQA packing or split-KV, as §4 shows.
-- **Implication:** on 300 W parts, decode throughput at real load is set by joules per
-  byte and per FLOP, not by bandwidth. Faster memory alone doesn't help; cheaper bytes
-  (and higher caps) do.
+- **Model-free check (`cap_check.py`; NVML throttle reasons and clocks, steady windows,
+  2026-11-05):**
+
+  | | SW-power-cap flag set | SM clock (median / max) | memory clock | power |
+  |---|---|---|---|---|
+  | A100, all 7B trace levels except the lightest | 95–100% of samples | 1380 → 1125 MHz / 1410 (−2% to −20% with load) | fixed 1512 | 296–299 W |
+  | A6000, same | 94–100% | 1755 → 1575 / 1905 (−8% to −17%) | fixed 7601 | 288–299 W |
+  | B200, 7B (all traces) | 0% (7% at reasoning 0.5×) | 1965 / 1965 (never throttled) | — | 355–861 W |
+  | B200, 32B chat 4× / 6× | 10% / 30% | 1965 / 1965 | — | 934–955 W |
+
+  No thermal or hardware-slowdown flags anywhere.
+- **What this does and doesn't support:**
+  - **Certain (direct measurement):** the 300 W parts run at their cap at real decode
+    load, and the driver holds them there by lowering the SM clock. The B200 with a 7B model
+    never reaches its 1000 W cap; a 32B model at high load starts to.
+  - **Not shown:** that the cap explains the bandwidth gap. The memory clock never drops,
+    and the SM clock drops ≤20%, so the cap costs at most ~2–20% of step speed (an upper
+    bound; only part of a decode step scales with SM clock). Most of the gap between
+    achieved and peak bandwidth (41–62% on A100) is not a power effect. The causal test
+    (raise the cap, measure throughput) needs a power-limit change, which is out of bounds
+    on shared hardware.
+- **Implication:** the nameplate power is the wrong planning number in both directions.
+  Small-cap parts sit at it under any real load, while a 1000 W part serving a 7B model
+  draws 36–86% of it. The model's power-roof-vs-bandwidth-roof ratio predicts which
+  regime a GPU/model pair is in.
 
 ## 2. LIMINAL-E holds on real traffic up to the knee
 The predicted window energy is computed from coefficients on the measured step timeline,
