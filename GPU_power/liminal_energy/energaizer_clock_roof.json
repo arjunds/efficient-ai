@@ -1,0 +1,473 @@
+{
+ "p_cap_w": 250.0,
+ "peak_bw": 1555000000000.0,
+ "peak_flops": 312000000000000.0,
+ "clocks": {
+  "510": {
+   "clock": "510",
+   "elem_sm_mhz": 509.9999999999999,
+   "bw": 824567798491.949,
+   "p_stream": 139.49881007434186,
+   "p_idle": 45.28,
+   "n_elem": 66,
+   "gemm_sm_mhz": 510.0,
+   "f_rate": 101228066216835.03,
+   "p_gemm": 147.0738371252523,
+   "b_rate_gemm": 148283300122.31693,
+   "n_gemm": 2,
+   "e_b": 1.1426447921766836e-10,
+   "e_f": 8.38209463355206e-13,
+   "roof": [
+    {
+     "I": 1,
+     "attainable_tf": 0.824567798491949,
+     "power_roof_tf": 1.778585733712328,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 2.1569915014449768
+    },
+    {
+     "I": 3,
+     "attainable_tf": 2.4737033954758467,
+     "power_roof_tf": 5.259159900955826,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 2.1260268755641025
+    },
+    {
+     "I": 10,
+     "attainable_tf": 8.24567798491949,
+     "power_roof_tf": 16.691864564300086,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 2.024316811161898
+    },
+    {
+     "I": 30,
+     "attainable_tf": 24.73703395475847,
+     "power_roof_tf": 44.05398738680837,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.780892061165403
+    },
+    {
+     "I": 100,
+     "attainable_tf": 82.45677984919489,
+     "power_roof_tf": 103.34935012421172,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.2533760148435003
+    },
+    {
+     "I": 300,
+     "attainable_tf": 101.22806621683503,
+     "power_roof_tf": 167.92839074259524,
+     "bound": "compute",
+     "power_over_unconstrained": 1.658911377234898
+    },
+    {
+     "I": 1000,
+     "attainable_tf": 101.22806621683503,
+     "power_roof_tf": 214.9350138094059,
+     "bound": "compute",
+     "power_over_unconstrained": 2.123274916158188
+    }
+   ]
+  },
+  "705": {
+   "clock": "705",
+   "elem_sm_mhz": 705.0,
+   "bw": 982763579138.435,
+   "p_stream": 157.0366787860674,
+   "p_idle": 46.15,
+   "n_elem": 66,
+   "gemm_sm_mhz": 705.0,
+   "f_rate": 139299456368581.34,
+   "p_gemm": 184.20983190860994,
+   "b_rate_gemm": 204051938039.91406,
+   "n_gemm": 2,
+   "e_b": 1.1283148983123596e-10,
+   "e_f": 8.258205073839869e-13,
+   "roof": [
+    {
+     "I": 1,
+     "attainable_tf": 0.982763579138435,
+     "power_roof_tf": 1.793549393282917,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.8250059641559755
+    },
+    {
+     "I": 3,
+     "attainable_tf": 2.9482907374153053,
+     "power_roof_tf": 5.303577847358786,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.7988652815184376
+    },
+    {
+     "I": 10,
+     "attainable_tf": 9.82763579138435,
+     "power_roof_tf": 16.83462826129022,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.7129886188953733
+    },
+    {
+     "I": 30,
+     "attainable_tf": 29.48290737415305,
+     "power_roof_tf": 44.44206888680873,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.507384204780632
+    },
+    {
+     "I": 100,
+     "attainable_tf": 98.2763579138435,
+     "power_roof_tf": 104.3172338036417,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.0614682515513456
+    },
+    {
+     "I": 300,
+     "attainable_tf": 139.29945636858133,
+     "power_roof_tf": 169.6028618217127,
+     "bound": "compute",
+     "power_over_unconstrained": 1.217541448065308
+    },
+    {
+     "I": 1000,
+     "attainable_tf": 139.29945636858133,
+     "power_roof_tf": 217.17313829276324,
+     "bound": "compute",
+     "power_over_unconstrained": 1.5590379456911228
+    }
+   ]
+  },
+  "900": {
+   "clock": "900",
+   "elem_sm_mhz": 900.0000000000002,
+   "bw": 1152424884647.3027,
+   "p_stream": 164.70893696960596,
+   "p_idle": 47.35,
+   "n_elem": 66,
+   "gemm_sm_mhz": 900.0,
+   "f_rate": 177745659623866.12,
+   "p_gemm": 222.2818151015393,
+   "b_rate_gemm": 260369618589.64767,
+   "n_gemm": 2,
+   "e_b": 1.0183651753192002e-10,
+   "e_f": 8.349946782797685e-13,
+   "roof": [
+    {
+     "I": 1,
+     "attainable_tf": 1.1524248846473026,
+     "power_roof_tf": 1.973770480609206,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.7127107431503221
+    },
+    {
+     "I": 3,
+     "attainable_tf": 3.457274653941908,
+     "power_roof_tf": 5.8265406465424885,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.6852987482204214
+    },
+    {
+     "I": 10,
+     "attainable_tf": 11.524248846473027,
+     "power_roof_tf": 18.391551200080738,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.595900213983095
+    },
+    {
+     "I": 30,
+     "attainable_tf": 34.57274653941908,
+     "power_roof_tf": 47.91295220038196,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.3858590073470927
+    },
+    {
+     "I": 100,
+     "attainable_tf": 109.34196055152576,
+     "power_roof_tf": 109.34196055152576,
+     "bound": "power",
+     "power_over_unconstrained": 0.9487990237644829
+    },
+    {
+     "I": 300,
+     "attainable_tf": 172.54889133531276,
+     "power_roof_tf": 172.54889133531276,
+     "bound": "power",
+     "power_over_unconstrained": 0.9707628962667756
+    },
+    {
+     "I": 1000,
+     "attainable_tf": 177.74565962386612,
+     "power_roof_tf": 216.31431671574532,
+     "bound": "compute",
+     "power_over_unconstrained": 1.2169878981770677
+    }
+   ]
+  },
+  "1410": {
+   "clock": "1410",
+   "elem_sm_mhz": 1308.3557226513103,
+   "bw": 1270365213957.828,
+   "p_stream": 240.21226223141002,
+   "p_idle": 58.43,
+   "n_elem": 66,
+   "gemm_sm_mhz": 1035.200892857143,
+   "f_rate": 197901406411804.88,
+   "p_gemm": 243.21797575588164,
+   "b_rate_gemm": 289894638298.54236,
+   "n_gemm": 2,
+   "e_b": 1.430944898633257e-10,
+   "e_f": 7.241264878948842e-13,
+   "roof": [
+    {
+     "I": 1,
+     "attainable_tf": 1.2703652139578279,
+     "power_roof_tf": 1.3320250525298154,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.0485370961787328
+    },
+    {
+     "I": 3,
+     "attainable_tf": 3.8110956418734836,
+     "power_roof_tf": 3.95623587582293,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.038083597891051
+    },
+    {
+     "I": 10,
+     "attainable_tf": 12.70365213957828,
+     "power_roof_tf": 12.742810273471848,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.0030824312145301
+    },
+    {
+     "I": 30,
+     "attainable_tf": 34.86931087426768,
+     "power_roof_tf": 34.86931087426768,
+     "bound": "power",
+     "power_over_unconstrained": 0.9149418999394724
+    },
+    {
+     "I": 100,
+     "attainable_tf": 88.89264698958428,
+     "power_roof_tf": 88.89264698958428,
+     "bound": "power",
+     "power_over_unconstrained": 0.6997408777641108
+    },
+    {
+     "I": 300,
+     "attainable_tf": 159.49438413318595,
+     "power_roof_tf": 159.49438413318595,
+     "bound": "power",
+     "power_over_unconstrained": 0.8059285026064982
+    },
+    {
+     "I": 1000,
+     "attainable_tf": 197.90140641180489,
+     "power_roof_tf": 220.90102166948697,
+     "bound": "compute",
+     "power_over_unconstrained": 1.116217543243847
+    }
+   ]
+  },
+  "nolock": {
+   "clock": "nolock",
+   "elem_sm_mhz": 1311.4923224568138,
+   "bw": 1265258385940.245,
+   "p_stream": 237.79543704458482,
+   "p_idle": 58.43,
+   "n_elem": 66,
+   "gemm_sm_mhz": 1035.200892857143,
+   "f_rate": 197901406411804.88,
+   "p_gemm": 243.21797575588164,
+   "b_rate_gemm": 289894638298.54236,
+   "n_gemm": 2,
+   "p_idle_elem": 58.43,
+   "p_idle_gemm": 48.73,
+   "e_b": 1.4176190336908448e-10,
+   "e_f": 7.750928244289532e-13,
+   "roof": [
+    {
+     "I": 1,
+     "attainable_tf": 1.265258385940245,
+     "power_roof_tf": 1.3440019441683586,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.0622351601088953
+    },
+    {
+     "I": 3,
+     "attainable_tf": 3.7957751578207355,
+     "power_roof_tf": 3.988626834472493,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.0508069283962749
+    },
+    {
+     "I": 10,
+     "attainable_tf": 12.652583859402451,
+     "power_roof_tf": 12.81294708506236,
+     "bound": "bandwidth",
+     "power_over_unconstrained": 1.0126743460025154
+    },
+    {
+     "I": 30,
+     "attainable_tf": 34.82780876117644,
+     "power_roof_tf": 34.82780876117644,
+     "bound": "power",
+     "power_over_unconstrained": 0.9175414062505246
+    },
+    {
+     "I": 100,
+     "attainable_tf": 87.36670041282444,
+     "power_roof_tf": 87.36670041282444,
+     "bound": "power",
+     "power_over_unconstrained": 0.6905048121684652
+    },
+    {
+     "I": 300,
+     "attainable_tf": 153.54681738642205,
+     "power_roof_tf": 153.54681738642205,
+     "bound": "power",
+     "power_over_unconstrained": 0.7758753218100574
+    },
+    {
+     "I": 1000,
+     "attainable_tf": 197.90140641180489,
+     "power_roof_tf": 208.9425883859308,
+     "bound": "compute",
+     "power_over_unconstrained": 1.0557913264706709
+    }
+   ]
+  }
+ },
+ "envelope": [
+  {
+   "I": 1,
+   "best_clock": "1410",
+   "attainable_tf": 1.2703652139578279,
+   "frac_peak_bw": 0.816955121516288,
+   "frac_peak_f": 0.004071683378069961
+  },
+  {
+   "I": 3,
+   "best_clock": "1410",
+   "attainable_tf": 3.8110956418734836,
+   "frac_peak_bw": 0.816955121516288,
+   "frac_peak_f": 0.012215050134209883
+  },
+  {
+   "I": 10,
+   "best_clock": "1410",
+   "attainable_tf": 12.70365213957828,
+   "frac_peak_bw": 0.816955121516288,
+   "frac_peak_f": 0.04071683378069961
+  },
+  {
+   "I": 30,
+   "best_clock": "1410",
+   "attainable_tf": 34.86931087426768,
+   "frac_peak_bw": 0.7474664710453951,
+   "frac_peak_f": 0.11176061177649899
+  },
+  {
+   "I": 100,
+   "best_clock": "900",
+   "attainable_tf": 109.34196055152576,
+   "frac_peak_bw": 0.7031637334503265,
+   "frac_peak_f": 0.35045500176771077
+  },
+  {
+   "I": 300,
+   "best_clock": "900",
+   "attainable_tf": 172.54889133531276,
+   "frac_peak_bw": 0.3698797241914528,
+   "frac_peak_f": 0.5530413183824127
+  },
+  {
+   "I": 1000,
+   "best_clock": "1410",
+   "attainable_tf": 197.90140641180489,
+   "frac_peak_bw": 0.1272677854738295,
+   "frac_peak_f": 0.6342993795250156
+  }
+ ],
+ "idle_vs_clock": {
+  "210": 44.47,
+  "225": 44.68,
+  "240": 44.47,
+  "255": 44.68,
+  "270": 44.68,
+  "285": 44.77,
+  "300": 44.68,
+  "315": 44.87,
+  "330": 44.87,
+  "345": 44.87,
+  "360": 44.87,
+  "375": 44.98,
+  "390": 44.97,
+  "405": 45.08,
+  "420": 44.97,
+  "435": 44.97,
+  "450": 45.28,
+  "465": 45.08,
+  "480": 45.18,
+  "495": 45.67,
+  "510": 45.28,
+  "525": 45.18,
+  "540": 45.47,
+  "555": 45.37,
+  "570": 45.37,
+  "585": 45.47,
+  "600": 45.47,
+  "615": 45.57,
+  "630": 45.76,
+  "645": 45.57,
+  "660": 45.76,
+  "675": 45.86,
+  "690": 45.96,
+  "705": 46.15,
+  "720": 46.25,
+  "735": 46.35,
+  "750": 46.35,
+  "765": 46.35,
+  "780": 46.35,
+  "795": 46.65,
+  "810": 46.75,
+  "825": 46.96,
+  "840": 46.75,
+  "855": 47.16,
+  "870": 47.26,
+  "885": 47.35,
+  "900": 47.35,
+  "915": 48.34,
+  "930": 47.65,
+  "945": 47.65,
+  "960": 48.05,
+  "975": 47.95,
+  "990": 47.95,
+  "1005": 48.24,
+  "1020": 48.62,
+  "1035": 48.73,
+  "1050": 49.24,
+  "1065": 49.23,
+  "1080": 50.12,
+  "1095": 50.21,
+  "1110": 50.62,
+  "1125": 51.31,
+  "1140": 51.81,
+  "1155": 51.81,
+  "1170": 53.1,
+  "1185": 52.9,
+  "1200": 54.28,
+  "1215": 54.39,
+  "1230": 55.09,
+  "1245": 55.56,
+  "1260": 56.26,
+  "1275": 56.76,
+  "1290": 58.52,
+  "1305": 58.43,
+  "1320": 60.6,
+  "1335": 60.42,
+  "1350": 61.51,
+  "1365": 63.18,
+  "1380": 64.77,
+  "1395": 66.16,
+  "1410": 67.34
+ }
+}
