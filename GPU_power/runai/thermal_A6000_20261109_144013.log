@@ -1,0 +1,27 @@
+==== thermal Mon Nov  9 14:40:13 PST 2026 host=a6000-thermal-qppw4 tag=A6000 ====
+name, pci.bus_id, power.limit [W], enforced.power.limit [W], clocks.current.sm [MHz], clocks.max.sm [MHz], temperature.gpu, fan.speed [%]
+NVIDIA RTX A6000, 00000000:61:00.0, 300.00 W, 300.00 W, 210 MHz, 2100 MHz, 32, 30 %
+[thermal] {'gpu': 'NVIDIA RTX A6000', 'sm_count': 84, 'power_limit_w': 300.0, 'host': 'a6000-thermal-qppw4', 'started': '2026-11-09 14:40:15'}
+[thermal] baseline: 95 s, T=32 C
+[thermal] heat:stream: 165 s, T=66 C, 711 GB/s 0.0 TF/s
+[thermal] cool:stream: 120 s, T=34 C
+[thermal] heat:gemm: 169 s, T=66 C, 0 GB/s 106.6 TF/s
+[thermal] cool:gemm: 120 s, T=34 C
+[thermal] ramp_up:10: 128 s, T=56 C, 225 GB/s 0.0 TF/s
+[thermal] ramp_up:21: 66 s, T=61 C, 452 GB/s 0.0 TF/s
+[thermal] ramp_up:42: 95 s, T=66 C, 673 GB/s 0.0 TF/s
+[thermal] ramp_up:84: 150 s, T=67 C, 706 GB/s 0.0 TF/s
+[thermal] ramp_up:168: 30 s, T=67 C, 711 GB/s 0.0 TF/s
+[thermal] ramp_up:336: 30 s, T=67 C, 711 GB/s 0.0 TF/s
+[thermal] ramp_up:672: 30 s, T=67 C, 711 GB/s 0.0 TF/s
+[thermal] ramp_down:672: 30 s, T=66 C, 711 GB/s 0.0 TF/s
+[thermal] ramp_down:336: 30 s, T=67 C, 711 GB/s 0.0 TF/s
+[thermal] ramp_down:168: 30 s, T=66 C, 711 GB/s 0.0 TF/s
+[thermal] ramp_down:84: 30 s, T=66 C, 710 GB/s 0.0 TF/s
+[thermal] ramp_down:42: 30 s, T=66 C, 675 GB/s 0.0 TF/s
+[thermal] ramp_down:21: 78 s, T=63 C, 448 GB/s 0.0 TF/s
+[thermal] ramp_down:10: 77 s, T=58 C, 224 GB/s 0.0 TF/s
+[thermal] ramp_cool: 120 s, T=33 C
+[thermal] wrote 160766 samples to microbench/thermal_A6000
+[analyze] no matplotlib: No module named 'matplotlib'
+==== done Mon Nov  9 15:07:22 PST 2026 ====

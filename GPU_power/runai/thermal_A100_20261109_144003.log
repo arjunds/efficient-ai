@@ -1,0 +1,27 @@
+==== thermal Mon Nov  9 14:40:03 PST 2026 host=a100-thermal-v7l7s tag=A100 ====
+name, pci.bus_id, power.limit [W], enforced.power.limit [W], clocks.current.sm [MHz], clocks.max.sm [MHz], temperature.gpu, fan.speed [%]
+NVIDIA A100 80GB PCIe, 00000000:C1:00.0, 300.00 W, 300.00 W, 210 MHz, 1410 MHz, 37, [N/A]
+[thermal] {'gpu': 'NVIDIA A100 80GB PCIe', 'sm_count': 108, 'power_limit_w': 300.0, 'host': 'a100-thermal-v7l7s', 'started': '2026-11-09 14:40:05'}
+[thermal] baseline: 132 s, T=43 C
+[thermal] heat:stream: 159 s, T=72 C, 1767 GB/s 0.0 TF/s
+[thermal] cool:stream: 600 s, T=48 C
+[thermal] heat:gemm: 145 s, T=73 C, 0 GB/s 220.5 TF/s
+[thermal] cool:gemm: 600 s, T=48 C
+[thermal] ramp_up:14: 75 s, T=53 C, 217 GB/s 0.0 TF/s
+[thermal] ramp_up:27: 55 s, T=57 C, 404 GB/s 0.0 TF/s
+[thermal] ramp_up:54: 63 s, T=62 C, 770 GB/s 0.0 TF/s
+[thermal] ramp_up:108: 60 s, T=68 C, 1326 GB/s 0.0 TF/s
+[thermal] ramp_up:216: 40 s, T=71 C, 1686 GB/s 0.0 TF/s
+[thermal] ramp_up:432: 30 s, T=72 C, 1706 GB/s 0.0 TF/s
+[thermal] ramp_up:864: 30 s, T=72 C, 1767 GB/s 0.0 TF/s
+[thermal] ramp_down:864: 30 s, T=72 C, 1766 GB/s 0.0 TF/s
+[thermal] ramp_down:432: 30 s, T=72 C, 1706 GB/s 0.0 TF/s
+[thermal] ramp_down:216: 30 s, T=72 C, 1691 GB/s 0.0 TF/s
+[thermal] ramp_down:108: 73 s, T=67 C, 1324 GB/s 0.0 TF/s
+[thermal] ramp_down:54: 58 s, T=62 C, 769 GB/s 0.0 TF/s
+[thermal] ramp_down:27: 54 s, T=58 C, 403 GB/s 0.0 TF/s
+[thermal] ramp_down:14: 52 s, T=55 C, 217 GB/s 0.0 TF/s
+[thermal] ramp_cool: 600 s, T=48 C
+[thermal] wrote 291581 samples to microbench/thermal_A100
+[analyze] no matplotlib: No module named 'matplotlib'
+==== done Mon Nov  9 15:28:47 PST 2026 ====
