@@ -1,0 +1,232 @@
+{
+ "info": {
+  "gpu": "NVIDIA B200",
+  "sm_count": 148,
+  "power_limit_w": 1000.0,
+  "host": "dgx016",
+  "started": "2026-11-09 19:18:59"
+ },
+ "t_base_c": 32,
+ "phases": [
+  {
+   "phase": "baseline",
+   "t0": 1794269939.9180474,
+   "t1": 1794270029.9271486,
+   "temp0": null,
+   "temp1": 32
+  },
+  {
+   "phase": "heat:stream",
+   "t0": 1794270031.64555,
+   "t1": 1794270158.6347623,
+   "temp1": 52,
+   "calls": 4428,
+   "bytes_per_s": 7326328689488.004,
+   "flops_per_s": 0.0
+  },
+  {
+   "phase": "cool:stream",
+   "t0": 1794270158.6382256,
+   "t1": 1794270278.6483917,
+   "temp0": null,
+   "temp1": 31
+  },
+  {
+   "phase": "heat:gemm",
+   "t0": 1794270278.9358742,
+   "t1": 1794270879.447777,
+   "temp1": 57,
+   "calls": 17220,
+   "bytes_per_s": 0.0,
+   "flops_per_s": 1324221528254122.0
+  },
+  {
+   "phase": "cool:gemm",
+   "t0": 1794270879.4532208,
+   "t1": 1794270999.4630427,
+   "temp0": null,
+   "temp1": 31
+  },
+  {
+   "phase": "ramp_up:18",
+   "t0": 1794270999.560218,
+   "t1": 1794271030.0345206,
+   "temp1": 32,
+   "calls": 960,
+   "bytes_per_s": 267428612551.83563,
+   "flops_per_s": 0.0,
+   "direction": "up",
+   "nprog": 18
+  },
+  {
+   "phase": "ramp_up:37",
+   "t0": 1794271030.082069,
+   "t1": 1794271060.1254482,
+   "temp1": 33,
+   "calls": 969,
+   "bytes_per_s": 547615086959.5397,
+   "flops_per_s": 0.0,
+   "direction": "up",
+   "nprog": 37
+  },
+  {
+   "phase": "ramp_up:74",
+   "t0": 1794271060.1499364,
+   "t1": 1794271090.2215154,
+   "temp1": 35,
+   "calls": 1024,
+   "bytes_per_s": 1084040242744.5294,
+   "flops_per_s": 0.0,
+   "direction": "up",
+   "nprog": 74
+  },
+  {
+   "phase": "ramp_up:148",
+   "t0": 1794271090.2343616,
+   "t1": 1794271120.47849,
+   "temp1": 38,
+   "calls": 1020,
+   "bytes_per_s": 2147290357140.0356,
+   "flops_per_s": 0.0,
+   "direction": "up",
+   "nprog": 148
+  },
+  {
+   "phase": "ramp_up:296",
+   "t0": 1794271120.485729,
+   "t1": 1794271183.0239103,
+   "temp1": 44,
+   "calls": 2108,
+   "bytes_per_s": 4077656483439.0933,
+   "flops_per_s": 0.0,
+   "direction": "up",
+   "nprog": 296
+  },
+  {
+   "phase": "ramp_up:592",
+   "t0": 1794271183.0333276,
+   "t1": 1794271333.4621754,
+   "temp1": 50,
+   "calls": 5050,
+   "bytes_per_s": 6483538033757.132,
+   "flops_per_s": 0.0,
+   "direction": "up",
+   "nprog": 592
+  },
+  {
+   "phase": "ramp_up:1184",
+   "t0": 1794271333.4674077,
+   "t1": 1794271363.9368303,
+   "temp1": 50,
+   "calls": 1062,
+   "bytes_per_s": 7323284542152.116,
+   "flops_per_s": 0.0,
+   "direction": "up",
+   "nprog": 1184
+  },
+  {
+   "phase": "ramp_down:1184",
+   "t0": 1794271363.9416919,
+   "t1": 1794271394.4211516,
+   "temp1": 51,
+   "calls": 1062,
+   "bytes_per_s": 7320872913033.339,
+   "flops_per_s": 0.0,
+   "direction": "down",
+   "nprog": 1184
+  },
+  {
+   "phase": "ramp_down:592",
+   "t0": 1794271394.426506,
+   "t1": 1794271424.7343714,
+   "temp1": 52,
+   "calls": 1080,
+   "bytes_per_s": 6503951268541.948,
+   "flops_per_s": 0.0,
+   "direction": "down",
+   "nprog": 592
+  },
+  {
+   "phase": "ramp_down:296",
+   "t0": 1794271424.7421148,
+   "t1": 1794271487.1493857,
+   "temp1": 48,
+   "calls": 2260,
+   "bytes_per_s": 4073423260761.1694,
+   "flops_per_s": 0.0,
+   "direction": "down",
+   "nprog": 296
+  },
+  {
+   "phase": "ramp_down:148",
+   "t0": 1794271487.1622775,
+   "t1": 1794271539.773414,
+   "temp1": 42,
+   "calls": 1768,
+   "bytes_per_s": 2139618054457.0862,
+   "flops_per_s": 0.0,
+   "direction": "down",
+   "nprog": 148
+  },
+  {
+   "phase": "ramp_down:74",
+   "t0": 1794271539.7980313,
+   "t1": 1794271590.032583,
+   "temp1": 37,
+   "calls": 1705,
+   "bytes_per_s": 1080496919875.8737,
+   "flops_per_s": 0.0,
+   "direction": "down",
+   "nprog": 74
+  },
+  {
+   "phase": "ramp_down:37",
+   "t0": 1794271590.080075,
+   "t1": 1794271620.1224864,
+   "temp1": 35,
+   "calls": 969,
+   "bytes_per_s": 547632731353.4796,
+   "flops_per_s": 0.0,
+   "direction": "down",
+   "nprog": 37
+  },
+  {
+   "phase": "ramp_down:18",
+   "t0": 1794271620.2186563,
+   "t1": 1794271652.2352626,
+   "temp1": 33,
+   "calls": 1008,
+   "bytes_per_s": 267273344899.04538,
+   "flops_per_s": 0.0,
+   "direction": "down",
+   "nprog": 18
+  },
+  {
+   "phase": "ramp_cool",
+   "t0": 1794271652.2354999,
+   "t1": 1794271772.250251,
+   "temp0": null,
+   "temp1": 31
+  }
+ ],
+ "args": {
+  "out": "microbench/thermal_B200",
+  "analyze": null,
+  "phases": [
+   "baseline",
+   "heat:stream",
+   "heat:gemm",
+   "ramp"
+  ],
+  "sample_ms": 10.0,
+  "baseline_min_s": 90,
+  "baseline_max_s": 300,
+  "heat_min_s": 120,
+  "heat_max_s": 600,
+  "cool_min_s": 120,
+  "cool_max_s": 600,
+  "level_min_s": 30,
+  "level_max_s": 150,
+  "gemm_n": null
+ }
+}

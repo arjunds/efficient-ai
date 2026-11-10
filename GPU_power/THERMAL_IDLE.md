@@ -18,7 +18,7 @@ because NVML's averaging tail settles in about 1.3 s while the die takes minutes
 **Runs:**
 - **A100 80GB PCIe** (kai, PCI C1:00.0) and **RTX A6000** (kai): `microbench/thermal_{A100,A6000}/`, with `thermal.png`.
 - **A5000 smoke test:** the debug A5000 is capped at 100 W, so every ramp level throttles to 210 MHz. Unusable for the ramp.
-- **B200:** `microbench/b200_thermal.sbatch`, pending.
+- **B200** (PARCC dgx-b200, node dgx016, PCI 43:00.0): `microbench/thermal_B200/`, job 10342748, 31 min.
 
 ## Results
 **1. Idle power rises linearly with die temperature, and only temperature matters (A100).**
@@ -48,6 +48,13 @@ ramp, uncapped levels).**
 
 - **Independent agreement.** The ramp's leakage coefficient (0.64 W/°C) agrees with the
   cool-down slope (0.71–0.78) without being fitted to it.
+  **Revised 2026-11-09 after the B200 run (§5):** treat this agreement as a coincidence,
+  not as confirmation. In a ramp, bandwidth and temperature rise together — on this A100
+  they correlate at **r = 0.986** — so the temperature coefficient is barely identified
+  separately from the per-byte term. On B200 the same method gives a ramp k of 2.59 W/°C
+  against a cool-down slope of 1.03, a 2.5x disagreement. The cool-down fit is the
+  trustworthy estimate on all three cards, because there bandwidth is zero and temperature
+  varies alone.
 - **About half of the "activity" intercept above idle is temperature.** The per-byte energy
   is about 6% too high when temperature isn't modelled.
 - **The up/down hysteresis is uninformative.** Each level was held until the temperature was
@@ -73,6 +80,70 @@ power and its speed tracks temperature, so leakage and fan power can't be separa
 2 ramp levels per direction stay under the 300 W limit, so the A6000 temperature-corrected fit
 is not reliable.
 
+**5. B200: the effect reproduces, is bigger in watts and smaller in proportion, and it
+breaks the ramp cross-check.**
+
+Same script, no clock or power-limit change, one B200 (1000 W limit, 148 SMs). Baseline
+idle with a context open at 1965 MHz and 32 °C: **240.2 W**.
+
+| cool-down after | W per °C (excluding 2 / 5 / 10 s) | R² | idle extrapolated to the 32 °C baseline | measured baseline |
+|---|---|---|---|---|
+| DRAM stream | 1.08 / 1.06 / 1.05 | 0.99 | 241.0 W | 240.2 W |
+| fp16 GEMM | 1.02 / 1.00 / 0.99 | 0.98 | 241.2 W | 240.2 W |
+
+- **The A100's three qualitative claims all hold.** The heater doesn't matter (stream and
+  GEMM agree to ~5%, and the GEMM heater ran at 1324 TF/s against the stream's 7326 GB/s);
+  the slope barely moves as more of the start is excluded, so it isn't NVML's averaging
+  tail; and both lines pass through the independently measured cold baseline, here to
+  within **1.0 W (0.4%)**.
+- **k grows with the card, but strongly sublinearly.** 1.03 W/°C against the A100's 0.75,
+  for 3.3x the power limit (1000 vs 300 W) and a much larger die — a **1.4x** slope. As a
+  fraction of its own idle the B200 is the *less* temperature-sensitive card:
+  **0.43%/°C** vs the A100's 1.02%/°C.
+- **The B200 runs cold, so the operating swing is smaller.** It peaked at **57 °C** under a
+  full 1000 W GEMM, and returned to 31 °C within the 120 s cool-down floor every time. Our
+  53 B200 trace-replay levels sit at 36–61 °C (median 47). Over the serving swing
+  (32 → 61 °C) idle moves **+30 W, about +12% of idle**, against the A100's +30%.
+- **It hits the power cap on a pure DRAM stream.** At ≥592 concurrent programs the card
+  reached 1000 W and downclocked (1965 → 1530–1732 MHz), so those 4 of 14 ramp levels are
+  excluded from the fit, as on the A100.
+
+**The ramp cross-check does not survive.** The B200 ramp fit gives a leakage term of
+**2.59 W/°C**, 2.5x its own cool-down slope:
+
+| fit | intercept above idle | J per DRAM byte | leakage term |
+|---|---|---|---|
+| P = a + e·BW | 273.0 W | 1.308e-10 | — |
+| P = a + e·BW + k·(T − 32 °C) | 273.0 W | **1.218e-10 (−6.9%)** | 2.59 W/°C |
+
+The cause is collinearity: a ramp raises bandwidth and temperature together, so the two
+regressors are nearly the same variable. Across the three cards the correlation between
+bandwidth and temperature over the fitted levels is **0.956 (B200), 0.986 (A100), 0.924
+(A6000)** — the A100, whose ramp and cool-down happened to agree, is the *most* collinear
+of the three. So that agreement was luck. **Use the cool-down slope**, where bandwidth is
+zero and temperature varies on its own; §2's ramp k should not be quoted as an independent
+confirmation.
+
+**What does replicate cleanly is the correction to the per-byte energy**, which is stable
+even where k is not: **−5.9% (A100), −6.8% (A6000), −6.9% (B200)**. Modelling temperature
+takes 6–7% off `e_b` on every card tested.
+
+**6. Quantified on our own B200 breakdowns.** Applying `P_s(T) = 240.2 + 1.03·(T − 32)`
+with each trace level's own median die temperature, against the cold idle those runs
+actually used (234–244 W):
+
+| level | median T | idle used | idle at T | static share | corrected |
+|---|---|---|---|---|---|
+| 7B reasoning x0.5 | 57 °C | 241.5 W | 265.9 W | 27.6% | 30.3% |
+| MoE reasoning x0.5 | 61 °C | 243.7 W | 270.1 W | 25.0% | 27.7% |
+| MoE azure23_conv x12 | 51 °C | 243.7 W | 259.8 W | 27.2% | 28.9% |
+| 7B azure23_code x2 | 36 °C | 240.0 W | 244.3 W | 66.3% | 67.5% |
+
+Across all 53 levels the static slice is understated by **+0.6 to +5.9 points, median
++2.1**, and the dynamic slices are overstated by the same amount. The error is largest
+exactly where it matters most — the hottest, highest-load levels. This does not change any
+J/token number, only the attribution between static and dynamic.
+
 ## What this changes
 - **Total J/token predictions: little change.** The dynamic coefficients were measured on hot,
   loaded chips, so they already absorb operating-temperature leakage.
@@ -91,4 +162,18 @@ is not reliable.
   - Measure P_s0 per card.
   - Refit e_b and P_0 with the temperature term.
 
-  The B200 run will show whether k scales with die size and power.
+  The B200 run answers this: **k does scale with die size and power, but sublinearly** —
+  1.03 W/°C at 1000 W against 0.75 W/°C at 300 W. Per card:
+
+  | card | idle (cold, clocks up) | k (cool-down) | k as % of idle | swing over its own operating range |
+  |---|---|---|---|---|
+  | A100 80GB PCIe | 73.6 W @ 43 °C | 0.75 W/°C | 1.02%/°C | +22 W (43→72 °C), +30% |
+  | RTX A6000 | 107 W clocks-up / 31 W deep | 0.37–0.43 W/°C (fan-confounded) | — | not reliable |
+  | B200 | 240.2 W @ 32 °C | 1.03 W/°C | 0.43%/°C | +30 W (32→61 °C), +12% |
+
+  So a single k is not portable, but neither is it wild: within 1.4x across a 3.3x range of
+  power limits. Measure it per card; the cool-down is a 4-minute measurement.
+
+  One practical caveat for the refit: **fit k from cool-downs, not from a load ramp.** The
+  ramp makes bandwidth and temperature collinear (r = 0.92–0.99 on all three cards) and the
+  B200 shows it can inflate k by 2.5x.

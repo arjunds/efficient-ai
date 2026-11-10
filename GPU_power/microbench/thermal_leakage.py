@@ -295,9 +295,16 @@ def _plot(d, S, P, pw, out):
         a.scatter([s["temp_c"] for s in w], [s[pw] for s in w], s=2, alpha=0.3, label=p["phase"])
     b = out.get("baseline")
     if b:
-        a.plot(b["temp_c"], b["p_w"], "k*", ms=12, label="baseline")
+        a.plot(b["temp_c"], b["p_w"], "k*", ms=12)
     a.set_xlabel("temperature (C)"); a.set_ylabel("idle power (W)")
-    a.set_title("idle power vs temperature, >2 s after load stops", loc="left", fontsize=9); a.legend(fontsize=7, markerscale=4)
+    a.set_title("idle power vs temperature, >2 s after load stops", loc="left", fontsize=9)
+    # markerscale=4 is for the s=2 scatter dots; give the star its own small
+    # proxy handle so it does not render at 48 pt and cover the legend.
+    hs, ls = a.get_legend_handles_labels()
+    if b:
+        from matplotlib.lines import Line2D
+        hs.append(Line2D([], [], color="k", marker="*", ls="", ms=3)); ls.append("baseline")
+    a.legend(hs, ls, fontsize=7, markerscale=4)
     a = ax[2]
     for dr, m in (("up", "o"), ("down", "s")):
         L = [x for x in out.get("ramp_levels", []) if x["direction"] == dr]
