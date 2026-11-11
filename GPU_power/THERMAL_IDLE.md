@@ -56,7 +56,10 @@ ramp, uncapped levels).**
   trustworthy estimate on all three cards, because there bandwidth is zero and temperature
   varies alone.
 - **About half of the "activity" intercept above idle is temperature.** The per-byte energy
-  is about 6% too high when temperature isn't modelled.
+  is about 6% too high when temperature isn't modelled. (Revised 2026-11-11, §5: with k fixed
+  at the cool-down slope instead of fitted, the A100 numbers barely move: intercept
+  12.5 → 5.6 W, e_b −6.9%. The intercept drop is because this ramp started hot, 53 °C at the
+  first level against the 43 °C baseline: 10 °C × 0.75 ≈ 7.5 W of leakage.)
 - **The up/down hysteresis is uninformative.** Each level was held until the temperature was
   steady, so up and down landed within 1–2 °C of each other. The regression is the
   cross-check.
@@ -113,8 +116,13 @@ idle with a context open at 1965 MHz and 32 °C: **240.2 W**.
 
 | fit | intercept above idle | J per DRAM byte | leakage term |
 |---|---|---|---|
-| P = a + e·BW | 273.0 W | 1.308e-10 | — |
-| P = a + e·BW + k·(T − 32 °C) | 273.0 W | **1.218e-10 (−6.9%)** | 2.59 W/°C |
+| P = a + e·BW | 32.9 W | 1.308e-10 | — |
+| P = a + e·BW + k·(T − 32 °C), k fitted | 32.9 W | 1.218e-10 (−6.9%) | 2.59 W/°C |
+| P = a + e·BW + k·(T − 32 °C), k fixed at the cool-down 1.03 | 32.9 W | **1.272e-10 (−2.8%)** | 1.03 W/°C |
+
+(Absolute intercept 273.0 W; the 240.2 W baseline is subtracted to match §2. Unlike the A100,
+the intercept doesn't move with the temperature term, because the B200 ramp started at the
+baseline temperature: 32 °C at the first level.)
 
 The cause is collinearity: a ramp raises bandwidth and temperature together, so the two
 regressors are nearly the same variable. Across the three cards the correlation between
@@ -124,9 +132,38 @@ of the three. So that agreement was luck. **Use the cool-down slope**, where ban
 zero and temperature varies on its own; §2's ramp k should not be quoted as an independent
 confirmation.
 
-**What does replicate cleanly is the correction to the per-byte energy**, which is stable
-even where k is not: **−5.9% (A100), −6.8% (A6000), −6.9% (B200)**. Modelling temperature
-takes 6–7% off `e_b` on every card tested.
+**The per-byte correction is card-dependent, not a uniform 6–7%** (revised 2026-11-11). The
+free-k fits give −5.9% (A100), −6.8% (A6000), −6.9% (B200), but those carry the same
+collinearity: on the B200 the inflated k (2.59) is what makes the correction look as large as
+the A100's. Holding k at each card's cool-down slope:
+
+| card | k fixed at | e_b correction | °C per TB/s during the ramp | predicted k·dT/dBW ÷ e_b |
+|---|---|---|---|---|
+| A100 | 0.75 (0.71–0.78) | **−6.9%** (−6.6 to −7.2) | 13.5 | 7.9% |
+| A6000 | 0.40 (0.37–0.43), fan-confounded, n=4 | **−4.2%** (−3.9 to −4.5) | 22 | 4.2% |
+| B200 | 1.03 (0.99–1.08) | **−2.8%** (−2.6 to −2.9) | 3.1 | 2.5% |
+
+The size follows from how fast each card heats per unit of bandwidth. The A100 heats
+13.5 °C per TB/s, so a byte carries almost 8% of extra leakage. The B200 heats only 3 °C per
+TB/s (large heatsink, cold intake), so leakage adds under 3%.
+
+**Up/down pairs at the same bandwidth give an in-load k on the B200, and it matches the
+cool-down.** On the A100 the up and down levels landed within 1–2 °C, so the pairs are
+uninformative there. The B200 heats fast enough that the down leg runs 2–4 °C hotter than
+the up leg at the same occupancy. Bandwidth matches to within 0.4%, so the pair difference
+isolates temperature with no collinearity:
+
+| programs | DRAM GB/s | ΔT down − up | ΔP (bandwidth-corrected) | W/°C |
+|---|---|---|---|---|
+| 37 | 548 | +2 °C | +1.9 W | 0.97 |
+| 74 | 1084 | +2 °C | +2.2 W | 1.09 |
+| 148 | 2147 | +4 °C | +4.2 W | 1.05 |
+| 296 | 4078 | +4 °C | +10.5 W | 2.6 (outlier, see below) |
+
+Three of the four pairs agree with the idle cool-down slope (1.03), so on this card leakage
+per °C is the same under load as at idle. Each pair is coarse, because NVML reports
+temperature in whole degrees. At 296 programs (about 800 W) the ramp fit's residual is about
+8 W, which is the same size as the pair difference.
 
 **6. Quantified on our own B200 breakdowns.** Applying `P_s(T) = 240.2 + 1.03·(T − 32)`
 with each trace level's own median die temperature, against the cold idle those runs
@@ -150,8 +187,8 @@ J/token number, only the attribution between static and dynamic.
 - **The breakdown's static slice is understated.**
   - It uses cool, clocks-up idle. At serving temperature the A100's static draw is about
     15–22 W higher, roughly 5–7 points of a 300 W budget.
-  - The dynamic slices are overstated by the same amount. Part of P_0, and about 6% of the
-    per-byte energy, is leakage.
+  - The dynamic slices are overstated by the same amount. Part of P_0, and 3–7% of the
+    per-byte energy (A100 about 7%, B200 about 3%), is leakage.
 - **The power roof moves with temperature and with the card.** The A100's dynamic headroom is
   about 300 − P_s − P_0 ≈ 175–200 W, depending on which P_s.
   - The temperature swing (about 22 W) moves the roof by about 11–12%.
@@ -176,4 +213,5 @@ J/token number, only the attribution between static and dynamic.
 
   One practical caveat for the refit: **fit k from cool-downs, not from a load ramp.** The
   ramp makes bandwidth and temperature collinear (r = 0.92–0.99 on all three cards) and the
-  B200 shows it can inflate k by 2.5x.
+  B200 shows it can inflate k by 2.5x. Use up/down pairs at matched bandwidth as the in-load
+  check (§5). Then refit e_b with k held fixed.
