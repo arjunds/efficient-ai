@@ -303,6 +303,51 @@ the A100 and B200 where it's exposed. If the HBM–die temperature gap at matche
 grows with load, the sensor-lag reading (§7 b) gains weight. If it doesn't, e_b(T) is the
 better description.
 
+**9. How repeatable is "an A100 at T °C idles at X W", and does history matter? (2026-11-13)**
+
+PI questions after the idle-vs-temperature figure:
+- How accurate is a statement like "an A100 at 40 °C idles at X W", and does it vary between runs?
+- What does the picture look like over time?
+
+**Runs:** five kai jobs `a100-hist1..5` (`microbench/thermal_A100_hist*/`), about 12 min each.
+- **Phases:** warm-up baseline, heavy stream to a plateau, then cool; light stream (1/8 occupancy) to a plateau, then cool.
+- **New in the script:** memory (HBM) temperature every 100 ms (`mem_temp.csv`), plus PCI bus id, UUID and serial.
+- **Cards:** four distinct cards. **PCI bus ids repeat across nodes:** hist3 and hist4 were both "E1:00.0" but on node8 and node3. Cards are therefore identified by node + bus from `kai pods`.
+- **One crash:** hist1's first attempt errored on node3 and was rescheduled to node8 01:00.0, the same card as hist2.
+
+Figures: `talk_figs/fig_idle_cards.png`, `fig_idle_history.png`, `fig_thermal_time.png` (`fig_thermal_detail.py`).
+Cool-down samples start 10 s after the load stops.
+
+| question | answer |
+|---|---|
+| Spread within a run at a fixed die temperature | 10–90% of 1 s means is **0.5 W** wide |
+| Same card, two runs (node8 01:00.0), per degree | median **0.2 W** apart, max 1.2 W |
+| Across cards at 50 °C, 6 A100s | **78–110 W**. Five cards sit within 104–111 W (±3%); node3 C1:00.0 is about 30 W lower. |
+| Thermal history at a matched die temperature: warming at idle, after heavy load, after light load | within about **0.5 W** on 3 of 4 cards. On node3 81:00.0 the light-load cool-down runs 1–2 W low at 37–38 °C. |
+
+- **So "this card at T idles at X W" is good to about ±1 W. "An A100 at T idles at X W" is
+  good to about ±3%, with one card in six 30 W off.** Card-to-card variation dominates every
+  other source.
+- **The relationship is convex, not linear.** On every card the slope rises with temperature:
+  0.6–0.9 W/°C at 38–46 °C, 0.7–1.0 at 45–53, 0.8–1.3 at 52–62. That's the expected shape of
+  leakage. It also explains the earlier "history effect": the low warm-up slope (about
+  0.5 W/°C at 31–43 °C) is this curvature, not path dependence. Fit P_s(T) locally or with a
+  quadratic; a single k is an average over the range fitted (0.77 is the 45–68 °C average on
+  the first card).
+- **Memory temperature.** Under heavy load the HBM runs about 14 °C hotter than the die
+  (75 vs 61 °C). Once idle it falls back to its usual offset within about 30 s. At a matched
+  die temperature the memory–die gap is the same for all three histories, so at idle one
+  sensor is enough. Two node3 cards read memory about 13 °C above the die even at idle,
+  against about 2 °C on node8. Their idle power per die temperature is mid-pack, so this
+  looks like a sensor offset or local airflow, not extra power.
+- **Over time** (`fig_thermal_time.png`):
+  - The A100 holds 1410 MHz whenever a context is open, so its idle power just follows
+    temperature.
+  - Under the 300 W cap the A100 sheds clock (1410 → about 1260 MHz).
+  - The A6000's governor drops it to 210 MHz within about 10–20 s of going idle, a step of
+    about 75 W unrelated to temperature. That's the one place where "power management
+    kicking in" dominates idle power.
+
 ## What this changes
 - **Total J/token predictions: little change.** The dynamic coefficients were measured on hot,
   loaded chips, so they already absorb operating-temperature leakage.

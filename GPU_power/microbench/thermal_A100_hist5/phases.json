@@ -1,0 +1,73 @@
+{
+ "info": {
+  "gpu": "NVIDIA A100 80GB PCIe",
+  "sm_count": 108,
+  "power_limit_w": 300.0,
+  "host": "a100-hist5-9zvsg",
+  "started": "2026-11-13 08:36:05",
+  "pci_bus_id": "00000000:81:00.0",
+  "mem_temp_c_at_start": 45.0
+ },
+ "t_base_c": 36,
+ "phases": [
+  {
+   "phase": "baseline",
+   "t0": 1794587765.8987112,
+   "t1": 1794587878.9433205,
+   "temp0": null,
+   "temp1": 36
+  },
+  {
+   "phase": "heat:stream",
+   "t0": 1794587879.777036,
+   "t1": 1794588101.5003154,
+   "temp1": 65,
+   "calls": 7668,
+   "bytes_per_s": 1763860725312.6086,
+   "flops_per_s": 0.0
+  },
+  {
+   "phase": "cool:stream",
+   "t0": 1794588101.5006993,
+   "t1": 1794588308.520952,
+   "temp0": null,
+   "temp1": 38
+  },
+  {
+   "phase": "heat:light",
+   "t0": 1794588308.5620823,
+   "t1": 1794588428.6629224,
+   "temp1": 41,
+   "calls": 4012,
+   "bytes_per_s": 201761025107.04706,
+   "flops_per_s": 0.0
+  },
+  {
+   "phase": "cool:light",
+   "t0": 1794588428.6631985,
+   "t1": 1794588548.675085,
+   "temp0": null,
+   "temp1": 37
+  }
+ ],
+ "args": {
+  "out": "microbench/thermal_A100_hist5",
+  "analyze": null,
+  "phases": [
+   "baseline",
+   "heat:stream",
+   "heat:light"
+  ],
+  "sample_ms": 10.0,
+  "baseline_min_s": 90,
+  "baseline_max_s": 300,
+  "heat_min_s": 120,
+  "heat_max_s": 400.0,
+  "cool_min_s": 120,
+  "cool_max_s": 500.0,
+  "level_min_s": 30,
+  "level_max_s": 150,
+  "gemm_n": null,
+  "ramp_fracs": "0.125,0.25,0.5,1,2,4,8"
+ }
+}

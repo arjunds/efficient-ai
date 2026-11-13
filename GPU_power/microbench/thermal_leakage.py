@@ -107,6 +107,12 @@ def run(a):
         info["pci_bus_id"] = bus.decode() if isinstance(bus, bytes) else bus
     except Exception:
         pass
+    for k, fn in (("uuid", "nvmlDeviceGetUUID"), ("serial", "nvmlDeviceGetSerial")):
+        try:                                            # bus ids repeat across nodes; these don't
+            v = getattr(pynvml, fn)(h)
+            info[k] = v.decode() if isinstance(v, bytes) else v
+        except Exception:
+            pass
     info["mem_temp_c_at_start"] = mt.read()           # None: no memory-temperature sensor exposed
     print("[thermal]", info, flush=True)
     phases = []
