@@ -131,7 +131,7 @@ def run(a):
                        lambda t0: temp_now() <= T_base + 2)
         if "ramp" in a.phases:
             sm = info["sm_count"]
-            fr = [0.125, 0.25, 0.5, 1, 2, 4, 8]
+            fr = [float(x) for x in a.ramp_fracs.split(",")]
             for direction, fs in (("up", fr), ("down", fr[::-1])):
                 for f in fs:
                     nprog = max(1, int(round(sm * f)))
@@ -332,6 +332,8 @@ def main():
     ap.add_argument("--level_min_s", type=float, default=30)
     ap.add_argument("--level_max_s", type=float, default=150)
     ap.add_argument("--gemm_n", type=int, default=None)
+    ap.add_argument("--ramp_fracs", default="0.125,0.25,0.5,1,2,4,8",
+                    help="ramp levels as multiples of the SM count (DRAM-stream programs)")
     a = ap.parse_args()
     if a.analyze:
         s = analyze(a.analyze)

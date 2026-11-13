@@ -19,6 +19,6 @@ kai submit --name "$NAME" \
   --workdir "$REPO" \
   -e STAGES="$STAGES" -e PROV_ARMS="${PROV_ARMS:-a100_graphs,a100_eager,a100_highconc}" \
   -e PROV_LOG_ROOT="${PROV_LOG_ROOT:-logs/A100_prov}" -e MB_OUT="${MB_OUT:-microbench/results_A100_steady.json}" \
-  -e GPU_TAG="${GPU_TAG:-A100}" \
+  -e GPU_TAG="${GPU_TAG:-A100}" -e THERMAL_ARGS="${THERMAL_ARGS:-}" \
   -- bash "$REPO/runai/${JOB_SCRIPT:-gpu_job.sh}"
 echo "submitted $NAME. Follow: kai logs $NAME   (also tee'd to $REPO/runai/a100_job_*.log)"
