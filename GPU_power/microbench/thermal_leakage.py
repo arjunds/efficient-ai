@@ -44,6 +44,46 @@ sys.path.insert(0, HERE)
 COLS = ("t", "energy_mj", "p_inst_w", "p_avg_w", "sm_mhz", "mem_mhz", "temp_c", "reasons")
 
 
+class MemTemp:
+    """GPU and memory (HBM) temperature every `dt` s on its own thread -> mem_temp.csv.
+    NVML exposes memory temperature as a field value (NVML_FI_DEV_MEMORY_TEMP); boards without
+    it (GDDR) return an error and the column stays empty."""
+
+    def __init__(self, h, dt=0.1):
+        import threading
+        import pynvml
+        self.h, self.dt, self.rows, self.nv = h, dt, [], pynvml
+        self.fid = getattr(pynvml, "NVML_FI_DEV_MEMORY_TEMP", 82)
+        self._stop = threading.Event()
+        self._th = threading.Thread(target=self._loop, daemon=True)
+
+    def read(self):
+        try:
+            v = self.nv.nvmlDeviceGetFieldValues(self.h, [self.fid])[0]
+            if getattr(v, "nvmlReturn", 1) != 0:
+                return None
+            return float(getattr(v.value, {0: "dVal", 1: "uiVal", 2: "ulVal", 3: "ullVal", 4: "sllVal", 5: "siVal"}.get(v.valueType, "uiVal")))
+        except Exception:
+            return None
+
+    def _loop(self):
+        while not self._stop.is_set():
+            try:
+                g = self.nv.nvmlDeviceGetTemperature(self.h, self.nv.NVML_TEMPERATURE_GPU)
+            except Exception:
+                g = None
+            self.rows.append((time.time(), g, self.read()))
+            time.sleep(self.dt)
+
+    def start(self):
+        self._th.start()
+        return self
+
+    def stop(self):
+        self._stop.set()
+        self._th.join(timeout=2)
+
+
 # ---------------------------------------------------------------- run
 def run(a):
     import pynvml
@@ -56,11 +96,18 @@ def run(a):
     torch.zeros(1, device="cuda")                       # open the context first
     h = mb.Bench._match_handle(None)                    # UUID match, as energy_microbench (uses no state)
     smp = mb.Sampler(h, a.sample_ms / 1000.0).start()
+    mt = MemTemp(h).start()
     name = pynvml.nvmlDeviceGetName(h)
     name = name.decode() if isinstance(name, bytes) else name
     info = dict(gpu=name, sm_count=torch.cuda.get_device_properties(0).multi_processor_count,
                 power_limit_w=pynvml.nvmlDeviceGetEnforcedPowerLimit(h) / 1e3,
                 host=os.uname().nodename, started=time.strftime("%Y-%m-%d %H:%M:%S"))
+    try:
+        bus = pynvml.nvmlDeviceGetPciInfo(h).busId
+        info["pci_bus_id"] = bus.decode() if isinstance(bus, bytes) else bus
+    except Exception:
+        pass
+    info["mem_temp_c_at_start"] = mt.read()           # None: no memory-temperature sensor exposed
     print("[thermal]", info, flush=True)
     phases = []
 
@@ -116,6 +163,8 @@ def run(a):
     B = torch.randn(n, n, device="cuda", dtype=torch.float16)
     C = torch.empty(n, n, device="cuda", dtype=torch.float16)
     heaters = {"stream": lambda: mb.StreamOp(ws),
+               # light load: 1/8 occupancy, so the die and memory heat less (a second thermal history)
+               "light": lambda: mb.StreamOp(ws, nprog=max(1, info["sm_count"] // 8)),
                "gemm": lambda: mb.TorchOp(lambda: torch.matmul(A, B, out=C), 0.0, 2.0 * n ** 3)}
     T_base = None
     try:
@@ -141,6 +190,11 @@ def run(a):
             idle_until("ramp_cool", a.cool_min_s, a.cool_max_s, lambda t0: temp_now() <= T_base + 2)
     finally:
         smp.stop()
+        mt.stop()
+        with open(os.path.join(a.out, "mem_temp.csv"), "w", newline="") as fh:
+            w = csv.writer(fh)
+            w.writerow(("t", "gpu_temp_c", "mem_temp_c"))
+            w.writerows(mt.rows)
         with open(os.path.join(a.out, "samples.csv"), "w", newline="") as fh:
             w = csv.writer(fh)
             w.writerow(COLS)
