@@ -18,7 +18,11 @@ because NVML's averaging tail settles in about 1.3 s while the die takes minutes
 **Runs:**
 - **A100 80GB PCIe** (kai, PCI C1:00.0) and **RTX A6000** (kai): `microbench/thermal_{A100,A6000}/`, with `thermal.png`.
 - **A5000 smoke test:** the debug A5000 is capped at 100 W, so every ramp level throttles to 210 MHz. Unusable for the ramp.
-- **B200** (PARCC dgx-b200, node dgx016, PCI 43:00.0): `microbench/thermal_B200/`, job 10342748, 31 min.
+- **B200 card A** (PARCC dgx-b200, node dgx016, PCI 43:00.0): `microbench/thermal_B200/`,
+  job 10342748, 31 min.
+- **B200 card B** (node dgx007, PCI DF:00.0): `microbench/thermal_B200_pairs/`, job 10516414,
+  17 min. Dense ramp (12 levels) with **fixed 20 s holds** so the die never equilibrates, to
+  make the up/down pair check informative (§7).
 
 ## Results
 **1. Idle power rises linearly with die temperature, and only temperature matters (A100).**
@@ -165,6 +169,12 @@ per °C is the same under load as at idle. Each pair is coarse, because NVML rep
 temperature in whole degrees. At 296 programs (about 800 W) the ramp fit's residual is about
 8 W, which is the same size as the pair difference.
 
+**Superseded 2026-11-13 by the dedicated pair run (§7).** With 11 pairs instead of 4 and
+ΔT of 8–9 °C instead of 2–4, the in-load k is *not* a single number: it rises with
+bandwidth, and only its zero-bandwidth limit matches the idle cool-down. These four pairs
+all sit in the small-ΔT regime where a ±1 W error moves the ratio by ±0.5 W/°C, so their
+tight agreement with 1.03 was not as informative as it looked.
+
 **6. Quantified on our own B200 breakdowns.** Applying `P_s(T) = 240.2 + 1.03·(T − 32)`
 with each trace level's own median die temperature, against the cold idle those runs
 actually used (234–244 W):
@@ -180,6 +190,61 @@ Across all 53 levels the static slice is understated by **+0.6 to +5.9 points, m
 +2.1**, and the dynamic slices are overstated by the same amount. The error is largest
 exactly where it matters most — the hottest, highest-load levels. This does not change any
 J/token number, only the attribution between static and dynamic.
+
+**7. The in-load k is not constant: it rises with bandwidth, and only its zero-bandwidth
+limit matches the idle cool-down (B200 card B, 2026-11-13).**
+
+Built to settle §5's in-load check. Twelve ramp levels instead of seven, and **fixed 20 s
+holds** (`--level_min_s 20 --level_max_s 20`) so the die never reaches steady state. The
+lag is the point: the down leg then runs much hotter than the up leg at the same
+occupancy. It worked — ΔT at matched bandwidth is **8–9 °C at low occupancy**, against
+2–4 °C with steady-state holds. (20 s, not shorter: each level's mean is taken from the
+last 10 s, so a shorter hold would fold in the load transient. A moving temperature also
+makes the 10 s average fractional rather than snapping to NVML's whole degrees.)
+
+Bandwidth matches across each pair to within 0.2%, so the difference isolates temperature.
+
+| programs | DRAM GB/s | ΔT | ΔP | W/°C |
+|---|---|---|---|---|
+| 18 | 265 | 9.0 | 11.1 | **1.23** |
+| 37 | 542 | 9.0 | 11.8 | **1.31** |
+| 56 | 826 | 8.7 | 13.5 | 1.55 |
+| 74 | 1077 | 8.2 | 14.0 | 1.70 |
+| 111 | 1617 | 7.9 | 14.0 | 1.76 |
+| 148 | 2131 | 6.0 | 11.8 | 1.96 |
+| 185 | 2635 | 4.0 | 6.5 | 1.64 |
+| 222–444 | 3140–5652 | 1.3–2.0 | 3.4–8.1 | 1.70–6.27 (noise) |
+
+**The tail is noise, the rise is not.** ΔT shrinks as occupancy grows, and a ±1 W error in
+ΔP moves the ratio by ±0.11 W/°C at ΔT = 9 but ±0.77 W/°C at ΔT = 1.3 — so the last four
+pairs carry no information. But over the seven well-resolved pairs, where the noise floor
+is ±0.11–0.17, k still climbs from 1.23 to ~1.9. Regressing those on bandwidth:
+
+> **k(BW) ≈ 1.30 + 0.22 W/°C per TB/s** (R² 0.57, n = 7)
+
+- **At zero bandwidth this extrapolates to 1.30 W/°C, against this card's own idle
+  cool-down of 1.21–1.26.** That is the real confirmation that leakage per degree is the
+  same under load as at idle — but it holds *in the limit*, not across the board.
+- **At 4 TB/s the apparent k is about 2.2 W/°C, nearly double the idle value.**
+
+Two mechanisms predict this sign and **this run cannot separate them**: (a) genuinely more
+leakage, because more of the die is powered and switching, so more devices leak per degree;
+(b) a sensor artifact, because NVML reports one temperature while the true mean die and
+HBM temperature run further above it the harder the card is driven, so ΔT is understated
+and the ratio inflated. Distinguishing them needs per-sensor or hot-spot telemetry.
+
+**A second B200, and the card-to-card picture differs from the A100's.** This run landed on
+a different card from §5 (dgx007 PCI DF:00.0 vs dgx016 PCI 43:00.0), so the two can be
+compared at a matched temperature using each card's own fit:
+
+| | idle at 42 °C | cool-down k |
+|---|---|---|
+| card A (dgx016) | 251.5 W | 1.00–1.08 |
+| card B (dgx007) | 246.8 W | 1.21–1.26 |
+
+**4.8 W apart, 1.9%** — nothing like the A100 pair's 26 W (35%) in §3. But their *slopes*
+differ by **18%**, so what varies between cards is not only the offset. Two cards each, on
+both models, so this is a hint and not a distribution.
 
 ## What this changes
 - **Total J/token predictions: little change.** The dynamic coefficients were measured on hot,
@@ -214,4 +279,12 @@ J/token number, only the attribution between static and dynamic.
   One practical caveat for the refit: **fit k from cool-downs, not from a load ramp.** The
   ramp makes bandwidth and temperature collinear (r = 0.92–0.99 on all three cards) and the
   B200 shows it can inflate k by 2.5x. Use up/down pairs at matched bandwidth as the in-load
-  check (§5). Then refit e_b with k held fixed.
+  check, with short fixed holds so ΔT is large enough to resolve (§7). Then refit e_b with k
+  held fixed.
+
+  **And treat P_s(T) with a single k as a low-occupancy approximation.** §7 finds the
+  effective k rising about 0.22 W/°C per TB/s, roughly doubling by 4 TB/s. For our serving
+  breakdowns that is second-order — the §6 correction uses idle-calibrated k and shifts the
+  static slice by about +2 points, and a higher in-load k would only push the same way — but
+  a model claiming to track power *across* occupancy should carry k as a function of load,
+  or state the approximation.

@@ -22,7 +22,7 @@ mkdir -p slurm_out
 source /vast/parcc/sw/etc/profile.d/Z98-lmod.sh
 module load apptainer/1.4.1
 export APPTAINERENV_PYTHONNOUSERSITE=1
-echo "==== B200 thermal $(date) node=$(hostname) ===="
+echo "==== B200 thermal $(date) node=$(hostname) args=${THERMAL_ARGS:-none} ===="
 nvidia-smi --query-gpu=index,name,pci.bus_id,power.limit,enforced.power.limit,clocks.sm,clocks.max.sm,temperature.gpu --format=csv
 apptainer exec --nv -B "$SLURM_SUBMIT_DIR:/workspace" "$SIF" bash -lc \
   "cd /workspace && python3 -W ignore -u microbench/thermal_leakage.py --out microbench/thermal_B200 ${THERMAL_ARGS:-}"
