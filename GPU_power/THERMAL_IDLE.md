@@ -23,6 +23,9 @@ because NVML's averaging tail settles in about 1.3 s while the die takes minutes
 - **B200 card B** (node dgx007, PCI DF:00.0): `microbench/thermal_B200_pairs/`, job 10516414,
   17 min. Dense ramp (12 levels) with **fixed 20 s holds** so the die never equilibrates, to
   make the up/down pair check informative (§7).
+- **A100 card 3** (kai, PCI 61:00.0) and **A6000 card 2** (kai, PCI 81:00.0):
+  `microbench/thermal_{A100,A6000}_run2/`, 2026-11-12. Same 20 s fixed holds, with finer low-load
+  levels (`--ramp_fracs`) so the A6000 gets 8 uncapped levels instead of 2 (§8).
 
 ## Results
 **1. Idle power rises linearly with die temperature, and only temperature matters (A100).**
@@ -245,6 +248,60 @@ compared at a matched temperature using each card's own fit:
 **4.8 W apart, 1.9%** — nothing like the A100 pair's 26 W (35%) in §3. But their *slopes*
 differ by **18%**, so what varies between cards is not only the offset. Two cards each, on
 both models, so this is a hint and not a distribution.
+
+**8. The rising in-load k replicates on the A100 and A6000, more cleanly than on the B200
+(2026-11-12 runs; `microbench/fig_inload_k.png`, `thermal_pairs_fig.py`).**
+
+Same pair method as §7: 20 s fixed holds, pairs with ΔT ≥ 4 °C and no capping.
+
+| card | pairs | k(BW) at matched bandwidth | R² | idle cool-down k | relative ∂e_b/∂T |
+|---|---|---|---|---|---|
+| A100 61:00.0 | 7 (0.11–1.35 TB/s) | **0.52 + 0.78·BW** | 0.97 | 0.77 | 0.6%/°C |
+| A6000 81:00.0 | 7 (0.07–0.54 TB/s) | **0.30 + 2.76·BW** | 0.88 | 0.25 | 1.3%/°C (fan-confounded) |
+| B200 DF:00.0 (§7) | 7 (0.27–2.64 TB/s) | **1.30 + 0.22·BW** | 0.57 | 1.26 | 0.2%/°C |
+
+(BW in TB/s; relative ∂e_b/∂T = the BW coefficient divided by each card's fixed-k e_b.)
+
+- **The rise is real, not a B200 quirk.** It's monotone on all three cards, and on the A100
+  it's the cleanest (R² 0.97). At 1.35 TB/s the A100's apparent k is about 1.6 W/°C, twice
+  its idle value.
+- **A simpler reading than §7's two mechanisms:** dP/dT at fixed bandwidth = k_idle +
+  BW·∂e_b/∂T. So the slope in BW is the temperature sensitivity of the energy per byte
+  itself. On the A100, e_b rises about 0.6% per °C. Over a 25 °C serving swing that's about
+  15% of e_b, too large to ignore in the dynamic term. This is a restatement, not a
+  separation: "more of the chip leaking when busy" and "memory or I/O energy per byte rising
+  with temperature" both look like this. The sensor-lag explanation from §7 is still open.
+- **The zero-bandwidth limit matches idle on two of three cards.** It does on the B200
+  (1.30 vs 1.26) and the A6000 (0.30 vs 0.25). It doesn't on the A100 (0.52 vs 0.77), which
+  isn't explained yet.
+- **Short holds also break the ramp collinearity.** corr(BW, T) falls from 0.92–0.99 with
+  steady holds to 0.73 with 20 s holds. The free ramp k is then 1.02 (A100) and 1.11
+  (A6000), between the idle and loaded pair values, as expected for a load-dependent k. With
+  k held at the idle cool-down slope, e_b drops by 6.3% (A100 card 3) and 3.0% (A6000
+  card 2). That agrees with §5's −6.9% and −4.2%.
+
+**Card-to-card, now 3 A100s and 2 of each other card:**
+
+| card | idle, cold, clocks as noted | idle cool-down k |
+|---|---|---|
+| A100 C1:00.0 | 73.6 W @ 43 °C, 1410 MHz | 0.75–0.78 |
+| A100 41:00.0 | 99.6 W (`idle_clk`), 1410 MHz | — |
+| A100 61:00.0 | 98.6 W @ 38 °C (about 102 W at 43 °C), 1410 MHz | 0.77 |
+| A6000 61:00.0 | 31.0 W @ 32 °C, 210 MHz | 0.37–0.43 (R² 0.86–0.96) |
+| A6000 81:00.0 | 27.9 W @ 32 °C, 210 MHz | 0.25 (R² 0.98) |
+| B200 dgx016 43:00.0 | 251.5 W @ 42 °C | 1.00–1.08 |
+| B200 dgx007 DF:00.0 | 246.8 W @ 42 °C | 1.21–1.26 |
+
+- **A100: C1:00.0 is the outlier.** Two of three cards idle at about 100 W. The slope is the
+  same on both cards measured (0.77). So on the A100 what varies is the offset.
+- **B200: the reverse.** The offsets are within 2%, but the slopes differ by 18%.
+- **A6000:** both differ (10% offset, about 1.6x slope). The first card's fit is noisier,
+  and the fan is in board power.
+
+**Next measurement:** log NVML's memory (HBM) temperature alongside the GPU temperature, on
+the A100 and B200 where it's exposed. If the HBM–die temperature gap at matched bandwidth
+grows with load, the sensor-lag reading (§7 b) gains weight. If it doesn't, e_b(T) is the
+better description.
 
 ## What this changes
 - **Total J/token predictions: little change.** The dynamic coefficients were measured on hot,
