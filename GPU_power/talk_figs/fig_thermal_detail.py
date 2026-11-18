@@ -164,9 +164,10 @@ def main():
     fig.tight_layout(rect=(0, 0.08, 1, 0.95))
     fig.savefig(os.path.join(HERE, "fig_idle_history.png"), dpi=180, facecolor=SURF)
 
-    # ---- fig C: over time, A100 vs A6000
-    runs = [("A100_hist1", "A100 (node8 01:00.0)"), ("A6000_run2", "RTX A6000 (81:00.0)")]
-    fig, ax = plt.subplots(3, 2, figsize=(11, 6.4), facecolor=SURF, sharex="col",
+    # ---- fig C: over time, A100 vs A6000 vs B200 (the B200 run predates memory-temperature logging)
+    runs = [("A100_hist1", "A100 (node8 01:00.0)"), ("A6000_run2", "RTX A6000 (81:00.0)"),
+            ("B200", "B200 (dgx016 43:00.0)")]
+    fig, ax = plt.subplots(3, len(runs), figsize=(15.5, 6.6), facecolor=SURF, sharex="col",
                            gridspec_kw=dict(height_ratios=[1.3, 1, 0.7]))
     for j, (tag, lab) in enumerate(runs):
         ph, S = load(tag)
@@ -181,7 +182,7 @@ def main():
         if np.isfinite(S["mem_c"]).any():
             ax[1, j].plot(tm[::k], S["mem_c"][::k], color=CAT[2], lw=1.2, label="memory (HBM)")
         else:
-            ax[1, j].text(0.99, 0.95, "no memory sensor (GDDR6)", transform=ax[1, j].transAxes, ha="right",
+            ax[1, j].text(0.99, 0.95, "no memory sensor (GDDR6)" if "A6000" in tag else "memory temp not logged in this run", transform=ax[1, j].transAxes, ha="right",
                           va="top", fontsize=7.5, color=INK2)
         ax[2, j].plot(tm[::k], S["sm_mhz"][::k], color=CAT[6], lw=1.0)
         ax[0, j].set_title(lab, loc="left", fontsize=10, color=INK)
@@ -191,9 +192,10 @@ def main():
             style(ax[i, j])
         if np.isfinite(S["mem_c"]).any():
             ax[1, j].legend(frameon=False, fontsize=7.5, loc="upper right")
-    fig.suptitle("Over time. A100: holds 1410 MHz at idle, so idle power follows temperature smoothly; memory runs "
-                 "hotter than the die under load but tracks it once idle.\nA6000: the clock governor drops to 210 MHz "
-                 "within seconds of going idle, a ~75 W step unrelated to temperature.",
+    fig.suptitle("Over time. Under load, every card that reaches its power cap (A100/A6000 300 W, B200 1000 W) sheds SM clock, "
+                 "and sheds more as it heats (~2-6 MHz/°C): leakage eats the budget.\nAt idle, A100 and B200 hold max clock, "
+                 "so idle power follows temperature smoothly; the A6000 governor drops to 210 MHz, a ~75 W step unrelated "
+                 "to temperature.",
                  x=0.01, ha="left", fontsize=9, color=INK)
     fig.tight_layout(rect=(0, 0, 1, 0.93))
     fig.savefig(os.path.join(HERE, "fig_thermal_time.png"), dpi=180, facecolor=SURF)
