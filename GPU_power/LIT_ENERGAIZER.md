@@ -53,7 +53,7 @@ below is (P − P_idle) / achieved bandwidth:
 | A100-PCIe (HBM2) | 510 MHz | 825 GB/s (0.53) | 114 pJ/B |
 | A100-PCIe (HBM2) | 705 MHz | 983 GB/s (0.63) | 113 pJ/B |
 | A100-PCIe (HBM2) | 900 MHz | 1152 GB/s (0.74) | 113 pJ/B |
-| A100-PCIe (HBM2) | 1410 MHz | 1270 GB/s (0.82) | 136 pJ/B (higher core voltage) |
+| A100-PCIe (HBM2) | 1410 MHz lock, held ~1308 at the cap | 1270 GB/s (0.82) | 136 pJ/B (higher core voltage) |
 | A10 (GDDR6) | 900 MHz | 453 GB/s (0.76) | ~150 pJ/B (baseline is tiny-kernel power; true idle unknown) |
 
 These include the kernel's own SM and L2 power, so they are an upper bound on DRAM-only
@@ -76,6 +76,34 @@ energy.
   on-chip share scales with V²f. Our serving runs use default boost clocks, so our
   lumped `e_wbyte` includes a clock-dependent on-chip share. Our A5000 L2 data shows the
   same effect.
+
+## Power roof vs SM clock (`liminal_energy/energaizer_clock_roof.py`, `figs/fig_clock_roof.png`)
+Power roof at the 250 W cap, φ_P(I) = (P_cap − P_idle(f)) / (e_b/I + e_f), per clock, with
+coefficients **only from runs below the cap** (corrected 2026-11-20; the first version used the
+default governor's capped GEMMs as the full-clock compute roof and e_f, which was circular and
+biased e_f low to 0.72 pJ/FLOP).
+- 510/705/900 MHz are uncapped: e_f = 0.83–0.84 pJ/FLOP (flat), GEMM rate linear in clock
+  (0.198 TF/s per MHz). Idle rises from 47 W at 900 MHz to 67 W at 1410: voltage climbs above
+  ~1000 MHz, and e_b rises 102 → 143 pJ/B from 900 to 1308 MHz.
+- Even streaming cannot hold a 1410 lock under the cap (ran at 1308 MHz, 240 W), so the
+  full-clock row is at 1308 MHz. No uncapped GEMM exists above 900 MHz, so its e_f is a band,
+  0.83–1.17 pJ/FLOP (flat value, up to scaled by e_b's rise), and its compute roof 259 TF/s is
+  the linear clock scaling.
+- **At full clock the cap binds from intensity ~10 upward**, including large GEMMs: the power
+  roof is 0.90× the unconstrained roof at I = 30, 0.58–0.67× at 100, 0.45–0.56× at 300–1000.
+  Decode-like intensity (1–10) stays bandwidth-bound, at the edge at 10.
+- **Dropping the clock recovers part of it.** The best roof over clocks (an ideal governor)
+  loses 9% at I = 30, 14% at 100, 33% at 300, ~24% at 1000 against the full-clock roofline;
+  900 MHz is best for I = 30–300. The default governor's GEMMs (capped at 1035 MHz) reach
+  198 TF/s, above the full-clock power band (146–196 TF/s) at their I ≈ 680.
+- **The GEMM inputs are low-activity constants, so e_f is a floor.** CUDA_Bench
+  (`include/CUDA_Bench/gemm/gemm_cublas_launch_fp.cuh`) fills A and B with ±1.0 by column
+  parity and C with 0; with A alternating along k, every output is 0 for even K, and ±1.0 has
+  an all-zero mantissa. That is close to the zero-input case. Real-data GEMMs draw more:
+  LBNL SC'25 splits A100 FP16 matrix energy into 0.37 pJ/FLOP control + 0.33 datapath (random
+  inputs), and Meta's Power Roofline (MICRO 2026) gets 1.70x the throughput at a fixed B200 cap
+  with zeros vs random. So with real data e_f is higher, the power roof lower, and the cap binds
+  harder at high intensity than drawn here. Our own serving fits use real weights.
 
 ## What to adopt
 1. **Steady-state streaming proxy (the PI's "blast HBM"):** a ≥1 GB read or copy
