@@ -1,0 +1,87 @@
+{
+ "A100_pulse1": {
+  "n": 58,
+  "n_dropped_clock_not_recovered": 0,
+  "ref": "cool-down (quadratic)",
+  "idle_mhz": 1410.0,
+  "res_median": 0.13591116427433292,
+  "res_p10": -0.8920125449988504,
+  "res_p90": 0.7841473820916081,
+  "res_by_load": {
+   "pulse:stream": 0.16727067669172868,
+   "pulse:gemm": 0.536295876053785,
+   "pulse_up": -0.14970510366826062,
+   "pulse_down": -0.004078195488695258
+  },
+  "res_vs_bw_w_per_tbs": -0.0358844783808868,
+  "corr_res_bw": -0.039914299218243916,
+  "mem_gap_range": [
+   1.0,
+   17.0
+  ],
+  "res_vs_mem_gap_w_per_c": -0.010749669993467032,
+  "corr_res_mem_gap": -0.09434236810251272,
+  "trough_gap_capped": {
+   "median": -6.444999999999993,
+   "p10": -18.157499999999995,
+   "clk_load": [
+    1020.0,
+    1320.0
+   ]
+  },
+  "trough_gap_uncapped": {
+   "median": -0.09700000000000841,
+   "p10": -1.369499999999995,
+   "clk_load": [
+    1410.0,
+    1410.0
+   ]
+  },
+  "pulse:stream_trough_gap_median": -4.448999999999998,
+  "pulse:stream_dT_load_to_late": 2.0,
+  "pulse:gemm_trough_gap_median": -16.629999999999995,
+  "pulse:gemm_dT_load_to_late": 5.0
+ },
+ "A6000_pulse1": {
+  "n": 54,
+  "n_dropped_clock_not_recovered": 1,
+  "ref": "pause self-fit (linear)",
+  "idle_mhz": 210.0,
+  "res_median": 0.03676940560942654,
+  "res_p10": -1.1746382108242173,
+  "res_p90": 1.1590534351145312,
+  "res_by_load": {
+   "pulse:stream": -0.27437850587526214,
+   "pulse:gemm": -0.20808268290588217,
+   "pulse_up": 0.6830534351145303,
+   "pulse_down": 0.5210534351145384
+  },
+  "res_vs_bw_w_per_tbs": 0.5988635146947197,
+  "corr_res_bw": 0.19051414541790115,
+  "trough_gap_capped": {
+   "median": -0.681999999999988,
+   "p10": -10.6468,
+   "clk_load": [
+    1320.0,
+    1350.0
+   ]
+  },
+  "trough_gap_uncapped": {
+   "median": -0.08500000000000796,
+   "p10": -0.22400000000000375,
+   "clk_load": [
+    1890.0,
+    1935.0
+   ]
+  },
+  "pulse:stream_trough_gap_median": -0.1700000000000017,
+  "pulse:stream_dT_load_to_late": 4.0,
+  "pulse:gemm_trough_gap_median": -0.681999999999988,
+  "pulse:gemm_dT_load_to_late": 5.0,
+  "clocks_up_idle_fit": {
+   "w_per_c": 0.5925680590102077,
+   "p_at_40": 92.46444926666089,
+   "p_at_60": 104.31581044686504
+  }
+ }
+}

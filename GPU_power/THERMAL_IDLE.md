@@ -477,6 +477,21 @@ GPU-59207268, 55 pauses). Figure: `talk_figs/fig_pause_static.png`.
   ~0.8–1.0 W/°C above 55 °C, flatter below (fan speed is in board power on this blower card). The
   model's P_s of 106.7 W is this card's clocks-up idle at about 62 °C. Capped GEMM pauses show a
   smaller trough (median 0.7 W, IQR 0.2–4.7) than the A100's.
+- **Nothing about the load matters except die temperature and clock** (`talk_figs/fig_pause.png`,
+  bottom row; numbers in `fig_pause.json`). With the clock recovered, pause power sits on the idle
+  line at the same die temperature (A100: median +0.14 W, 10–90% −0.9..+0.8 W, n = 58), and the
+  residual does not depend on:
+  - **the bandwidth the card was pulling just before:** A100 −0.04 W per TB/s (r = −0.04, 0–1.84
+    TB/s); A6000 +0.6 W per TB/s (r = 0.19, 0–0.71 TB/s);
+  - **how hot the HBM was:** on the A100 the HBM read 1–17 °C above the die when the pause
+    started, slope −0.01 W/°C (r = −0.09). The HBM takes ~30 s to settle (§9), so during a 1 s
+    pause it is still at its loaded temperature.
+
+  So on the A100 a hot HBM adds no measurable static power. That argues against §10's reading
+  of the rising in-load k (§7, §8) as HBM leakage, and points to the dynamic terms instead
+  (energy per byte rising with temperature). The B200, where §10 proposed it, is the test that
+  matters; its pause run (`thermal_B200_pulse1`) is queued. One A6000 pause is dropped: the first
+  GEMM pause ended at 1800 MHz, clock not yet recovered.
 - **For the model:** below the cap, P_s(T) from cool-downs is the static term at load
   temperature, within ~1 W. At the cap it is lower, by an amount set by how far the clock drops.
   - **A100 serving is at the cap for 80–93% of busy time** (`logs/A100_prov` power traces,
