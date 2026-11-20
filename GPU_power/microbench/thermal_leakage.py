@@ -24,6 +24,16 @@ clock, temperature, throttle reasons):
              -> up vs down at the same bandwidth differ only in temperature:
                 hysteresis dP/dT cross-checks the cool-down slope, and
                 P = a + e*BW + k*(T - T_ref) gives a leakage-corrected e_b and P_0.
+  pulse:<op> run <op> for --pulse_total_s, stopping for --pulse_off_s every --pulse_on_s,
+             then cool:pulse_<op>.
+  pulse_ramp DRAM stream at --pulse_fracs levels, up then down, --pulse_level_s each, with
+             the same pauses; then ramp_cool.
+             -> static power AT LOAD TEMPERATURE: activity power drops within ~0.1 s of a
+                stop (0.2 s on GDDR boards), while the die needs seconds to cool, so the
+                power just after the drop is the zero-activity power at the loaded die
+                temperature. Per pause: the trough (clock/voltage still near the loaded
+                level), 0.05-0.3 s after the drop, and the end of the pause (clock back at
+                idle max). Trough and end bracket static power under load.
 
   python3 microbench/thermal_leakage.py --out microbench/thermal_A5000          # run
   python3 microbench/thermal_leakage.py --analyze microbench/thermal_A5000      # analyse
@@ -137,6 +147,34 @@ def run(a):
         phases.append(dict(phase=label, t0=t0, t1=time.time(), temp0=None, temp1=temp_now()))
         print(f"[thermal] {label}: {time.time() - t0:.0f} s, T={temp_now()} C", flush=True)
 
+    def pulsed(label, op, total_s, on_s, off_s, extra=None):
+        """run op for total_s, idling off_s after every on_s of work; logs each pause"""
+        op.tune(0.03)
+        torch.cuda.synchronize()
+        t0 = seg0 = time.time()
+        calls, busy_s, pauses = 0, 0.0, []
+        while True:
+            op(); calls += 1
+            torch.cuda.synchronize()
+            now = time.time()
+            if now - seg0 >= on_s:
+                busy_s += now - seg0
+                if now - t0 >= total_s:
+                    break
+                p0 = time.time()
+                time.sleep(off_s)
+                pauses.append([p0, time.time()])
+                seg0 = time.time()
+        t1 = time.time()
+        rec = dict(phase=label, t0=t0, t1=t1, temp1=temp_now(), calls=calls, busy_s=busy_s, pauses=pauses)
+        rec.update(bytes_per_s=getattr(op, "bytes_per_call", 0.0) * calls / max(busy_s, 1e-9),
+                   flops_per_s=getattr(op, "flops_per_call", 0.0) * calls / max(busy_s, 1e-9))
+        rec.update(extra or {})
+        phases.append(rec)
+        print(f"[thermal] {label}: {t1 - t0:.0f} s, {len(pauses)} pauses, T={temp_now()} C, "
+              f"{rec['bytes_per_s'] / 1e9:.0f} GB/s {rec['flops_per_s'] / 1e12:.1f} TF/s", flush=True)
+        return rec
+
     def busy_until(label, op, min_s, max_s, done, bw=None):
         op.tune(0.03)
         torch.cuda.synchronize()
@@ -179,21 +217,38 @@ def run(a):
                        lambda t0: steady(t0, 60, 1))
             T_base = temp_now()
         T_base = T_base if T_base is not None else temp_now()
-        for op_name in [p.split(":", 1)[1] for p in a.phases if p.startswith("heat:")]:
-            busy_until(f"heat:{op_name}", heaters[op_name](), a.heat_min_s, a.heat_max_s,
-                       lambda t0: steady(t0, 60, 1))
-            idle_until(f"cool:{op_name}", a.cool_min_s, a.cool_max_s,
-                       lambda t0: temp_now() <= T_base + 2)
-        if "ramp" in a.phases:
-            sm = info["sm_count"]
-            fr = [float(x) for x in a.ramp_fracs.split(",")]
-            for direction, fs in (("up", fr), ("down", fr[::-1])):
-                for f in fs:
-                    nprog = max(1, int(round(sm * f)))
-                    r = busy_until(f"ramp_{direction}:{nprog}", mb.StreamOp(ws, nprog=nprog),
-                                   a.level_min_s, a.level_max_s, lambda t0: steady(t0, 20, 0.5))
-                    r.update(direction=direction, nprog=nprog)
-            idle_until("ramp_cool", a.cool_min_s, a.cool_max_s, lambda t0: temp_now() <= T_base + 2)
+        sm = info["sm_count"]
+        for ph in a.phases:                              # in the order given
+            if ph.startswith("heat:"):
+                op_name = ph.split(":", 1)[1]
+                busy_until(f"heat:{op_name}", heaters[op_name](), a.heat_min_s, a.heat_max_s,
+                           lambda t0: steady(t0, 60, 1))
+                idle_until(f"cool:{op_name}", a.cool_min_s, a.cool_max_s,
+                           lambda t0: temp_now() <= T_base + 2)
+            elif ph.startswith("pulse:"):
+                op_name = ph.split(":", 1)[1]
+                pulsed(f"pulse:{op_name}", heaters[op_name](), a.pulse_total_s, a.pulse_on_s, a.pulse_off_s)
+                idle_until(f"cool:pulse_{op_name}", a.cool_min_s, a.cool_max_s,
+                           lambda t0: temp_now() <= T_base + 2)
+            elif ph == "ramp":
+                fr = [float(x) for x in a.ramp_fracs.split(",")]
+                for direction, fs in (("up", fr), ("down", fr[::-1])):
+                    for f in fs:
+                        nprog = max(1, int(round(sm * f)))
+                        r = busy_until(f"ramp_{direction}:{nprog}", mb.StreamOp(ws, nprog=nprog),
+                                       a.level_min_s, a.level_max_s, lambda t0: steady(t0, 20, 0.5))
+                        r.update(direction=direction, nprog=nprog)
+                idle_until("ramp_cool", a.cool_min_s, a.cool_max_s, lambda t0: temp_now() <= T_base + 2)
+            elif ph == "pulse_ramp":
+                fr = [float(x) for x in (a.pulse_fracs or a.ramp_fracs).split(",")]
+                for direction, fs in (("up", fr), ("down", fr[::-1])):
+                    for f in fs:
+                        nprog = max(1, int(round(sm * f)))
+                        pulsed(f"pulse_{direction}:{nprog}", mb.StreamOp(ws, nprog=nprog), a.pulse_level_s,
+                               a.pulse_on_s, a.pulse_off_s, extra=dict(direction=direction, nprog=nprog))
+                idle_until("ramp_cool", a.cool_min_s, a.cool_max_s, lambda t0: temp_now() <= T_base + 2)
+            elif ph != "baseline":
+                raise SystemExit(f"unknown phase {ph}")
     finally:
         smp.stop()
         mt.stop()
@@ -323,8 +378,56 @@ def analyze(d):
                                dbw_pct=100 * (dn["bw_gbs"] / u["bw_gbs"] - 1),
                                w_per_c=(dn["p_w"] - u["p_w"]) / (dn["temp_c"] - u["temp_c"])))
         out["hysteresis"] = hy
+    out["pauses"] = _pauses(S, P, pw)
+    pz = [x for x in out["pauses"] if x.get("p_hot_w") is not None]
+    if len(pz) >= 4 and max(x["t_load_c"] for x in pz) - min(x["t_load_c"] for x in pz) >= 3:
+        (a0, k), r2, rmse = _lstsq([[1.0, x["t_load_c"]] for x in pz], [x["p_hot_w"] for x in pz])
+        (a1, k1), r21, rmse1 = _lstsq([[1.0, x["t_late_c"]] for x in pz], [x["p_late_w"] for x in pz])
+        out["pause_fit"] = dict(hot=dict(w_per_c=k, p_at_tbase=a0 + k * (meta["t_base_c"] or 0), r2=r2, rmse_w=rmse),
+                                late=dict(w_per_c=k1, p_at_tbase=a1 + k1 * (meta["t_base_c"] or 0), r2=r21, rmse_w=rmse1),
+                                n=len(pz))
     json.dump(out, open(os.path.join(d, "summary.json"), "w"), indent=1)
     _plot(d, S, P, pw, out)
+    return out
+
+
+def _med(v):
+    v = sorted(x for x in v if x is not None)
+    return v[len(v) // 2] if v else None
+
+
+def _pauses(S, P, pw):
+    """Per pause: the loaded state just before (last 0.5 s), the zero-activity power at the
+    loaded temperature ('hot': 0.05-0.30 s after power crosses halfway from loaded to the end
+    of the pause), and the end of the pause ('late': last 0.2 s, clock recovered)."""
+    out = []
+    for p in P:
+        for i, (p0, p1) in enumerate(p.get("pauses", [])):
+            ld = [s for s in S if p0 - 0.5 <= s["t"] < p0 and s[pw] is not None]
+            af = [s for s in S if p0 <= s["t"] <= p1 and s[pw] is not None]
+            lt = [s for s in af if s["t"] >= p1 - 0.2]
+            if len(ld) < 5 or len(lt) < 3:
+                continue
+            p_load, p_late = _med([s[pw] for s in ld]), _med([s[pw] for s in lt])
+            thr = 0.5 * (p_load + p_late)
+            t_drop = next((s["t"] for s in af if s[pw] < thr), None)
+            rec = dict(phase=p["phase"], i=i, nprog=p.get("nprog"), t0=p0, off_s=p1 - p0,
+                       bw_gbs=p.get("bytes_per_s", 0) / 1e9, tflops=p.get("flops_per_s", 0) / 1e12,
+                       p_load_w=p_load, t_load_c=_med([s["temp_c"] for s in ld]), clk_load=_med([s["sm_mhz"] for s in ld]),
+                       capped=any(s["reasons"] and int(s["reasons"]) & 0x4 for s in ld),
+                       p_late_w=p_late, t_late_c=_med([s["temp_c"] for s in lt]), clk_late=_med([s["sm_mhz"] for s in lt]),
+                       drop_s=None if t_drop is None else t_drop - p0)
+            # trough: lowest 50 ms running median in the pause -- zero activity while the clock and
+            # voltage are still at (or near) their loaded level, before the governor raises them
+            if len(af) >= 5:
+                rm = [(_med([x[pw] for x in af[j:j + 5]]), af[j + 2]) for j in range(len(af) - 4)]
+                pmin, smin = min(rm, key=lambda r: r[0])
+                rec.update(p_min_w=pmin, t_min_s=smin["t"] - p0, clk_min=smin["sm_mhz"], temp_min_c=smin["temp_c"])
+            hot = [s for s in af if t_drop is not None and t_drop + 0.05 <= s["t"] <= t_drop + 0.30]
+            if len(hot) >= 3:
+                rec.update(p_hot_w=_med([s[pw] for s in hot]), t_hot_c=_med([s["temp_c"] for s in hot]),
+                           clk_hot=_med([s["sm_mhz"] for s in hot]))
+            out.append(rec)
     return out
 
 
@@ -337,7 +440,8 @@ def _plot(d, S, P, pw, out):
         print("[analyze] no matplotlib:", e)
         return
     t0 = S[0]["t"]
-    fig, ax = plt.subplots(1, 3, figsize=(16, 4.4))
+    npan = 4 if out.get("pauses") else 3
+    fig, ax = plt.subplots(1, npan, figsize=(5.3 * npan, 4.4))
     a = ax[0]
     a.plot([s["t"] - t0 for s in S], [s[pw] for s in S], lw=0.4, color="#2a78d6", label=pw)
     a2 = a.twinx()
@@ -374,6 +478,22 @@ def _plot(d, S, P, pw, out):
         fig.colorbar(sc, ax=a, label="C")
     a.set_xlabel("DRAM GB/s"); a.set_ylabel("W"); a.legend(fontsize=7)
     a.set_title("occupancy ramp up (o) / down (s)", loc="left", fontsize=9)
+    if npan == 4:
+        a = ax[3]
+        for p in P:
+            if p["phase"].startswith("cool") or p["phase"] == "ramp_cool":
+                w = [s for s in S if p["t0"] + 10 <= s["t"] <= p["t1"] and s[pw] and s["temp_c"]]
+                a.scatter([s["temp_c"] for s in w], [s[pw] for s in w], s=1, color="#bbb", alpha=0.3)
+        pz = [x for x in out["pauses"] if x.get("p_hot_w") is not None]
+        a.scatter([x["t_load_c"] for x in pz], [x["p_hot_w"] for x in pz], s=14, color="#d03b3b",
+                  label="just after the stop (loaded T, recovering clock)")
+        a.scatter([x["t_load_c"] for x in pz if x.get("p_min_w")], [x["p_min_w"] for x in pz if x.get("p_min_w")],
+                  s=14, marker="v", color="#6250d6", label="trough (loaded T, clock not yet raised)")
+        a.scatter([x["t_late_c"] for x in pz], [x["p_late_w"] for x in pz], s=14, color="#2a78d6",
+                  label="end of pause (clock recovered)")
+        a.scatter([], [], s=6, color="#bbb", label="cool-down idle (>10 s)")
+        a.set_xlabel("die temperature (C)"); a.set_ylabel("W"); a.legend(fontsize=7)
+        a.set_title("zero-activity power during load pauses", loc="left", fontsize=9)
     fig.tight_layout(); fig.savefig(os.path.join(d, "thermal.png"), dpi=140)
 
 
@@ -394,6 +514,11 @@ def main():
     ap.add_argument("--gemm_n", type=int, default=None)
     ap.add_argument("--ramp_fracs", default="0.125,0.25,0.5,1,2,4,8",
                     help="ramp levels as multiples of the SM count (DRAM-stream programs)")
+    ap.add_argument("--pulse_on_s", type=float, default=15.0, help="work between pauses")
+    ap.add_argument("--pulse_off_s", type=float, default=1.0, help="pause length")
+    ap.add_argument("--pulse_total_s", type=float, default=240.0, help="length of a pulse:<op> phase")
+    ap.add_argument("--pulse_level_s", type=float, default=45.0, help="length of each pulse_ramp level")
+    ap.add_argument("--pulse_fracs", default=None, help="pulse_ramp levels (default: --ramp_fracs)")
     a = ap.parse_args()
     if a.analyze:
         s = analyze(a.analyze)
