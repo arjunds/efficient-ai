@@ -1,0 +1,31 @@
+{
+ "A100_pulse1": {
+  "uncapped": {
+   "n": 16,
+   "end_minus_trough_w": 0.09700000000000841,
+   "clk_load": 1410.0
+  },
+  "capped stream": {
+   "n": 27,
+   "end_minus_trough_w": 4.448999999999998,
+   "clk_load": 1290.0
+  },
+  "capped GEMM": {
+   "n": 15,
+   "end_minus_trough_w": 16.629999999999995,
+   "clk_load": 1035.0
+  }
+ },
+ "A6000_pulse1": {
+  "uncapped": {
+   "n": 41,
+   "end_minus_trough_w": 0.08500000000000796,
+   "clk_load": 1905.0
+  },
+  "capped GEMM": {
+   "n": 14,
+   "end_minus_trough_w": 0.6504999999999939,
+   "clk_load": 1335.0
+  }
+ }
+}

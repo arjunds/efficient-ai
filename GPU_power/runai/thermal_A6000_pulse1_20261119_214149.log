@@ -1,0 +1,27 @@
+==== thermal Thu Nov 19 21:41:49 PST 2026 host=thermal-a6000-pulse1-44vzl tag=A6000_pulse1 ====
+name, pci.bus_id, power.limit [W], enforced.power.limit [W], clocks.current.sm [MHz], clocks.max.sm [MHz], temperature.gpu, fan.speed [%]
+NVIDIA RTX A6000, 00000000:A1:00.0, 300.00 W, 300.00 W, 210 MHz, 2100 MHz, 31, 30 %
+[thermal] {'gpu': 'NVIDIA RTX A6000', 'sm_count': 84, 'power_limit_w': 300.0, 'host': 'thermal-a6000-pulse1-44vzl', 'started': '2026-11-19 21:41:50', 'pci_bus_id': '00000000:A1:00.0', 'uuid': 'GPU-59207268-ffb1-03f2-cdde-febe77eb009c', 'serial': '1324521060349', 'mem_temp_c_at_start': None}
+[thermal] baseline: 90 s, T=31 C
+[thermal] pulse:stream: 255 s, 15 pauses, T=65 C, 711 GB/s 0.0 TF/s
+[thermal] cool:pulse_stream: 120 s, T=33 C
+[thermal] pulse:gemm: 255 s, 15 pauses, T=71 C, 0 GB/s 109.7 TF/s
+[thermal] cool:pulse_gemm: 125 s, T=33 C
+[thermal] pulse_up:10: 47 s, 2 pauses, T=47 C, 226 GB/s 0.0 TF/s
+[thermal] pulse_up:21: 47 s, 2 pauses, T=55 C, 452 GB/s 0.0 TF/s
+[thermal] pulse_up:42: 47 s, 2 pauses, T=62 C, 674 GB/s 0.0 TF/s
+[thermal] pulse_up:84: 47 s, 2 pauses, T=64 C, 710 GB/s 0.0 TF/s
+[thermal] pulse_up:168: 47 s, 2 pauses, T=65 C, 711 GB/s 0.0 TF/s
+[thermal] pulse_up:336: 47 s, 2 pauses, T=66 C, 712 GB/s 0.0 TF/s
+[thermal] pulse_up:672: 47 s, 2 pauses, T=66 C, 711 GB/s 0.0 TF/s
+[thermal] pulse_down:672: 47 s, 2 pauses, T=66 C, 712 GB/s 0.0 TF/s
+[thermal] pulse_down:336: 47 s, 2 pauses, T=65 C, 711 GB/s 0.0 TF/s
+[thermal] pulse_down:168: 47 s, 2 pauses, T=61 C, 711 GB/s 0.0 TF/s
+[thermal] pulse_down:84: 47 s, 2 pauses, T=64 C, 710 GB/s 0.0 TF/s
+[thermal] pulse_down:42: 47 s, 2 pauses, T=63 C, 674 GB/s 0.0 TF/s
+[thermal] pulse_down:21: 47 s, 2 pauses, T=60 C, 453 GB/s 0.0 TF/s
+[thermal] pulse_down:10: 47 s, 2 pauses, T=56 C, 225 GB/s 0.0 TF/s
+[thermal] ramp_cool: 120 s, T=33 C
+[thermal] wrote 156326 samples to microbench/thermal_A6000_pulse1
+[analyze] no matplotlib: No module named 'matplotlib'
+==== done Thu Nov 19 22:08:59 PST 2026 ====

@@ -1,0 +1,27 @@
+==== thermal Thu Nov 19 21:05:15 PST 2026 host=thermal-a100-pulse1-56m5r tag=A100_pulse1 ====
+name, pci.bus_id, power.limit [W], enforced.power.limit [W], clocks.current.sm [MHz], clocks.max.sm [MHz], temperature.gpu, fan.speed [%]
+NVIDIA A100 80GB PCIe, 00000000:81:00.0, 300.00 W, 300.00 W, 210 MHz, 1410 MHz, 33, [N/A]
+[thermal] {'gpu': 'NVIDIA A100 80GB PCIe', 'sm_count': 108, 'power_limit_w': 300.0, 'host': 'thermal-a100-pulse1-56m5r', 'started': '2026-11-19 21:05:16', 'pci_bus_id': '00000000:81:00.0', 'uuid': 'GPU-b30129ef-c7c8-bf57-a1c5-0b80aed5dd72', 'serial': '1651124005511', 'mem_temp_c_at_start': 37.0}
+[thermal] baseline: 90 s, T=39 C
+[thermal] pulse:stream: 255 s, 15 pauses, T=62 C, 1836 GB/s 0.0 TF/s
+[thermal] cool:pulse_stream: 124 s, T=41 C
+[thermal] pulse:gemm: 255 s, 15 pauses, T=64 C, 0 GB/s 217.9 TF/s
+[thermal] cool:pulse_gemm: 132 s, T=41 C
+[thermal] pulse_up:14: 47 s, 2 pauses, T=43 C, 218 GB/s 0.0 TF/s
+[thermal] pulse_up:27: 47 s, 2 pauses, T=46 C, 408 GB/s 0.0 TF/s
+[thermal] pulse_up:54: 47 s, 2 pauses, T=50 C, 782 GB/s 0.0 TF/s
+[thermal] pulse_up:108: 47 s, 2 pauses, T=58 C, 1350 GB/s 0.0 TF/s
+[thermal] pulse_up:216: 47 s, 2 pauses, T=60 C, 1714 GB/s 0.0 TF/s
+[thermal] pulse_up:432: 47 s, 2 pauses, T=62 C, 1789 GB/s 0.0 TF/s
+[thermal] pulse_up:864: 47 s, 2 pauses, T=62 C, 1836 GB/s 0.0 TF/s
+[thermal] pulse_down:864: 47 s, 2 pauses, T=62 C, 1836 GB/s 0.0 TF/s
+[thermal] pulse_down:432: 47 s, 2 pauses, T=62 C, 1789 GB/s 0.0 TF/s
+[thermal] pulse_down:216: 47 s, 2 pauses, T=62 C, 1713 GB/s 0.0 TF/s
+[thermal] pulse_down:108: 47 s, 2 pauses, T=63 C, 1350 GB/s 0.0 TF/s
+[thermal] pulse_down:54: 47 s, 2 pauses, T=57 C, 781 GB/s 0.0 TF/s
+[thermal] pulse_down:27: 47 s, 2 pauses, T=51 C, 408 GB/s 0.0 TF/s
+[thermal] pulse_down:14: 47 s, 2 pauses, T=47 C, 218 GB/s 0.0 TF/s
+[thermal] ramp_cool: 120 s, T=40 C
+[thermal] wrote 163237 samples to microbench/thermal_A100_pulse1
+[analyze] no matplotlib: No module named 'matplotlib'
+==== done Thu Nov 19 21:32:36 PST 2026 ====

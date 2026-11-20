@@ -438,6 +438,50 @@ draws 0.26 TB/s and 294 W, lifting the die 1 °C, so the light-vs-heavy thermal-
 comparison that §9 could make on the A100 has no temperature range here. This run says
 nothing about history on the B200; that would need a heavier light load (1/2 occupancy).
 
+**11. Static power at load temperature, read in 1 s pauses inside the load (2026-11-20)**
+
+The professors' objection (static and dynamic power cannot be separated under load) left §1–§10
+measuring idle, not load. This run reads the zero-activity power *at load temperature*: stop the
+load for 1 s every 15 s. Activity power falls within ~0.1 s (the transition traces of §9), the
+die needs seconds to cool, and NVML samples every 10 ms. `thermal_leakage.py` pulse phases
+(`768a2d5`): `--phases baseline,pulse:stream,pulse:gemm,pulse_ramp`, 4 min per op, then a
+7-level stream ramp up and down at 45 s per level. Per pause the analysis keeps the **trough**
+(lowest 50 ms running median: clock and voltage not yet back up) and the **end** (last 0.2 s:
+clock recovered).
+
+Runs: `microbench/thermal_A100_pulse1/` (kai, A100 80GB PCIe, PCI 81:00.0, UUID GPU-b30129ef,
+baseline 99.7 W @ 39 °C, 58 pauses) and `microbench/thermal_A6000_pulse1/` (PCI A1:00.0, UUID
+GPU-59207268, 55 pauses). Figure: `talk_figs/fig_pause_static.png`.
+
+| A100 pauses | n | loaded clock | end − trough | end − own cool-down idle at the same T |
+|---|---|---|---|---|
+| load below the cap | 16 | 1410 MHz | **0.1 W** | **−0.15 W** |
+| capped stream | 27 | ~1290 MHz | **4.4 W** (IQR 3.4–6.8) | −0.75 W |
+| capped GEMM | 15 | ~1035 MHz | **16.6 W** (IQR 14.3–18.3) | +0.39 W |
+
+- **Below the cap, static power at load temperature is the idle curve.** Trough and end agree to
+  0.1 W, and both land on the card's own cool-down idle at the same die temperature (−0.15 W). So
+  for uncapped serving, P_s(T) from cool-downs is not an idle-only quantity: it is what the card
+  draws with zero activity at its loaded temperature. This card reads 117.5 W at 60 °C against
+  99.7 W cold, the same +18 W as §6's correction.
+- **Under the cap, static power is lower than the idle curve, because voltage is lower.** The
+  trough deficit grows with how far the load pulled the clock down: 0.1 W at 1410 MHz, 4.4 W at
+  ~1290, 16.6 W at ~1035. This is a lower bound on the loaded-voltage effect: NVML already reports
+  1335–1410 MHz at the trough, so the voltage has partly recovered.
+- **What remains a convention:** the always-on clock power is inside both readings; NVML's power
+  reading averages over ~25–100 ms; and any static component that disappears within ~0.1 s of a
+  stop (e.g. the hottest spots cooling) is invisible. The die reads 2–5 °C cooler at the end of
+  the pause than under load.
+- **A6000:** in a 1 s pause it stays at ~1900 MHz, so the pauses give the clocks-up idle curve
+  that the 210 MHz cool-downs of §4 could not: **94.6 W at 40 °C to 108–109 W at 66 °C**, slope
+  ~0.8–1.0 W/°C above 55 °C, flatter below (fan speed is in board power on this blower card). The
+  model's P_s of 106.7 W is this card's clocks-up idle at about 62 °C. Capped GEMM pauses show a
+  smaller trough (median 0.7 W, IQR 0.2–4.7) than the A100's.
+- **For the model:** below the cap, P_s(T) from cool-downs is the static term at load
+  temperature, within ~1 W. At the cap, the static share is lower by up to ~17 W on the A100, so
+  §6's correction overstates the static slice at capped levels. The trace levels in fig 9 mostly
+  run below the cap, so §6 stands for them.
+
 ## What this changes
 - **Total J/token predictions: little change.** The dynamic coefficients were measured on hot,
   loaded chips, so they already absorb operating-temperature leakage.
