@@ -488,7 +488,7 @@ GPU-59207268, 55 pauses). Figure: `talk_figs/fig_pause_static.png`.
   ~0.8–1.0 W/°C above 55 °C, flatter below (fan speed is in board power on this blower card). The
   model's P_s of 106.7 W is this card's clocks-up idle at about 62 °C. Capped GEMM pauses show a
   smaller trough (median 0.7 W, IQR 0.2–4.7) than the A100's.
-- **Nothing about the load matters except die temperature and clock** (`talk_figs/fig_pause.png`,
+- **Nothing about the load matters except die temperature and clock** (`talk_figs/fig_pause_full.png`,
   bottom row; numbers in `fig_pause.json`). With the clock recovered, pause power sits on the idle
   line at the same die temperature (A100: median +0.14 W, 10–90% −0.9..+0.8 W, n = 58), and the
   residual does not depend on:
