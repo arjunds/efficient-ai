@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Load-pause experiment (thermal_leakage.py pulse phases; THERMAL_IDLE.md §11).
 
-1 s pauses every 15 s inside long stream / GEMM loads and a stream ramp, sampled at 10 ms.
+1 s pauses every 15 s (B200: 10 s) inside long stream / GEMM loads and a stream ramp, sampled at 10 ms.
 Per pause (summary.json "pauses"):
   late   = last 0.2 s of the pause: zero activity, clock back at its idle level, die still hot
   trough = lowest 50 ms running median in the pause: zero activity while clock/voltage are
@@ -28,10 +28,10 @@ CAT = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#6250d
 # (thermal dir, title); a missing dir leaves a placeholder panel
 RUNS = [("A100_pulse1", "A100 80GB PCIe (node8 81:00.0)"),
         ("A6000_pulse1", "RTX A6000 (A1:00.0)"),
-        ("B200_pulse1", "B200")]
+        ("B200_pulse", "B200 (dgx023 52:00.0)")]
 LOADS = [("pulse:stream", "stream, full occupancy", CAT[0]), ("pulse:gemm", "GEMM", CAT[1]),
          ("pulse_up", "stream ramp, up", CAT[2]), ("pulse_down", "stream ramp, down", CAT[5])]
-CARD_MK = {"A100_pulse1": "o", "A6000_pulse1": "s", "B200_pulse1": "D"}
+CARD_MK = {"A100_pulse1": "o", "A6000_pulse1": "s", "B200_pulse": "D"}
 
 
 def fnum(x):
@@ -153,6 +153,11 @@ def main():
         if r["ref_kind"].startswith("cool"):
             a.plot(r["bins"][:, 0], r["bins"][:, 1], "-", color=INK2, lw=2.2, alpha=0.55, zorder=1,
                    label=f"idle cool-down, {r['fidle']:.0f} MHz (1 °C medians)")
+            t_hi = max(x["t_late_c"] for x in r["pz"])
+            if t_hi > r["hi"] + 0.5:   # pauses run hotter than the cool-down reached: show the extrapolation
+                xs = np.linspace(r["hi"], t_hi, 10)
+                a.plot(xs, np.polyval(r["q"], xs), ":", color=INK2, lw=1.6, zorder=1,
+                       label=f"its quadratic, extrapolated past {r['hi']:.0f} °C")
         else:
             xs = np.linspace(r["lo"], r["hi"], 10)
             a.plot(xs, np.polyval(r["q"], xs), "--", color=INK2, lw=1.2, zorder=1,
@@ -199,9 +204,16 @@ def main():
             P = [x for x in r["pz"] if x["kind"] == k and x["mem_gap_c"] is not None]
             a.plot([x["mem_gap_c"] for x in P], [x["res_w"] for x in P], CARD_MK[tag], ms=4.5, color=col, mec="white", mew=0.4)
     a.axhline(0, color=INK2, lw=0.8)
+    # §10's hypothesis on the B200: a share phi of the leakage tracks HBM, not die, temperature, so the
+    # pause residual would rise phi*k per degree of HBM-die gap above the idle gap
+    PHI, K_B200, GAP_IDLE = 0.4, 1.64, -2.2
+    gx = np.array([GAP_IDLE, 17.0])
+    a.plot(gx, PHI * K_B200 * (gx - GAP_IDLE), "--", color=INK, lw=1.1, zorder=1,
+           label=f"§10 HBM-leakage hypothesis on the B200 (φ = {PHI}): +{PHI * K_B200:.2f} W/°C")
+    a.legend(frameon=False, fontsize=7.5, loc="upper left")
     a.set_xlabel("HBM minus die temperature when the pause starts (°C)")
     a.set_ylabel("pause end minus idle line (W)")
-    a.set_title("Does hot HBM add leakage? (A6000: no memory sensor)", loc="left", fontsize=9, color=INK)
+    a.set_title("Does hot HBM add leakage? No (A6000: no memory sensor)", loc="left", fontsize=9, color=INK)
 
     a = ax[1, 2]; style(a)
     for tag, r in data.items():
@@ -216,17 +228,21 @@ def main():
     a.set_ylabel("trough minus pause end (W)")
     a.set_title("Lower loaded clock (capped) → lower zero-activity power", loc="left", fontsize=9, color=INK)
 
-    A = js.get("A100_pulse1", {})
-    fig.suptitle("Load pauses: 1 s of zero activity every 15 s, at load temperature. At the same die temperature, power with the "
-                 f"clock recovered sits on the idle line (A100 median {A.get('res_median', 0):+.1f} W),\nwhatever ran before and however "
-                 "hot the HBM is. Only the clock matters: while still at a capped load's lower clock, zero-activity power is "
+    A = js.get("A100_pulse1", {}); B = js.get("B200_pulse", {})
+    fig.suptitle("Load pauses: 1 s of zero activity inside the load, at load temperature. At the same die temperature, power with the "
+                 f"clock recovered sits on the idle line (median A100 {A.get('res_median', 0):+.1f} W, B200 {B.get('res_median', 0):+.1f} W),\n"
+                 "whatever ran before and however hot the HBM is: on the B200 the HBM ran 16 °C above the die and the residual stayed within "
+                 f"2 W, where HBM leakage (§10) predicted +{0.4 * 1.64 * (16 + 2.2):.0f} W.\n"
+                 "Only the clock matters: while still at a capped load's lower clock, zero-activity power is "
                  f"{-A.get('pulse:stream_trough_gap_median', 0):.0f} W (stream) to {-A.get('pulse:gemm_trough_gap_median', 0):.0f} W "
-                 "(GEMM) lower on the A100.", x=0.01, ha="left", fontsize=9, color=INK)
+                 f"(GEMM) lower on the A100, {-B.get('trough_gap_capped', {}).get('median', 0):.0f} W on the B200's capped top level.",
+                 x=0.01, ha="left", fontsize=9, color=INK)
     fig.text(0.01, 0.005, "Pause end = last 0.2 s of each 1 s pause. Trough = lowest 50 ms median; NVML averages power over ~25–100 ms, "
-             "so troughs are smeared upward (a lower bound on the clock effect).\n"
-             "Idle line: own cool-downs ≥2 s after load. Capped: A100 stream and GEMM, A6000 GEMM. Pauses whose clock had not recovered are dropped (A6000: 1).",
+             "so troughs are smeared upward (a lower bound on the clock effect). A100/A6000: 1 s every 15 s; B200: every 10 s (six-level stream ramp).\n"
+             "Idle line: own cool-downs ≥2 s after load. Capped: A100 stream and GEMM, A6000 GEMM, B200 6.5 TB/s level. "
+             "Pauses whose clock had not recovered are dropped (A6000: 1). B200 above 55 °C uses the extrapolated idle line (linear instead: within 0.4 W).",
              fontsize=7, color=INK2)
-    fig.tight_layout(rect=(0, 0.035, 1, 0.93))
+    fig.tight_layout(rect=(0, 0.035, 1, 0.915))
     fig.savefig(os.path.join(HERE, "fig_pause.png"), dpi=170, facecolor=SURF)
     json.dump(js, open(os.path.join(HERE, "fig_pause.json"), "w"), indent=1)
     for t, v in js.items():

@@ -591,6 +591,17 @@ coefficient: the bytes move through memory that is 18 °C hotter than the sensor
 against, so the +0.25 pJ/byte/°C above is per °C of **die** temperature and would be roughly
 half that per °C of actual HBM temperature.
 
+Read directly, as §11 does on the A100 (`talk_figs/fig_pause.png`, bottom middle;
+`fig_pause.json`): pause end minus this card's cool-down idle line at the same die temperature
+is median **−0.7 W** (10–90% −1.8..+0.5, n = 48), against an HBM−die gap of −1 to +16 °C when
+the pause starts. Its slope on the gap is **−0.08 W/°C**; φ = 0.4 would need **+0.66 W/°C**,
+i.e. **+12 W** at the top level, where every pause sits within 2.2 W of the line. The small
+negative drift (−0.2 W per TB/s) is within what the extrapolation of the idle line past 55 °C
+can produce (a linear instead of quadratic extension moves it by ≤0.4 W) and points the wrong way
+for any HBM term. Uncapped troughs match the pause end (median −0.6 W); the capped top level
+(1695–1717 MHz, 0.87 of idle clock) reads a median **2.7 W** below it, between the A100's
+uncapped and capped-stream cases.
+
 **Convexity, fourth card.** This card's cool-down gives k = 1.64 over 46–55 °C, extending the
 §10 table upward: about 1.0 at 33–37 °C, 1.13 at 37–41, 1.3–1.4 at 41–45, **1.6 at 46–55**.
 The curve keeps steepening, and this is why card D's k must not be compared with cards A–C's
