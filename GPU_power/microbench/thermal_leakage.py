@@ -440,7 +440,8 @@ def _plot(d, S, P, pw, out):
         print("[analyze] no matplotlib:", e)
         return
     t0 = S[0]["t"]
-    npan = 4 if out.get("pauses") else 3
+    # a pulse-only run has no plain ramp, so don't reserve an axis for an empty panel
+    npan = 2 + bool(out.get("ramp_levels")) + bool(out.get("pauses"))
     fig, ax = plt.subplots(1, npan, figsize=(5.3 * npan, 4.4))
     a = ax[0]
     a.plot([s["t"] - t0 for s in S], [s[pw] for s in S], lw=0.4, color="#2a78d6", label=pw)
@@ -469,17 +470,18 @@ def _plot(d, S, P, pw, out):
         from matplotlib.lines import Line2D
         hs.append(Line2D([], [], color="k", marker="*", ls="", ms=3)); ls.append("baseline")
     a.legend(hs, ls, fontsize=7, markerscale=4)
-    a = ax[2]
-    for dr, m in (("up", "o"), ("down", "s")):
-        L = [x for x in out.get("ramp_levels", []) if x["direction"] == dr]
-        sc = a.scatter([x["bw_gbs"] for x in L], [x["p_w"] for x in L], c=[x["temp_c"] for x in L],
-                       cmap="coolwarm", marker=m, label=dr)
+    i = 2
     if out.get("ramp_levels"):
+        a = ax[i]; i += 1
+        for dr, m in (("up", "o"), ("down", "s")):
+            L = [x for x in out["ramp_levels"] if x["direction"] == dr]
+            sc = a.scatter([x["bw_gbs"] for x in L], [x["p_w"] for x in L], c=[x["temp_c"] for x in L],
+                           cmap="coolwarm", marker=m, label=dr)
         fig.colorbar(sc, ax=a, label="C")
-    a.set_xlabel("DRAM GB/s"); a.set_ylabel("W"); a.legend(fontsize=7)
-    a.set_title("occupancy ramp up (o) / down (s)", loc="left", fontsize=9)
-    if npan == 4:
-        a = ax[3]
+        a.set_xlabel("DRAM GB/s"); a.set_ylabel("W"); a.legend(fontsize=7)
+        a.set_title("occupancy ramp up (o) / down (s)", loc="left", fontsize=9)
+    if out.get("pauses"):
+        a = ax[i]
         for p in P:
             if p["phase"].startswith("cool") or p["phase"] == "ramp_cool":
                 w = [s for s in S if p["t0"] + 10 <= s["t"] <= p["t1"] and s[pw] and s["temp_c"]]

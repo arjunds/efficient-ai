@@ -275,6 +275,11 @@ Same pair method as §7: 20 s fixed holds, pairs with ΔT ≥ 4 °C and no cappi
   15% of e_b, too large to ignore in the dynamic term. This is a restatement, not a
   separation: "more of the chip leaking when busy" and "memory or I/O energy per byte rising
   with temperature" both look like this. The sensor-lag explanation from §7 is still open.
+
+  **Separated 2026-11-20 by the pulse runs (§11, §12):** it is e_b(T). With the activity paused for
+  1 s the static slope sits at the idle value at every bandwidth, and the gap to the loaded
+  slope is proportional to bandwidth with a zero intercept. "More of the chip leaking when
+  busy" is excluded as a mechanism.
 - **The zero-bandwidth limit matches idle on two of three cards.** It does on the B200
   (1.30 vs 1.26) and the A6000 (0.30 vs 0.25). It doesn't on the A100 (0.52 vs 0.77), which
   isn't explained yet.
@@ -405,6 +410,12 @@ logged, which the script has done since `14db4f8`. If the apparent k collapses o
 value when regressed against *memory* temperature, it is the sensor. If it still rises with
 bandwidth against memory temperature, e_b(T) is real.
 
+**Superseded 2026-11-20 by §11 and §12.** The pulse protocol answered it better and the φ ≈ 0.4 estimate
+above is moot: measured directly with the activity off, the static k does not rise with
+bandwidth at all, so there is no inflation for a sensor offset to explain. The HBM gap
+replicates (2.8 °C per TB/s on a fourth card) but belongs to the per-byte term, not the static
+one.
+
 **§9's convexity replicates on the B200 — and it invalidates §8's slope comparison.** Local
 slope from `cool:stream`, 1 s bins past 2 s, at the modal clock:
 
@@ -490,7 +501,8 @@ GPU-59207268, 55 pauses). Figure: `talk_figs/fig_pause_static.png`.
   So on the A100 a hot HBM adds no measurable static power. That argues against §10's reading
   of the rising in-load k (§7, §8) as HBM leakage, and points to the dynamic terms instead
   (energy per byte rising with temperature). The B200, where §10 proposed it, is the test that
-  matters; its pause run (`thermal_B200_pulse1`) is queued. One A6000 pause is dropped: the first
+  matters; it has now run (`thermal_B200_pulse`, **§12**) and agrees: no bandwidth dependence in
+  the static reading, while the loaded slope has plenty. One A6000 pause is dropped: the first
   GEMM pause ended at 1800 MHz, clock not yet recovered.
 - **For the model:** below the cap, P_s(T) from cool-downs is the static term at load
   temperature, within ~1 W. At the cap it is lower, by an amount set by how far the clock drops.
@@ -501,6 +513,104 @@ GPU-59207268, 55 pauses). Figure: `talk_figs/fig_pause_static.png`.
     median serving temperature is overstated by roughly 2 W typically, up to ~10 W in the
     heaviest moments, and its conclusion stands.
   - **B200 serving is at the cap for only 4.5% of busy time,** so §6 stands there as measured.
+
+**12. The same pauses on a B200: the rising in-load k is real, and it is entirely in the
+energy per byte (2026-11-20)**
+
+§11 shows that below the power cap the pause reading *is* the idle curve, on the A100 and A6000,
+and that the residual depends on neither bandwidth nor HBM temperature. This is the B200 run it
+names as the one that matters — the card where §7, §8 and §10 located the problem. It reaches
+the same conclusion from the other direction: instead of showing that static power has no
+bandwidth dependence, it measures the bandwidth dependence that *is* there and shows it is not
+static.
+
+`microbench/thermal_B200_pulse/`, job 10836211, node dgx023 PCI 52:00.0 — a **fourth** B200,
+and a hot one: baseline **249.5 W @ 44 °C**, levels running 46–63 °C, peak 66 °C. Protocol:
+baseline, heavy stream and cool-down (the same-card idle reference), then `pulse_ramp` over six
+bandwidth levels up and back down with a 1 s pause after every 10 s of work — **48 pauses**,
+8 per level, 4 on each leg.
+
+The pause does read zero-activity power at the loaded die temperature: power crosses halfway
+**72 ms** (median; 31–140 ms) into the pause, and the trough, the 0.05–0.30 s window and the
+last 0.2 s agree to a median of 2.4 W. On the 40 uncapped pauses the clock is still at 1965 MHz
+through the whole pause, so the reading is at the loaded clock and voltage.
+
+**Both of these are true at once, on one card, from the same 48 pauses:**
+
+| | measured |
+|---|---|
+| total loaded dP/dT at matched bandwidth (§7 pairs method) | **1.83 + 0.26·BW** |
+| static dP/dT, same pauses, activity off | **1.71 mean, no comparable rise** |
+| this card's idle cool-down k | **1.64** (46–55 °C) |
+
+Per level (BW in TB/s; k in W/°C):
+
+| BW | T band | k_total (pairs) | k_static (pause) | difference |
+|---|---|---|---|---|
+| 0.27 | 46–48 °C | 2.21 | 1.40 ± 0.37 | +0.82 |
+| 0.55 | 47–50 °C | 1.59 | 1.80 ± 0.32 | −0.22 |
+| 1.08 | 49–53 °C | 2.08 | 1.50 ± 0.17 | +0.58 |
+| 2.14 | 52–57 °C | 2.55 | 1.88 ± 0.08 | +0.67 |
+| 4.08 | 55–62 °C | 2.85 | 1.96 ± 0.18 | +0.90 |
+| 6.48 | 60–63 °C | *capped* | 1.66 ± 0.44 | — |
+
+- **The rising in-load k replicates.** §7's own method, applied to the loaded power from these
+  pauses, gives **1.83 + 0.26·BW** against **1.30 + 0.22·BW** on card B. Fourth card, different
+  protocol, nearly the same bandwidth coefficient — the effect is real and reproducible.
+- **It is not static leakage.** Turn the activity off for one second and the slope sits at the
+  card's idle value at every bandwidth, 1.4–2.0 against an idle cool-down of 1.64, and never
+  approaches the 2.6–2.9 the pairs method gives at the same bandwidths. At 6.5 TB/s §7's model
+  predicts 2.73 W/°C; the direct measurement is 1.66 ± 0.44, a 2.4σ rejection.
+- **The difference is proportional to bandwidth with a zero intercept.**
+  Dropping the 0.27 TB/s level, whose 1 °C up/down swing makes its pair estimate meaningless,
+  `k_total − k_static = −0.01 + 0.249·BW`. A fixed cost of being busy rising with temperature
+  would show up as an intercept; it doesn't. So the term is per byte:
+  **∂e_b/∂T ≈ +0.25 pJ/byte/°C**, about **+0.17% of e_b per °C**. Measured independently as
+  (loaded − static)/BW at each pause it is +0.23, +0.27 and +0.10 pJ/byte/°C at 1.08, 2.14 and
+  4.08 TB/s, which agrees.
+
+**This settles the question §8 left open.** §8 wrote that "more of the chip leaking when busy"
+and "memory or I/O energy per byte rising with temperature" both look identical from a ramp,
+and called the distinction a restatement rather than a separation. Pausing the load separates
+them, and it is the second: **leakage is a function of die temperature alone, bandwidth plays
+no part in it, and the per-byte energy carries a small positive temperature coefficient.**
+
+**What it changes in the model.** Keep `P_s(T) = P_s0 + k·(T − T0)` with a single
+idle-calibrated k — the §6 correction stands exactly as written, and the §7 warning that a
+model tracking power across occupancy "should carry k as a function of load" is now withdrawn.
+Put the temperature term on e_b instead, where on this B200 it is small: 0.17% per °C, about
+5% of e_b over a 30 °C serving swing, against §8's 0.6%/°C estimate for the A100. That is a
+correction to the dynamic coefficient, not to the static slice.
+
+**It also removes the need for §10's HBM-share estimate.** §10 asked what fraction of the
+leakage would have to sit in the HBM for sensor misattribution to inflate the apparent static
+k, and fitted φ ≈ 0.4. There is no inflated static k to explain. The gap itself is real and
+replicates here — **−2.2 °C at idle to +18.3 °C at 7.3 TB/s, 2.8 °C per TB/s** against §10's
+3.0 — but it is not what drives the apparent rise. It may still matter for the *per-byte*
+coefficient: the bytes move through memory that is 18 °C hotter than the sensor we regress
+against, so the +0.25 pJ/byte/°C above is per °C of **die** temperature and would be roughly
+half that per °C of actual HBM temperature.
+
+**Convexity, fourth card.** This card's cool-down gives k = 1.64 over 46–55 °C, extending the
+§10 table upward: about 1.0 at 33–37 °C, 1.13 at 37–41, 1.3–1.4 at 41–45, **1.6 at 46–55**.
+The curve keeps steepening, and this is why card D's k must not be compared with cards A–C's
+without matching the window.
+
+**Caveats.**
+- **All 8 pauses at the top level were power-capped while loaded**, so that level has no usable
+  `k_total`: under the cap the GPU sheds clock (1965 → 1695–1717 MHz) instead of drawing more
+  power, and the loaded dP/dT collapses toward zero. §11 shows capped pauses also read *below*
+  the idle curve, by an amount set by how far the clock fell, so that level's pause reading is
+  a lower bound too. It is excluded from every pairs and e_b fit. The other 40 pauses hold
+  1965 MHz for the whole pause — §11's "below the cap" case, where the pause reading is the
+  idle curve to within about 1 W.
+- **The static-k-versus-bandwidth slope cannot be separated from convexity in this run.** Across
+  levels corr(T, BW) = 0.945 — the fast levels are the hot ones — and within a level the up/down
+  swing is only 1–4 °C. The small positive slope the pause fits show (+0.075 ± 0.058, 1.3σ) is
+  what convexity alone would produce. The conclusion above does not rest on that slope: it rests
+  on k_static staying near the idle value while k_total runs away from it.
+- Longer holds per level would give each pair a bigger ΔT and tighten `∂e_b/∂T`, which is the
+  cheapest improvement if this number matters.
 
 ## What this changes
 - **Total J/token predictions: little change.** The dynamic coefficients were measured on hot,
@@ -538,9 +648,10 @@ GPU-59207268, 55 pauses). Figure: `talk_figs/fig_pause_static.png`.
   check, with short fixed holds so ΔT is large enough to resolve (§7). Then refit e_b with k
   held fixed.
 
-  **And treat P_s(T) with a single k as a low-occupancy approximation.** §7 finds the
-  effective k rising about 0.22 W/°C per TB/s, roughly doubling by 4 TB/s. For our serving
-  breakdowns that is second-order — the §6 correction uses idle-calibrated k and shifts the
-  static slice by about +2 points, and a higher in-load k would only push the same way — but
-  a model claiming to track power *across* occupancy should carry k as a function of load,
-  or state the approximation.
+  **A single idle-calibrated k is right, and the load-dependent k is withdrawn (§12).** §7
+  found the effective k rising about 0.22 W/°C per TB/s and advised carrying k as a function of
+  load. The pulse run shows that rise is not in the static term: with the activity paused the
+  slope stays at the idle value at every bandwidth up to 6.5 TB/s. So keep one k per card,
+  calibrated from a cool-down and fitted over the temperature range you care about (the curve
+  is convex), and put the load's temperature sensitivity on e_b instead — about +0.17% per °C
+  on the B200, +0.6%/°C on the A100 (§8). The §6 correction is unaffected.
