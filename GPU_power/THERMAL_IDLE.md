@@ -249,6 +249,10 @@ compared at a matched temperature using each card's own fit:
 differ by **18%**, so what varies between cards is not only the offset. Two cards each, on
 both models, so this is a hint and not a distribution.
 
+  **Revised 2026-11-19 after the third B200 (§10):** the 18% is a range artifact. Those two
+  fits cover different temperature ranges on a curve that is convex (§9), so they are not
+  comparable. On the common 37–43 °C window the three B200 slopes agree within 3%.
+
 **8. The rising in-load k replicates on the A100 and A6000, more cleanly than on the B200
 (2026-11-12 runs; `microbench/fig_inload_k.png`, `thermal_pairs_fig.py`).**
 
@@ -294,7 +298,10 @@ Same pair method as §7: 20 s fixed holds, pairs with ΔT ≥ 4 °C and no cappi
 
 - **A100: C1:00.0 is the outlier.** Two of three cards idle at about 100 W. The slope is the
   same on both cards measured (0.77). So on the A100 what varies is the offset.
-- **B200: the reverse.** The offsets are within 2%, but the slopes differ by 18%.
+- **B200: offsets and slopes are both tight** — within 2.5% and 3% across three cards, on a
+  common temperature window (§10). The 18% slope difference first reported here was a range
+  artifact; the k values in this table are each card's own-range fit and are not comparable
+  between rows.
 - **A6000:** both differ (10% offset, about 1.6x slope). The first card's fit is noisier,
   and the fan is in board power.
 
@@ -302,6 +309,12 @@ Same pair method as §7: 20 s fixed holds, pairs with ΔT ≥ 4 °C and no cappi
 the A100 and B200 where it's exposed. If the HBM–die temperature gap at matched bandwidth
 grows with load, the sensor-lag reading (§7 b) gains weight. If it doesn't, e_b(T) is the
 better description.
+
+**Answered in §9 (A100) and §10 (B200): the gap does grow with load** — about 3 °C per TB/s on
+the B200, reaching +19 °C at 7.4 TB/s, with the memory heating 2.11x as fast as the die. That
+is enough to explain the rise if about 40% of the leakage sits in the HBM, but it predicts a
+step rather than the linear rise in BW that §8 measured, so it is not yet decided. §10 names
+the run that would settle it.
 
 **9. How repeatable is "an A100 at T °C idles at X W", and does history matter? (2026-11-13)**
 
@@ -347,6 +360,83 @@ Cool-down samples start 10 s after the load stops.
   - The A6000's governor drops it to 210 MHz within about 10–20 s of going idle, a step of
     about 75 W unrelated to temperature. That's the one place where "power management
     kicking in" dominates idle power.
+
+**10. B200, third card: memory temperature answers §8's next measurement, and the "18% slope
+difference" was a range artifact (2026-11-19)**
+
+The B200 counterpart of §9, same protocol (`--phases baseline,heat:stream,heat:light`), on a
+**third** B200: `microbench/thermal_B200_hist1/`, job 10835525, node dgx025 PCI 43:00.0. The
+bus id repeats card A's but the UUID and serial differ, so these are distinct cards — §9's
+warning about bus ids repeating holds on SLURM too. Baseline idle **235.4 W @ 33 °C**, 10 min.
+
+**The HBM–die gap grows with bandwidth, which is what §8 asked for.**
+
+| | bandwidth | die | memory (HBM) | gap |
+|---|---|---|---|---|
+| idle (baseline, and after either load) | 0 | 33.0 °C | 30.0 °C | **−3.0** |
+| light stream, 1/8 occupancy | 0.26 TB/s | 34.0 °C | 33.0 °C | −1.0 |
+| full stream | 7.38 TB/s | 52.9 °C | 72.0 °C | **+19.2** |
+
+- The gap grows about **3.0 °C per TB/s**. At full bandwidth the memory sits 19 °C above the
+  die, against the A100's 14 °C at its own peak (§9) — larger on the card with more bandwidth.
+- Along the load direction the memory heats **2.11x** as fast as the die (ΔT_mem 42.0 vs
+  ΔT_die 19.9 °C). The single die sensor does understate what the HBM sees, so §7's
+  sensor-lag reading gains weight.
+- **At idle the two track 1:1** (dT_mem/dT_die = 1.02 over the cool-down), so fitting the
+  cool-down against memory temperature instead of die temperature gives the same slope
+  (1.04 vs 1.08 W/°C). §9's "at idle one sensor is enough" holds on the B200 too.
+- At idle this B200 reads memory **3 °C below** the die, where node8's A100s read about 2 °C
+  above and node3's about 13 °C above. One more sensor offset, not extra power.
+
+**How much of the in-load k rise this explains.** If a fraction φ of the leakage sits in the
+HBM and we attribute all of it to the die sensor, the apparent k inflates by 1 + φ·(R − 1)
+with R = 2.11. Reproducing §8's inflation on card B at 2.64 TB/s (1.88/1.30 = 1.45x) needs
+**φ ≈ 0.4**. That is a plausible HBM share for an 8-stack HBM3e part, but it is one parameter
+fitted to one number, not a measurement of φ.
+
+It also does not close the question, because it predicts a *different shape* than §8 measured:
+if the gap is proportional to bandwidth then R is bandwidth-independent, so the inflation
+should appear as a step at the first non-trivial load and then flatten — not rise linearly
+from the idle value, which is what §8's fits show. Our 0.26 TB/s point cannot referee it: die
+and memory move 1 and 3 °C, at 1 °C sensor resolution.
+
+**The discriminating run is now one command:** the §7 pairs protocol with memory temperature
+logged, which the script has done since `14db4f8`. If the apparent k collapses onto a single
+value when regressed against *memory* temperature, it is the sensor. If it still rises with
+bandwidth against memory temperature, e_b(T) is real.
+
+**§9's convexity replicates on the B200 — and it invalidates §8's slope comparison.** Local
+slope from `cool:stream`, 1 s bins past 2 s, at the modal clock:
+
+| card | 33–37 °C | 37–41 °C | 41–45 °C | 45–50 °C |
+|---|---|---|---|---|
+| A dgx016 43:00.0 | 1.04 | 1.13 | 1.40 | — |
+| B dgx007 DF:00.0 | — | 1.12 | 1.35 | 1.32 |
+| C dgx025 43:00.0 | 0.98 | 1.16 | 1.29 | — |
+
+Three cards, same shape as the A100: the slope rises about 30% from 33–37 to 41–45 °C, and the
+three agree band by band to within 6%.
+
+So **§8's "the slopes differ by 18%" was an artifact of fitting different temperature ranges
+on a convex curve.** Card B's cool-down started at 50 °C and card A's at 43 °C. Fit over each
+card's own range and you get 1.29 (B) vs 1.10 (A); fit over the common 37–43 °C window and the
+three cards agree:
+
+| card | idle at 40 °C | k over 37–43 °C |
+|---|---|---|
+| A dgx016 43:00.0 | 249.8 W | 1.16 |
+| B dgx007 DF:00.0 | 244.1 W | 1.13 |
+| C dgx025 43:00.0 | 243.8 W | 1.16 |
+
+**Spread 6.0 W (2.5%) at a matched 40 °C, slopes within 3%**, with B and C within 0.3 W. On the
+B200 both the offset and the slope are tight across three cards — unlike the A100, where one
+card in six is 30 W off (§9). Comparing cool-down slopes is only meaningful on a common
+temperature window; the per-card ranges in §5/§7/§8 are not interchangeable.
+
+**One caveat on this run:** the light-load heater barely heats a B200. At 1/8 occupancy it
+draws 0.26 TB/s and 294 W, lifting the die 1 °C, so the light-vs-heavy thermal-history
+comparison that §9 could make on the A100 has no temperature range here. This run says
+nothing about history on the B200; that would need a heavier light load (1/2 occupancy).
 
 ## What this changes
 - **Total J/token predictions: little change.** The dynamic coefficients were measured on hot,

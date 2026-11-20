@@ -1,0 +1,75 @@
+{
+ "info": {
+  "gpu": "NVIDIA B200",
+  "sm_count": 148,
+  "power_limit_w": 1000.0,
+  "host": "dgx025",
+  "started": "2026-11-19 23:49:51",
+  "pci_bus_id": "00000000:43:00.0",
+  "uuid": "GPU-ecf669df-0314-5159-8cb5-237e99aa1789",
+  "serial": "1655024045844",
+  "mem_temp_c_at_start": 30.0
+ },
+ "t_base_c": 33,
+ "phases": [
+  {
+   "phase": "baseline",
+   "t0": 1795150191.5357094,
+   "t1": 1795150281.5474534,
+   "temp0": null,
+   "temp1": 33
+  },
+  {
+   "phase": "heat:stream",
+   "t0": 1795150283.203478,
+   "t1": 1795150403.7040644,
+   "temp1": 53,
+   "calls": 4230,
+   "bytes_per_s": 7375590963147.56,
+   "flops_per_s": 0.0
+  },
+  {
+   "phase": "cool:stream",
+   "t0": 1795150403.7048502,
+   "t1": 1795150523.715211,
+   "temp0": null,
+   "temp1": 33
+  },
+  {
+   "phase": "heat:light",
+   "t0": 1795150523.813543,
+   "t1": 1795150644.1817067,
+   "temp1": 34,
+   "calls": 3743,
+   "bytes_per_s": 263984607842.87308,
+   "flops_per_s": 0.0
+  },
+  {
+   "phase": "cool:light",
+   "t0": 1795150644.1824458,
+   "t1": 1795150764.1976779,
+   "temp0": null,
+   "temp1": 33
+  }
+ ],
+ "args": {
+  "out": "microbench/thermal_B200_hist1",
+  "analyze": null,
+  "phases": [
+   "baseline",
+   "heat:stream",
+   "heat:light"
+  ],
+  "sample_ms": 10.0,
+  "baseline_min_s": 90,
+  "baseline_max_s": 300,
+  "heat_min_s": 120,
+  "heat_max_s": 400.0,
+  "cool_min_s": 120,
+  "cool_max_s": 500.0,
+  "level_min_s": 30,
+  "level_max_s": 150,
+  "gemm_n": null,
+  "ramp_fracs": "0.125,0.25,0.5,1,2,4,8"
+ }
+}
