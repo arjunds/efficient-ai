@@ -164,9 +164,11 @@ def main():
     fig.tight_layout(rect=(0, 0.08, 1, 0.95))
     fig.savefig(os.path.join(HERE, "fig_idle_history.png"), dpi=180, facecolor=SURF)
 
-    # ---- fig C: over time, A100 vs A6000 vs B200 (the B200 run predates memory-temperature logging)
-    runs = [("A100_hist1", "A100 (node8 01:00.0)"), ("A6000_run2", "RTX A6000 (81:00.0)"),
-            ("B200", "B200 (dgx016 43:00.0)")]
+    # ---- fig C: over time. A100 and B200 ran the same sequence (stream, then light stream);
+    # the A6000 has no history run, so its column is stream, GEMM, ramp
+    runs = [("A100_hist1", "A100 (node8 01:00.0): stream, light"),
+            ("A6000_run2", "RTX A6000 (81:00.0): stream, GEMM, ramp"),
+            ("B200_hist1", "B200 (dgx025 43:00.0): stream, light")]
     fig, ax = plt.subplots(3, len(runs), figsize=(15.5, 6.6), facecolor=SURF, sharex="col",
                            gridspec_kw=dict(height_ratios=[1.3, 1, 0.7]))
     for j, (tag, lab) in enumerate(runs):
@@ -193,9 +195,9 @@ def main():
         if np.isfinite(S["mem_c"]).any():
             ax[1, j].legend(frameon=False, fontsize=7.5, loc="upper right")
     fig.suptitle("Over time. Under load, every card that reaches its power cap (A100/A6000 300 W, B200 1000 W) sheds SM clock, "
-                 "and sheds more as it heats (~2-6 MHz/°C): leakage eats the budget.\nAt idle, A100 and B200 hold max clock, "
-                 "so idle power follows temperature smoothly; the A6000 governor drops to 210 MHz, a ~75 W step unrelated "
-                 "to temperature.",
+                 "and sheds more as it heats: leakage eats the budget. HBM runs hotter than the die under heavy load\n"
+                 "(A100 +14 °C, B200 +19 °C) but tracks it once idle. At idle, A100 and B200 hold max clock, so idle power "
+                 "follows temperature smoothly; the A6000 governor drops to 210 MHz, a ~75 W step unrelated to temperature.",
                  x=0.01, ha="left", fontsize=9, color=INK)
     fig.tight_layout(rect=(0, 0, 1, 0.93))
     fig.savefig(os.path.join(HERE, "fig_thermal_time.png"), dpi=180, facecolor=SURF)
