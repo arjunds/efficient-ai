@@ -10,14 +10,16 @@ Reference idle line: 1 C medians of the card's own cool-downs (>= 2 s after load
 fitted with a quadratic; for the A6000, whose idle governor drops to 210 MHz, the pauses are
 its only clocks-up idle data, so its reference is a linear fit of its own pause points.
 
-  fig_pause.png : top, pause power vs die temperature per card with the idle line;
-                  bottom, residual vs bandwidth, residual vs HBM-die gap, trough-late vs clock
+  fig_pause.png      : pause power vs die temperature per card with the idle line (slide version)
+  fig_pause_full.png : --full: adds the capped troughs and a bottom row (residual vs bandwidth,
+                       residual vs HBM-die gap, trough-late vs clock)
   fig_pause.json: the numbers quoted in THERMAL_IDLE.md
   PYTHONPATH=/shared_data0/adsampat/pydeps python3 talk_figs/fig_pause.py
 """
 import csv
 import json
 import os
+import sys
 
 import numpy as np
 
@@ -143,7 +145,11 @@ def main():
 
     data = {tag: load(tag) for tag, _ in RUNS}
     js = {tag: stats(r) for tag, r in data.items() if r}
-    fig, ax = plt.subplots(2, 3, figsize=(15.5, 8.6), facecolor=SURF, gridspec_kw=dict(height_ratios=[1.25, 1]))
+    FULL = "--full" in sys.argv
+    if FULL:
+        fig, ax = plt.subplots(2, 3, figsize=(15.5, 8.6), facecolor=SURF, gridspec_kw=dict(height_ratios=[1.25, 1]))
+    else:
+        fig, ax = plt.subplots(1, 3, figsize=(15.5, 5.2), facecolor=SURF, squeeze=False)
     for j, (tag, title) in enumerate(RUNS):
         a = ax[0, j]; style(a); r = data[tag]
         if r is None:
@@ -172,78 +178,93 @@ def main():
             a.plot([x["t_late_c"] for x in P], [x["p_late_w"] for x in P], "o", ms=4.5, color=col, mec="white", mew=0.4,
                    zorder=3, label=f"pause end: {lab}")
             C = [x for x in P if x["capped"] and x.get("p_min_w") is not None]
-            if C:
+            if C and FULL:
                 a.plot([x["temp_min_c"] for x in C], [x["p_min_w"] for x in C], "v", ms=5, mfc="none", color=col, mew=1.0,
                        zorder=2)
-        a.plot([], [], "v", mfc="none", color=INK2, label="trough (still at loaded clock), capped loads only")
+        if FULL:
+            a.plot([], [], "v", mfc="none", color=INK2, label="trough (still at loaded clock), capped loads only")
         a.set_title(title, loc="left", fontsize=10, color=INK)
         a.set_xlabel("die temperature (°C)"); a.set_ylabel("power with zero activity (W)")
-        lo_y, hi_y = a.get_ylim(); a.set_ylim(lo_y, hi_y + 0.45 * (hi_y - lo_y))   # headroom for the legend
+        lo_y, hi_y = a.get_ylim(); a.set_ylim(lo_y, hi_y + (0.45 if FULL else 0.38) * (hi_y - lo_y))   # headroom for the legend
         a.legend(frameon=False, fontsize=7, loc="upper left")
 
-    # bottom: pooled diagnostics
-    a = ax[1, 0]; style(a)
-    for tag, r in data.items():
-        if not r:
-            continue
-        for k, _, col in LOADS:
-            P = [x for x in r["pz"] if x["kind"] == k]
-            a.plot([x["bw_gbs"] / 1e3 for x in P], [x["res_w"] for x in P], CARD_MK[tag], ms=4.5, color=col, mec="white", mew=0.4)
-    a.axhline(0, color=INK2, lw=0.8)
-    a.set_xlabel("DRAM bandwidth of the load just before the pause (TB/s)")
-    a.set_ylabel("pause end minus idle line (W)")
-    a.set_title("Does it matter what the card was doing? (same die temperature)", loc="left", fontsize=9, color=INK)
-    a.legend(handles=[Line2D([], [], ls="", marker=CARD_MK[t], color=INK2, label=t.split("_")[0]) for t, r in data.items() if r],
-             frameon=False, fontsize=7.5, loc="upper right")
-
-    a = ax[1, 1]; style(a)
-    for tag, r in data.items():
-        if not r:
-            continue
-        for k, _, col in LOADS:
-            P = [x for x in r["pz"] if x["kind"] == k and x["mem_gap_c"] is not None]
-            a.plot([x["mem_gap_c"] for x in P], [x["res_w"] for x in P], CARD_MK[tag], ms=4.5, color=col, mec="white", mew=0.4)
-    a.axhline(0, color=INK2, lw=0.8)
-    # §10's hypothesis on the B200: a share phi of the leakage tracks HBM, not die, temperature, so the
-    # pause residual would rise phi*k per degree of HBM-die gap above the idle gap
-    PHI, K_B200, GAP_IDLE = 0.4, 1.64, -2.2
-    gx = np.array([GAP_IDLE, 17.0])
-    a.plot(gx, PHI * K_B200 * (gx - GAP_IDLE), "--", color=INK, lw=1.1, zorder=1,
-           label=f"§10 HBM-leakage hypothesis on the B200 (φ = {PHI}): +{PHI * K_B200:.2f} W/°C")
-    a.legend(frameon=False, fontsize=7.5, loc="upper left")
-    a.set_xlabel("HBM minus die temperature when the pause starts (°C)")
-    a.set_ylabel("pause end minus idle line (W)")
-    a.set_title("Does hot HBM add leakage? No (A6000: no memory sensor)", loc="left", fontsize=9, color=INK)
-
-    a = ax[1, 2]; style(a)
-    for tag, r in data.items():
-        if not r:
-            continue
-        for k, _, col in LOADS:
-            P = [x for x in r["pz"] if x["kind"] == k and x["trough_gap_w"] is not None]
-            a.plot([x["clk_load"] / x["clk_late"] for x in P], [x["trough_gap_w"] for x in P], CARD_MK[tag], ms=4.5,
-                   color=col, mec="white", mew=0.4)
-    a.axhline(0, color=INK2, lw=0.8)
-    a.set_xlabel("loaded SM clock / idle SM clock")
-    a.set_ylabel("trough minus pause end (W)")
-    a.set_title("Lower loaded clock (capped) → lower zero-activity power", loc="left", fontsize=9, color=INK)
-
     A = js.get("A100_pulse1", {}); B = js.get("B200_pulse", {})
-    fig.suptitle("Load pauses: 1 s of zero activity inside the load, at load temperature. At the same die temperature, power with the "
-                 f"clock recovered sits on the idle line (median A100 {A.get('res_median', 0):+.1f} W, B200 {B.get('res_median', 0):+.1f} W),\n"
-                 "whatever ran before and however hot the HBM is: on the B200 the HBM ran 16 °C above the die and the residual stayed within "
-                 f"2 W, where HBM leakage (§10) predicted +{0.4 * 1.64 * (16 + 2.2):.0f} W.\n"
-                 "Only the clock matters: while still at a capped load's lower clock, zero-activity power is "
-                 f"{-A.get('pulse:stream_trough_gap_median', 0):.0f} W (stream) to {-A.get('pulse:gemm_trough_gap_median', 0):.0f} W "
-                 f"(GEMM) lower on the A100, {-B.get('trough_gap_capped', {}).get('median', 0):.0f} W on the B200's capped top level.",
-                 x=0.01, ha="left", fontsize=9, color=INK)
-    fig.text(0.01, 0.005, "Pause end = last 0.2 s of each 1 s pause. Trough = lowest 50 ms median; NVML averages power over ~25–100 ms, "
-             "so troughs are smeared upward (a lower bound on the clock effect). A100/A6000: 1 s every 15 s; B200: every 10 s (six-level stream ramp).\n"
-             "Idle line: own cool-downs ≥2 s after load. Capped: A100 stream and GEMM, A6000 GEMM, B200 6.5 TB/s level. "
-             "Pauses whose clock had not recovered are dropped (A6000: 1). B200 above 55 °C uses the extrapolated idle line (linear instead: within 0.4 W).",
-             fontsize=7, color=INK2)
-    fig.tight_layout(rect=(0, 0.035, 1, 0.915))
-    fig.savefig(os.path.join(HERE, "fig_pause.png"), dpi=170, facecolor=SURF)
+    if not FULL:
+        fig.suptitle("Load pauses: stop the load for 1 s; within ~0.1 s the activity power is gone but the die is still at load temperature.\n"
+                     "Power with zero activity then sits on the card's own idle cool-down curve "
+                     f"(median A100 {A.get('res_median', 0):+.1f} W, B200 {B.get('res_median', 0):+.1f} W): "
+                     "static power under load is the idle curve at the same die temperature.",
+                     x=0.01, ha="left", fontsize=10, color=INK)
+        fig.text(0.01, 0.01, "Each dot = last 0.2 s of one 1 s pause (clock back at idle level). A100/A6000: a pause every 15 s in stream, GEMM and a stream ramp; "
+                 "B200: every 10 s in a six-level stream ramp.\n"
+                 "A6000 idles at 210 MHz, so its line is a fit to the pauses (its first clocks-up idle curve). B200 above 55 °C: idle line extrapolated "
+                 "(linear instead: within 0.4 W). One A6000 pause dropped (clock not recovered).",
+                 fontsize=7.5, color=INK2)
+        fig.tight_layout(rect=(0, 0.06, 1, 0.88))
+    if FULL:
+        # bottom: pooled diagnostics
+        a = ax[1, 0]; style(a)
+        for tag, r in data.items():
+            if not r:
+                continue
+            for k, _, col in LOADS:
+                P = [x for x in r["pz"] if x["kind"] == k]
+                a.plot([x["bw_gbs"] / 1e3 for x in P], [x["res_w"] for x in P], CARD_MK[tag], ms=4.5, color=col, mec="white", mew=0.4)
+        a.axhline(0, color=INK2, lw=0.8)
+        a.set_xlabel("DRAM bandwidth of the load just before the pause (TB/s)")
+        a.set_ylabel("pause end minus idle line (W)")
+        a.set_title("Does it matter what the card was doing? (same die temperature)", loc="left", fontsize=9, color=INK)
+        a.legend(handles=[Line2D([], [], ls="", marker=CARD_MK[t], color=INK2, label=t.split("_")[0]) for t, r in data.items() if r],
+                 frameon=False, fontsize=7.5, loc="upper right")
+
+        a = ax[1, 1]; style(a)
+        for tag, r in data.items():
+            if not r:
+                continue
+            for k, _, col in LOADS:
+                P = [x for x in r["pz"] if x["kind"] == k and x["mem_gap_c"] is not None]
+                a.plot([x["mem_gap_c"] for x in P], [x["res_w"] for x in P], CARD_MK[tag], ms=4.5, color=col, mec="white", mew=0.4)
+        a.axhline(0, color=INK2, lw=0.8)
+        # §10's hypothesis on the B200: a share phi of the leakage tracks HBM, not die, temperature, so the
+        # pause residual would rise phi*k per degree of HBM-die gap above the idle gap
+        PHI, K_B200, GAP_IDLE = 0.4, 1.64, -2.2
+        gx = np.array([GAP_IDLE, 17.0])
+        a.plot(gx, PHI * K_B200 * (gx - GAP_IDLE), "--", color=INK, lw=1.1, zorder=1,
+               label=f"§10 HBM-leakage hypothesis on the B200 (φ = {PHI}): +{PHI * K_B200:.2f} W/°C")
+        a.legend(frameon=False, fontsize=7.5, loc="upper left")
+        a.set_xlabel("HBM minus die temperature when the pause starts (°C)")
+        a.set_ylabel("pause end minus idle line (W)")
+        a.set_title("Does hot HBM add leakage? No (A6000: no memory sensor)", loc="left", fontsize=9, color=INK)
+
+        a = ax[1, 2]; style(a)
+        for tag, r in data.items():
+            if not r:
+                continue
+            for k, _, col in LOADS:
+                P = [x for x in r["pz"] if x["kind"] == k and x["trough_gap_w"] is not None]
+                a.plot([x["clk_load"] / x["clk_late"] for x in P], [x["trough_gap_w"] for x in P], CARD_MK[tag], ms=4.5,
+                       color=col, mec="white", mew=0.4)
+        a.axhline(0, color=INK2, lw=0.8)
+        a.set_xlabel("loaded SM clock / idle SM clock")
+        a.set_ylabel("trough minus pause end (W)")
+        a.set_title("Lower loaded clock (capped) → lower zero-activity power", loc="left", fontsize=9, color=INK)
+
+        A = js.get("A100_pulse1", {}); B = js.get("B200_pulse", {})
+        fig.suptitle("Load pauses: 1 s of zero activity inside the load, at load temperature. At the same die temperature, power with the "
+                     f"clock recovered sits on the idle line (median A100 {A.get('res_median', 0):+.1f} W, B200 {B.get('res_median', 0):+.1f} W),\n"
+                     "whatever ran before and however hot the HBM is: on the B200 the HBM ran 16 °C above the die and the residual stayed within "
+                     f"2 W, where HBM leakage (§10) predicted +{0.4 * 1.64 * (16 + 2.2):.0f} W.\n"
+                     "Only the clock matters: while still at a capped load's lower clock, zero-activity power is "
+                     f"{-A.get('pulse:stream_trough_gap_median', 0):.0f} W (stream) to {-A.get('pulse:gemm_trough_gap_median', 0):.0f} W "
+                     f"(GEMM) lower on the A100, {-B.get('trough_gap_capped', {}).get('median', 0):.0f} W on the B200's capped top level.",
+                     x=0.01, ha="left", fontsize=9, color=INK)
+        fig.text(0.01, 0.005, "Pause end = last 0.2 s of each 1 s pause. Trough = lowest 50 ms median; NVML averages power over ~25–100 ms, "
+                 "so troughs are smeared upward (a lower bound on the clock effect). A100/A6000: 1 s every 15 s; B200: every 10 s (six-level stream ramp).\n"
+                 "Idle line: own cool-downs ≥2 s after load. Capped: A100 stream and GEMM, A6000 GEMM, B200 6.5 TB/s level. "
+                 "Pauses whose clock had not recovered are dropped (A6000: 1). B200 above 55 °C uses the extrapolated idle line (linear instead: within 0.4 W).",
+                 fontsize=7, color=INK2)
+        fig.tight_layout(rect=(0, 0.035, 1, 0.915))
+    fig.savefig(os.path.join(HERE, "fig_pause_full.png" if FULL else "fig_pause.png"), dpi=170, facecolor=SURF)
     json.dump(js, open(os.path.join(HERE, "fig_pause.json"), "w"), indent=1)
     for t, v in js.items():
         print(t, json.dumps(v, default=float)[:900])

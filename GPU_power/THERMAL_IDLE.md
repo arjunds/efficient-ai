@@ -591,7 +591,7 @@ coefficient: the bytes move through memory that is 18 °C hotter than the sensor
 against, so the +0.25 pJ/byte/°C above is per °C of **die** temperature and would be roughly
 half that per °C of actual HBM temperature.
 
-Read directly, as §11 does on the A100 (`talk_figs/fig_pause.png`, bottom middle;
+Read directly, as §11 does on the A100 (`talk_figs/fig_pause_full.png`, bottom middle;
 `fig_pause.json`): pause end minus this card's cool-down idle line at the same die temperature
 is median **−0.7 W** (10–90% −1.8..+0.5, n = 48), against an HBM−die gap of −1 to +16 °C when
 the pause starts. Its slope on the gap is **−0.08 W/°C**; φ = 0.4 would need **+0.66 W/°C**,
