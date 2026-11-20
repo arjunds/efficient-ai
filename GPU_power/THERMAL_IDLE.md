@@ -478,9 +478,14 @@ GPU-59207268, 55 pauses). Figure: `talk_figs/fig_pause_static.png`.
   model's P_s of 106.7 W is this card's clocks-up idle at about 62 °C. Capped GEMM pauses show a
   smaller trough (median 0.7 W, IQR 0.2–4.7) than the A100's.
 - **For the model:** below the cap, P_s(T) from cool-downs is the static term at load
-  temperature, within ~1 W. At the cap, the static share is lower by up to ~17 W on the A100, so
-  §6's correction overstates the static slice at capped levels. The trace levels in fig 9 mostly
-  run below the cap, so §6 stands for them.
+  temperature, within ~1 W. At the cap it is lower, by an amount set by how far the clock drops.
+  - **A100 serving is at the cap for 80–93% of busy time** (`logs/A100_prov` power traces,
+    SW power-cap flag 93%), but the cap only trims the clock: **median 1365 MHz** (p10 1185,
+    p90 1395). Interpolating the pause deficits (0.1 W at 1410, 4.4 W at ~1290 MHz) gives
+    **~2 W at the median, ~10 W at the p10 clock**. So §6's +14 W static correction at the
+    median serving temperature is overstated by roughly 2 W typically, up to ~10 W in the
+    heaviest moments, and its conclusion stands.
+  - **B200 serving is at the cap for only 4.5% of busy time,** so §6 stands there as measured.
 
 ## What this changes
 - **Total J/token predictions: little change.** The dynamic coefficients were measured on hot,
